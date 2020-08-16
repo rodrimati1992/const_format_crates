@@ -46,7 +46,7 @@ macro_rules! impl_number_of_digits {
             #[allow(unused_mut,unused_variables)]
             pub const fn fmt_len(self, _: Formatting)-> usize {
                 let mut n = self.0.wrapping_abs() as $Unsigned;
-                let mut len = (self.0 < 0) as usize;
+                let mut len = 1 + (self.0 < 0) as usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
             }
         }
@@ -60,7 +60,7 @@ macro_rules! impl_number_of_digits {
             #[allow(unused_mut,unused_variables)]
             pub const fn fmt_len(self, _: Formatting)-> usize {
                 let mut n = self.0;
-                let mut len = 0usize;
+                let mut len = 1usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
             }
         }
