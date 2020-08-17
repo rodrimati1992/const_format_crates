@@ -17,7 +17,7 @@
 //!
 //! # Limitations
 //!
-//! All of the macros from this crate have these limitations:
+//! All of the macros from `const_format` have these limitations:
 //!
 //! - They cannot concatenate constants that *use* generic parameters,
 //! so while `Type::<u8>::FOO` is fine `Type::<T>::FOO` is not (`T` being a type parameter).
@@ -25,8 +25,7 @@
 //! - Integer arguments must have a type inferrable from context,
 //! [more details below](#integer-args).
 //!
-//!
-//! - They cannot be used in attributes that take string literals.
+//! - They cannot be used places that take string literals.
 //! So `#[doc = "foobar"]` cannot be replaced with `#[doc = concatcp!("foo", "bar") ]`.
 //!
 //! <span id="integer-args"></span>
@@ -55,11 +54,11 @@
 //!
 //! # No-std support
 //!
-//! This crate is unconditionally `#![no_std]`, so it can be used anywhere Rust can be used.
+//! `const_format` is unconditionally `#![no_std]`, so it can be used anywhere Rust can be used.
 //!
 //! # Minimum Supported Rust Version
 //!
-//! This crate requires Rust 1.46.0, because it uses looping an branching in const contexts.
+//! `const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
 //!
 //! Features that require versions of Rust, or the nightly compiler,
 //! need to be explicitly enabled with cargo features.
