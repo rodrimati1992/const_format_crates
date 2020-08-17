@@ -77,6 +77,9 @@ mod pargument;
 mod pwrapper;
 mod utils;
 
+#[cfg(test)]
+mod misc_tests;
+
 #[doc(hidden)]
 pub mod pmr {
     pub use core::ops::Range;

@@ -1,51 +1,55 @@
 use crate::{formatting::Formatting, pwrapper::PWrapper};
 
-const MAX_POWER: u32 = 38;
+use arrayvec::ArrayString;
+
+use core::fmt::{Display, Write};
+
+fn count_digits(n: impl Display) -> usize {
+    let mut buff = ArrayString::<[u8; 64]>::new();
+    write!(buff, "{}", n).unwrap();
+    buff.len()
+}
+
+macro_rules! number_of_digits_test_case {
+    ($val:expr) => {
+        assert_eq!(
+            PWrapper($val).fmt_len(Formatting::Display),
+            count_digits($val)
+        );
+    };
+}
 
 macro_rules! check_number_of_digits_ {
     ($ty:ty) => {{
-        let arr = generate_numbers();
-        for (n, digits) in arr
-            .iter()
-            .copied()
-            .filter(|v| v.0 <= (<$ty>::max_value() as u128))
-            .map(|v| (v.0 as $ty, v.1))
-        {
-            for fmt in [Formatting::Debug, Formatting::Display].iter().copied() {
-                assert_eq!(
-                    PWrapper(n).fmt_len(fmt) as u32,
-                    digits,
-                    "\nn:{} ty:{} \n",
-                    n,
-                    core::any::type_name::<$ty>(),
-                );
+        let zero: $ty = 0;
+        let one: $ty = 1;
+        let two: $ty = 2;
+
+        number_of_digits_test_case!(zero);
+        number_of_digits_test_case!(one);
+        number_of_digits_test_case!(two);
+
+        let mut n: $ty = 10;
+
+        loop {
+            number_of_digits_test_case!(n - 1);
+            number_of_digits_test_case!(n);
+            number_of_digits_test_case!(n + 1);
+
+            match n.checked_mul(10) {
+                Some(next) => n = next,
+                None => break,
             }
         }
+
+        let max_s2: $ty = <$ty>::MAX - 2;
+        let max_s1: $ty = <$ty>::MAX - 1;
+        let max_s0: $ty = <$ty>::MAX;
+
+        number_of_digits_test_case!(max_s2);
+        number_of_digits_test_case!(max_s1);
+        number_of_digits_test_case!(max_s0);
     }};
-}
-
-const ARR_LEN: usize = (MAX_POWER as usize) * 3 + 3;
-
-fn generate_numbers() -> [(u128, u32); ARR_LEN] {
-    let ten: u128 = 10;
-    let mut out: [(u128, u32); ARR_LEN] = [(0, 0); ARR_LEN];
-    out[0] = (0, 1);
-    out[1] = (1, 1);
-    out[2] = (9, 1);
-
-    for power in 1..MAX_POWER {
-        let digits = power + 1;
-
-        let i = power as usize * 3;
-        out[i] = (ten.pow(power), digits);
-        out[i + 1] = (ten.pow(power) + 1, digits);
-        out[i + 2] = (ten.pow(power + 1) - 1, digits);
-    }
-    out[ARR_LEN - 3] = (ten.pow(MAX_POWER), MAX_POWER + 1);
-    out[ARR_LEN - 2] = (ten.pow(MAX_POWER) + 1, MAX_POWER + 1);
-    out[ARR_LEN - 1] = (u128::max_value(), MAX_POWER + 1);
-
-    out
 }
 
 #[test]

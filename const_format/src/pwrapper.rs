@@ -67,25 +67,45 @@ macro_rules! impl_number_of_digits {
 
 macro_rules! int_to_array_impls {
     (
-        $( ($signedness:ident, $bits:tt, ($Int:ty, $Signed:ty), $array_cap:expr) )*
+        $( ($signedness:ident, $bits:tt, ($Int:ty, $Unsigned:ty), $array_cap:expr) )*
     ) => (
         $(
             impl_number_of_digits!{
                 impl_either;
                 $signedness,
-                ($Int, $Signed),
+                ($Int, $Unsigned),
                 $bits,
             }
 
             impl PWrapper<$Int> {
                 const ARR_CAP: usize = $array_cap;
-                int_to_array_impls!{@inner $signedness, $bits, $Int}
+                int_to_array_impls!{@to_start_array $signedness, $bits, $Int}
+                int_to_array_impls!{@unsigned_abs $signedness, $bits, ($Int, $Unsigned)}
             }
         )*
     );
-    (@inner $signedness:ident, $bits:tt, $int_type:ty)=>{
+    (@unsigned_abs signed, $bits:tt, ($Int:ty, $Unsigned:ty))=>{
+        pub const fn unsigned_abs(self) -> $Unsigned {
+            self.0.wrapping_abs() as $Unsigned
+        }
+    };
+    (@unsigned_abs unsigned, $bits:tt, ($Int:ty, $Unsigned:ty))=>{
+        pub const fn unsigned_abs(self) -> $Unsigned {
+            self.0
+        }
+    };
+    (@write_sign signed, $self:ident, $out:ident )=>{
+        if $self.0 < 0 {
+            $out.start-=1;
+            $out.array[$out.start] = b'-';
+        }
+    };
+    (@write_sign unsigned, $self:ident, $out:ident )=>{
+
+    };
+    (@to_start_array $signedness:ident, $bits:tt, $Int:ty)=>{
         pub const fn to_start_array(
-            mut self: Self,
+            self: Self,
             _fmt: Formatting,
         ) -> StartAndArray<[u8; Self::ARR_CAP]> {
             let mut out = StartAndArray {
@@ -93,17 +113,22 @@ macro_rules! int_to_array_impls {
                 array: [0u8; Self::ARR_CAP],
             };
 
+            let mut n = self.unsigned_abs();
+
             loop {
                 out.start-=1;
-                let digit = (self.0 as u8) % 10;
+                let digit = (n % 10) as u8;
                 out.array[out.start] = b'0' + digit;
-                self.0/=10;
-                if self.0 == 0 { break }
+                n/=10;
+                if n == 0 { break }
             }
+
+            int_to_array_impls!(@write_sign $signedness, self, out );
 
             out
         }
     };
+
 }
 
 int_to_array_impls! {
@@ -129,26 +154,30 @@ type UWord = u64;
 type UWord = u128;
 
 #[cfg(target_pointer_width = "16")]
-type IWord = u16;
+type IWord = i16;
 #[cfg(target_pointer_width = "32")]
-type IWord = u32;
+type IWord = i32;
 #[cfg(target_pointer_width = "64")]
-type IWord = u64;
+type IWord = i64;
 #[cfg(target_pointer_width = "128")]
-type IWord = u128;
+type IWord = i128;
 
 impl PWrapper<usize> {
     #[inline(always)]
     pub const fn to_start_array(
         self,
         fmt: Formatting,
-    ) -> StartAndArray<[u8; PWrapper::<IWord>::ARR_CAP]> {
+    ) -> StartAndArray<[u8; PWrapper::<UWord>::ARR_CAP]> {
         PWrapper(self.0 as UWord).to_start_array(fmt)
     }
 
     #[inline(always)]
     pub const fn fmt_len(self, fmt: Formatting) -> usize {
         PWrapper(self.0 as UWord).fmt_len(fmt)
+    }
+
+    pub const fn unsigned_abs(self) -> usize {
+        self.0
     }
 }
 
@@ -160,9 +189,14 @@ impl PWrapper<isize> {
     ) -> StartAndArray<[u8; PWrapper::<IWord>::ARR_CAP]> {
         PWrapper(self.0 as IWord).to_start_array(fmt)
     }
+
     #[inline(always)]
     pub const fn fmt_len(self, fmt: Formatting) -> usize {
         PWrapper(self.0 as IWord).fmt_len(fmt)
+    }
+
+    pub const fn unsigned_abs(self) -> usize {
+        self.0.wrapping_abs() as usize
     }
 }
 
@@ -173,7 +207,8 @@ impl PWrapper<Integer> {
         fmt: Formatting,
     ) -> StartAndArray<[u8; PWrapper::<u128>::ARR_CAP]> {
         if self.0.is_negative {
-            PWrapper((self.0.unsigned as i128).wrapping_neg()).to_start_array(fmt)
+            let n: i128 = (self.0.unsigned as i128).wrapping_neg();
+            PWrapper(n).to_start_array(fmt)
         } else {
             PWrapper(self.0.unsigned).to_start_array(fmt)
         }

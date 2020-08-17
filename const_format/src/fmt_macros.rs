@@ -49,6 +49,7 @@
 /// as well.
 #[macro_export]
 macro_rules! concatcp {
+    ()=>{""};
     ($($arg: expr),* $(,)?)=>(
         $crate::concatcp!(@with_fmt $(($crate::pmr::Formatting::Display, $arg))* )
     );

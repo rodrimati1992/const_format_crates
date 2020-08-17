@@ -16,7 +16,7 @@ macro_rules! __for_range{
 macro_rules! __write_pvariant {
     (int, $parg:expr, $elem:ident => $out:ident) => {{
         let mut sa = $crate::pmr::PWrapper($elem).to_start_array($parg.fmt);
-        while sa.start != sa.array.len() {
+        while sa.start < sa.array.len() {
             $out.array[$out.len] = sa.array[sa.start];
             $out.len += 1;
             sa.start += 1;

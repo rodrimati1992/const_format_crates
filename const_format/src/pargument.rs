@@ -13,7 +13,7 @@ pub enum PVariant {
     Int(Integer),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Integer {
     pub is_negative: bool,
     pub unsigned: u128,
@@ -31,7 +31,7 @@ macro_rules! pconvwrapper_impls {
                         fmt,
                         elem: PVariant::Int(Integer{
                             is_negative: self.0 < 0,
-                            unsigned: self.0.wrapping_abs() as u128,
+                            unsigned: PWrapper(self.0).unsigned_abs() as u128,
                         }),
                     }
                 }
