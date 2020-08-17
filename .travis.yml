@@ -12,6 +12,11 @@ matrix:
     - rust: nightly  
       script:
         - cargo update -Z minimal-versions
+        
+        - cd "${TRAVIS_BUILD_DIR}/const_format_proc_macros/"
+        - cargo test
+
+
         - cd "${TRAVIS_BUILD_DIR}/const_format/"
         - cargo build --tests
 
@@ -32,5 +37,9 @@ matrix:
 
 script:
   - cargo update
+  
+  - cd "${TRAVIS_BUILD_DIR}/const_format_proc_macros/"
+  - cargo test
+
   - cd "${TRAVIS_BUILD_DIR}/const_format/"
   - cargo test

@@ -1,0 +1,29 @@
+[package]
+name = "const_format_proc_macros"
+version = "0.1.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+edition = "2018"
+license = "Zlib"
+description = "Implementation detail of the `const_format` crate"
+keywords = ["no-std", "format", "concat"]
+categories = ["no-std", "text-processing"]
+repository = "https://github.com/rodrimati1992/const_format_crates/"
+include = [
+    "Cargo.toml", 
+    "src/**/*.rs", 
+    "../README.md",
+    "../LICENSE-ZLIB.md", 
+]
+
+[badges]
+travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
+
+[features]
+
+[dependencies.syn]
+version = "1.0.38"
+default_features = false
+features = ["parsing"]
+
+[dev-dependencies]
+fastrand = "1.3.4"
