@@ -1,9 +1,56 @@
-
-
+/// Concatenates constants of primitive types into a `&'static str`.
+///
+/// Each argument is stringified after evaluating it, so `concatcp!(1u8 + 3) == "4"`
+///
+/// # Example
+///
+/// ### Literal arguments
+///
+///
+/// ```rust
+/// use const_format::concatcp;
+///
+/// const TWO: u64 = 2;
+///
+/// const MSG: &str = concatcp!(TWO, "+", TWO, "=", 2u8 + 2);
+///
+/// assert_eq!(MSG, "2+2=4");
+///
+/// ```
+///
+/// ### `const` arguments
+///
+/// ```rust
+/// use const_format::concatcp;
+///
+/// const PASSWORD: &str = "password";
+///
+/// const fn times() -> u64 { 10 }
+///
+/// const MSG: &str =
+///     concatcp!("The password is \"", PASSWORD, "\", you can only guess ", times(), " times.");
+///
+/// assert_eq!(MSG, r#"The password is "password", you can only guess 10 times."#);
+///
+/// ```
+///
+/// # Limitations
+///
+/// This macro can only take constants of these types as inputs:
+///
+/// - `&str`
+///
+/// - `i*`/`u*` (all the primitive integer types).
+///
+/// - `bool`
+///
+/// This macro also shares
+/// [the limitations described in here](./index.html#macro-limitations)
+/// as well.
 #[macro_export]
-macro_rules! concatp {
+macro_rules! concatcp {
     ($($arg: expr),* $(,)?)=>(
-        $crate::concatp!(@with_fmt $(($crate::pmr::Formatting::Display, $arg))* )
+        $crate::concatcp!(@with_fmt $(($crate::pmr::Formatting::Display, $arg))* )
     );
     (@with_fmt $(($fmt:expr, $arg: expr))* )=>({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.

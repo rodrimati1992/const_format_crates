@@ -1,9 +1,7 @@
 use crate::{
-    formatting::{Formatting, StartAndArray, is_escaped_simple},
+    formatting::{is_escaped_simple, Formatting, StartAndArray},
     pargument::Integer,
 };
-
-
 
 #[cfg(test)]
 mod tests;
@@ -67,7 +65,6 @@ macro_rules! impl_number_of_digits {
     };
 }
 
-
 macro_rules! int_to_array_impls {
     (
         $( ($signedness:ident, $bits:tt, ($Int:ty, $Signed:ty), $array_cap:expr) )*
@@ -109,7 +106,7 @@ macro_rules! int_to_array_impls {
     };
 }
 
-int_to_array_impls!{
+int_to_array_impls! {
     (signed  , 8, (i8, u8), 4)
     (signed  , 16, (i16, u16), 6)
     (signed  , 32, (i32, u32), 11)
@@ -121,7 +118,6 @@ int_to_array_impls!{
     (unsigned, 64, (u64, u64), 20)
     (unsigned, 128, (u128, u128), 40)
 }
-
 
 #[cfg(target_pointer_width = "16")]
 type UWord = u16;
@@ -141,21 +137,18 @@ type IWord = u64;
 #[cfg(target_pointer_width = "128")]
 type IWord = u128;
 
-
 impl PWrapper<usize> {
     #[inline(always)]
     pub const fn to_start_array(
         self,
         fmt: Formatting,
     ) -> StartAndArray<[u8; PWrapper::<IWord>::ARR_CAP]> {
-        PWrapper(self.0 as UWord)
-            .to_start_array(fmt)
+        PWrapper(self.0 as UWord).to_start_array(fmt)
     }
 
     #[inline(always)]
     pub const fn fmt_len(self, fmt: Formatting) -> usize {
-        PWrapper(self.0 as UWord)
-            .fmt_len(fmt)
+        PWrapper(self.0 as UWord).fmt_len(fmt)
     }
 }
 
@@ -165,13 +158,11 @@ impl PWrapper<isize> {
         self,
         fmt: Formatting,
     ) -> StartAndArray<[u8; PWrapper::<IWord>::ARR_CAP]> {
-        PWrapper(self.0 as IWord)
-            .to_start_array(fmt)
+        PWrapper(self.0 as IWord).to_start_array(fmt)
     }
     #[inline(always)]
     pub const fn fmt_len(self, fmt: Formatting) -> usize {
-        PWrapper(self.0 as IWord)
-            .fmt_len(fmt)
+        PWrapper(self.0 as IWord).fmt_len(fmt)
     }
 }
 
@@ -189,18 +180,16 @@ impl PWrapper<Integer> {
     }
 }
 
-
 impl PWrapper<&'static str> {
     #[inline(always)]
     pub const fn fmt_len(self, fmt: Formatting) -> usize {
         let mut sum = self.0.len();
         let bytes = self.0.as_bytes();
         if !fmt.is_display() {
-            __for_range!{i in 0..self.0.len() =>
+            __for_range! {i in 0..self.0.len() =>
                 sum += is_escaped_simple(bytes[i]) as usize;
             }
         }
         sum + 2 // The quote characters
     }
 }
-

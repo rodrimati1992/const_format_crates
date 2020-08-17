@@ -1,10 +1,7 @@
-use crate::{
-    formatting::Formatting,
-    pwrapper::PWrapper,
-};
+use crate::{formatting::Formatting, pwrapper::PWrapper};
 
-/// The uniform representation for every argument of the concatp macro.
-pub struct PArgument{
+/// The uniform representation for every argument of the concatcp macro.
+pub struct PArgument {
     pub elem: PVariant,
     pub fmt_len: usize,
     pub fmt: Formatting,
@@ -17,14 +14,12 @@ pub enum PVariant {
 }
 
 #[derive(Copy, Clone)]
-pub struct Integer{
+pub struct Integer {
     pub is_negative: bool,
     pub unsigned: u128,
 }
 
-
 pub struct PConvWrapper<T>(pub T);
-
 
 macro_rules! pconvwrapper_impls {
     ($( ($Signed:ty, $Unsigned:ty) )*) => (
@@ -68,14 +63,13 @@ pconvwrapper_impls! {
 }
 
 impl PConvWrapper<bool> {
-    pub const fn to_pargument(self, _: Formatting)->PArgument{
-        PConvWrapper(if self.0 { "true" }else{ "false" })
-            .to_pargument(Formatting::Display)
+    pub const fn to_pargument(self, _: Formatting) -> PArgument {
+        PConvWrapper(if self.0 { "true" } else { "false" }).to_pargument(Formatting::Display)
     }
 }
 
 impl PConvWrapper<&'static str> {
-    pub const fn to_pargument(self, fmt: Formatting)->PArgument{
+    pub const fn to_pargument(self, fmt: Formatting) -> PArgument {
         PArgument {
             fmt_len: PWrapper(self.0).fmt_len(fmt),
             fmt,
@@ -83,4 +77,3 @@ impl PConvWrapper<&'static str> {
         }
     }
 }
-
