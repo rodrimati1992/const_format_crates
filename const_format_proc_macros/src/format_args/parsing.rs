@@ -3,15 +3,14 @@ use super::{
 };
 
 use crate::{
-    format_str_parsing::{FmtArg, FmtStrComponent, FormatStr, Formatting, WhichArg},
+    format_str_parsing::{FmtStrComponent, FormatStr, WhichArg},
     parse_utils::ParseBufferExt,
 };
 
-use proc_macro2::{Span, TokenStream as TokenStream2};
+use proc_macro2::Span;
 
 use syn::{
     parse::{Parse, ParseStream},
-    punctuated::Punctuated,
     Ident, LitStr, Token,
 };
 

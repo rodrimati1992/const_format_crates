@@ -1,10 +1,10 @@
-use crate::format_str_parsing::{FormatStr, Formatting, WhichArg};
+use crate::format_str_parsing::{FormatStr, Formatting};
 
 use proc_macro2::{Span, TokenStream as TokenStream2};
 
 use quote::quote;
 
-use syn::{punctuated::Punctuated, Ident, LitStr, Token};
+use syn::{punctuated::Punctuated, Ident, Token};
 
 ////////////////////////////////////////////////
 

@@ -27,6 +27,8 @@ where
     P: syn::parse::Parse,
     F: FnOnce(P) -> Result<TokenStream2, syn::Error>,
 {
+    // println!("{}", input);
+
     syn::parse::<P>(input)
         .and_then(f)
         .unwrap_or_else(|e| e.to_compile_error())

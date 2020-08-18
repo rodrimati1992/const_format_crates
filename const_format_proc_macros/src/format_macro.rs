@@ -5,7 +5,7 @@ use crate::{
 
 use proc_macro2::TokenStream as TokenStream2;
 
-use quote::quote;
+use quote::{quote, quote_spanned};
 
 pub(crate) fn macro_impl(args: WithProcMacroArgs<FormatArgs>) -> Result<TokenStream2, syn::Error> {
     let crate_path = args.crate_path;
@@ -14,7 +14,8 @@ pub(crate) fn macro_impl(args: WithProcMacroArgs<FormatArgs>) -> Result<TokenStr
     let locals = fmt_args.args.iter().map(|arg| {
         let local_variable = &arg.local_variable;
         let expr = &arg.expr;
-        quote!(#local_variable, #expr)
+        let span = local_variable.span();
+        quote_spanned!(span=> #local_variable, #expr)
     });
 
     let arg_pairs = fmt_args.expanded_into.iter().map(|ei| match ei {
@@ -22,7 +23,8 @@ pub(crate) fn macro_impl(args: WithProcMacroArgs<FormatArgs>) -> Result<TokenStr
         ExpandInto::Formatted(fmted) => {
             let formatting = fmted.format.tokens(&crate_path);
             let local_variable = &fmted.local_variable;
-            quote!(#formatting, #local_variable)
+            let span = local_variable.span();
+            quote_spanned!(span=> #formatting, #local_variable)
         }
     });
 

@@ -2,7 +2,23 @@
 ///
 /// Each argument is stringified after evaluating it, so `concatcp!(1u8 + 3) == "4"`
 ///
-/// # Example
+/// [For **examples** look here](#examples)
+///
+/// # Limitations
+///
+/// This macro can only take constants of these types as inputs:
+///
+/// - `&str`
+///
+/// - `i*`/`u*` (all the primitive integer types).
+///
+/// - `bool`
+///
+/// This macro also shares
+/// [the limitations described in here](./index.html#macro-limitations)
+/// as well.
+///
+/// # Examples
 ///
 /// ### Literal arguments
 ///
@@ -34,19 +50,6 @@
 ///
 /// ```
 ///
-/// # Limitations
-///
-/// This macro can only take constants of these types as inputs:
-///
-/// - `&str`
-///
-/// - `i*`/`u*` (all the primitive integer types).
-///
-/// - `bool`
-///
-/// This macro also shares
-/// [the limitations described in here](./index.html#macro-limitations)
-/// as well.
 #[macro_export]
 macro_rules! concatcp {
     ()=>{""};
@@ -118,6 +121,106 @@ macro_rules! concatcp {
     });
 }
 
+/// Formats constants of primitive types into a `&'static str`
+///
+/// [For **examples** look here](#examples)
+///
+/// # Syntax
+///
+/// This macro uses a limited version of the syntax from the standard library [`format`] macro,
+/// it can do these things:
+///
+/// - Take positional arguments: `formatcp!("{}{0}", "hello" )`
+///
+/// - Take named arguments: `formatcp!("{a}{a}", a = "hello" )`
+///
+/// - Use constants from scope as arguments: `formatcp!("{FOO}")`,
+/// equivalent to the [`format_args_implicits` RFC]
+///
+/// - Use Debug-like formatting: `formatcp!("{:?}", "hello" )`
+///
+/// - Use Display formatting: `formatcp!("{}", "hello" )`
+///
+/// # Limitations
+///
+/// This macro can only take constants of these types as inputs:
+///
+/// - `&str`
+///
+/// - `i*`/`u*` (all the primitive integer types).
+///
+/// - `bool`
+///
+/// This macro also shares
+/// [the limitations described in here](./index.html#macro-limitations)
+/// as well.
+///
+/// # Format specifiers
+///
+/// ### Debug-like
+///
+/// The `{:?}` formatter formats things similarly to how Debug does it.
+///
+/// For `&'static str` it only does this:
+/// - Prepend and append the double quote character (`"`).
+/// - Prepend the `\`, and `"` characters with a backslash (`\`).
+///
+/// Example:
+/// ```
+/// use const_format::formatcp;
+///
+/// assert_eq!(formatcp!("{:?}", r#" \ " ó "#), r#"" \\ \" ó ""#);
+/// ```
+///
+/// ### Display
+///
+/// The `{}`/`{:}` formatter works the same as in [`format`].
+///
+///
+/// # Examples
+///
+/// ### Implicit argument
+///
+/// ```rust
+/// use const_format::formatcp;
+///
+/// const NAME: &str = "John";
+///
+/// const MSG: &str = formatcp!("Hello {NAME}, your name is {} bytes long", NAME.len());
+///
+/// assert_eq!(MSG, "Hello John, your name is 4 bytes long");
+///
+/// ```
+///
+/// ### Repeating arguments
+///
+/// ```rust
+/// use const_format::formatcp;
+///
+/// const MSG: &str = formatcp!("{0}{S}{0}{S}{0}", "SPAM", S = "   ");
+///
+/// assert_eq!(MSG, "SPAM   SPAM   SPAM");
+///
+/// ```
+///
+/// ### Debug-like and Display formatting
+///
+/// ```rust
+/// use const_format::formatcp;
+///
+/// const TEXT: &str = r#"hello " \ world"#;
+/// const MSG: &str = formatcp!("{TEXT}____{TEXT:?}");
+///
+/// assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
+///
+/// ```
+///
+/// [`format`]: https://doc.rust-lang.org/std/macro.format.html
+///
+/// [`format_args_implicits` RFC]:
+/// https://github.com/rust-lang/rfcs/blob/master/text/2795-format-args-implicit-identifiers.md
+///
+///
 #[macro_export]
 macro_rules! formatcp {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (

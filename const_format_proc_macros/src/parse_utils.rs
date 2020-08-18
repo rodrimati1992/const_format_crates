@@ -8,7 +8,7 @@ pub(crate) trait ParseBufferExt {
     fn parse_token_stream_and_span(&self) -> (TokenStream2, Span) {
         let input = self.as_parse_buffer();
         let mut span = input.span();
-        let mut ts = std::iter::from_fn(|| {
+        let ts = std::iter::from_fn(|| {
             if input.is_empty() {
                 None
             } else {

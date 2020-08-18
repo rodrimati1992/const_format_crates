@@ -19,7 +19,7 @@
 //!
 //! All of the macros from `const_format` have these limitations:
 //!
-//! - They cannot concatenate constants that *use* generic parameters,
+//! - They cannot take constants that *use* generic parameters,
 //! so while `Type::<u8>::FOO` is fine `Type::<T>::FOO` is not (`T` being a type parameter).
 //!
 //! - Integer arguments must have a type inferrable from context,
