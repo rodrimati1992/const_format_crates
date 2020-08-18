@@ -4,8 +4,10 @@ use core::fmt::Write;
 
 macro_rules! tests {
     (
+        format_str = $format_str:literal,
         $($expr:expr,)*
     ) => (
+        const ALL_TYS_F: &'static str = formatcp!( $format_str, $($expr,)* );
         const ALL_TYS: &'static str = concatcp!( $($expr,)* );
 
         #[test]
@@ -15,21 +17,36 @@ macro_rules! tests {
                 write!(string, "{}", $expr).unwrap();
             )*
             assert_eq!(string.as_str(), ALL_TYS);
+            assert_eq!(string.as_str(), ALL_TYS_F);
         }
 
         #[test]
         fn each_type(){
             $({
+                const VALUE_F: &'static str = formatcp!("{}", $expr);
                 const VALUE: &'static str = concatcp!($expr);
+
                 let mut string = ArrayString::<[u8; 64]>::new();
                 write!(string, "{}", $expr).unwrap();
+
                 assert_eq!(string.as_str(), VALUE);
+                assert_eq!(string.as_str(), VALUE_F);
             })*
         }
     )
 }
 
 tests! {
+    format_str = "\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}{}{}{}{}\
+        {}{}{}{}\
+    ",
+
     i8::MIN, " ", i8::MAX, " ",
     i16::MIN, " ", i16::MAX, " ",
     i32::MIN, " ", i32::MAX, " ",

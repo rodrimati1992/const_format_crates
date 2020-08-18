@@ -4,6 +4,8 @@
 ///
 /// [For **examples** look here](#examples)
 ///
+/// `concatcp` stands for "concatenate constants (of) primitives"
+///
 /// # Limitations
 ///
 /// This macro can only take constants of these types as inputs:
@@ -65,6 +67,7 @@ macro_rules! concatcp {
         $(($fmt:expr, $arg: expr))*
     )=>({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+        #[allow(unused_mut, non_snake_case)]
         const CONCATP_NHPMWYD3NJA : (usize, &[$crate::pmr::PArgument]) = {
             let mut len = 0usize;
 
@@ -124,6 +127,8 @@ macro_rules! concatcp {
 /// Formats constants of primitive types into a `&'static str`
 ///
 /// [For **examples** look here](#examples)
+///
+/// `formatcp` stands for "format constants (of) primitives"
 ///
 /// # Syntax
 ///

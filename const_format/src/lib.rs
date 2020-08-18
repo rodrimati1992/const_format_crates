@@ -93,3 +93,5 @@ pub mod pmr {
         utils::Transmute,
     };
 }
+
+const _: &str = formatcp!("{}", a = 1000);
