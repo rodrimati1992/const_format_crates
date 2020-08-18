@@ -22,7 +22,9 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
 
-[dependencies]
+[dependencies.const_format_proc_macros]
+version = "0.1.0"
+path = "../const_format_proc_macros"
 
 [dev-dependencies]
 arrayvec = {version = "0.5.1", default_features = false}

@@ -51,12 +51,21 @@
 macro_rules! concatcp {
     ()=>{""};
     ($($arg: expr),* $(,)?)=>(
-        $crate::concatcp!(@with_fmt $(($crate::pmr::Formatting::Display, $arg))* )
+        $crate::concatcp!(
+            @with_fmt
+            locals()
+            $(($crate::pmr::Formatting::Display, $arg))*
+        )
     );
-    (@with_fmt $(($fmt:expr, $arg: expr))* )=>({
+    (@with_fmt
+        locals($(($local:ident, $local_init:expr))*)
+        $(($fmt:expr, $arg: expr))*
+    )=>({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         const CONCATP_NHPMWYD3NJA : (usize, &[$crate::pmr::PArgument]) = {
             let mut len = 0usize;
+
+            $(let $local = $local_init;)*
 
             let array = [
                 $({
@@ -107,4 +116,22 @@ macro_rules! concatcp {
             CONCAT_STR
         }
     });
+}
+
+#[macro_export]
+macro_rules! formatcp {
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
+        $crate::formatcp!(
+            @inner
+            (($crate))
+            $format_string
+            $(, $(($expr),)+)?
+        )
+    );
+    (@inner (($path:path)) $($everything:tt)*  ) => (
+        $crate::pmr::__formatcp_impl!(
+            (($path))
+            $($everything)*
+        )
+    );
 }

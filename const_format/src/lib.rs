@@ -82,6 +82,8 @@ mod misc_tests;
 
 #[doc(hidden)]
 pub mod pmr {
+    pub use const_format_proc_macros::__formatcp_impl;
+
     pub use core::ops::Range;
 
     pub use crate::{

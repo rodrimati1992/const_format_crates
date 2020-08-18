@@ -1,3 +1,10 @@
+use proc_macro2::Span;
+
+use std::{
+    fmt::{self, Display},
+    ops::Range,
+};
+
 #[derive(Debug, PartialEq)]
 pub(crate) struct ParseError {
     pub(crate) pos: usize,
@@ -23,6 +30,7 @@ pub(crate) enum ParseErrorKind {
     },
 }
 
+#[allow(dead_code)]
 impl ParseErrorKind {
     pub fn not_a_number(what: &str) -> Self {
         Self::NotANumber {
@@ -38,5 +46,69 @@ impl ParseErrorKind {
         Self::UnknownFormatting {
             what: what.to_string(),
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, PartialEq)]
+pub(crate) struct DisplayParseError<'a> {
+    pub(crate) str: &'a str,
+    pub(crate) error_span: Range<usize>,
+    pub(crate) kind: ParseErrorKind,
+}
+impl ParseError {
+    fn error_span(&self) -> Range<usize> {
+        let len = match &self.kind {
+            ParseErrorKind::UnclosedArg => 0,
+            ParseErrorKind::InvalidClosedArg => 0,
+            ParseErrorKind::NotANumber { what } => what.len(),
+            ParseErrorKind::NotAnIdent { what } => what.len(),
+            ParseErrorKind::UnknownFormatting { what } => what.len(),
+        };
+
+        self.pos..self.pos + len
+    }
+
+    pub(crate) fn into_syn_err(self, span: Span, original_str: &str) -> syn::Error {
+        let display = DisplayParseError {
+            str: original_str,
+            error_span: self.error_span(),
+            kind: self.kind,
+        };
+
+        syn::Error::new(span, display)
+    }
+}
+
+impl Display for ParseErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParseErrorKind::UnclosedArg => f.write_str("unclosed argument"),
+            ParseErrorKind::InvalidClosedArg => f.write_str("`}` closing a nonexistent argument"),
+            ParseErrorKind::NotANumber { what } => writeln!(f, "not a number: \"{}\"", what),
+            ParseErrorKind::NotAnIdent { what } => {
+                writeln!(f, "not a valid identifier: \"{}\"", what)
+            }
+            ParseErrorKind::UnknownFormatting { what } => {
+                writeln!(f, "unknown formatting: \"{}\"", what)
+            }
+        }
+    }
+}
+
+impl Display for DisplayParseError<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("failed to parse the format string ")?;
+
+        // Gets the amount of chars up to the error,
+        // this is good enough for most cases,
+        // but doesn't acount for multi-char characters.
+        let chars = self.str[..self.error_span.start].chars().count();
+        writeln!(f, "at the character number {}, ", chars)?;
+
+        Display::fmt(&self.kind, f)?;
+
+        Ok(())
     }
 }

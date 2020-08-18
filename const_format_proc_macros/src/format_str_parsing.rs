@@ -1,3 +1,5 @@
+use syn::Ident;
+
 use std::str::FromStr;
 
 mod errors;
@@ -26,7 +28,7 @@ pub(crate) struct FmtArg {
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum WhichArg {
-    Ident(String),
+    Ident(syn::Ident),
     Positional(Option<usize>),
 }
 
@@ -64,7 +66,7 @@ impl FmtArg {
 #[allow(dead_code)]
 impl WhichArg {
     fn ident(s: &str) -> Self {
-        Self::Ident(s.to_string())
+        Self::Ident(Ident::new(s, proc_macro2::Span::mixed_site()))
     }
 }
 
@@ -96,12 +98,6 @@ fn parse_format_str(input: &str) -> Result<FormatStr, ParseError> {
                 arg_start = open_pos + 2;
             } else if let Some(close_pos) = input.find_from('}', after_open) {
                 let after_close = close_pos + 1;
-                // if input[after_close..].chars().next() == Some('}') {
-                //     return Err(ParseError {
-                //         pos: after_close,
-                //         kind: ParseErrorKind::InvalidClosedArg,
-                //     });
-                // }
 
                 let arg = parse_fmt_arg(&input[after_open..close_pos], after_open)?;
                 components.push(FmtStrComponent::Arg(arg));
