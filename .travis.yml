@@ -5,10 +5,14 @@ os:
   - osx
   - windows
 
+rust: 
+  # Remember to uncomment after 2020-08-27
+  # - rust: 1.46.0
+  - beta
+  - nightly
+
 matrix:
   include:
-    - rust: 1.46.0
-    - rust: beta
     - rust: nightly  
       script:
         - cargo update -Z minimal-versions
@@ -43,3 +47,5 @@ script:
 
   - cd "${TRAVIS_BUILD_DIR}/const_format/"
   - cargo test
+
+

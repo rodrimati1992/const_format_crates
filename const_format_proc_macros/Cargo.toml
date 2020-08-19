@@ -24,8 +24,8 @@ proc-macro = true
 [features]
 
 [dependencies]
-quote = "1.0"
-proc-macro2 = "1.0"
+quote = "1.0.7"
+proc-macro2 = "1.0.19"
 
 [dependencies.syn]
 version = "1.0.38"
