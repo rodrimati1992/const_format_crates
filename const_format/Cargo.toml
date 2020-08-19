@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -23,7 +23,7 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 [features]
 
 [dependencies.const_format_proc_macros]
-version = "0.1.0"
+version = "=0.0.2"
 path = "../const_format_proc_macros"
 
 [dev-dependencies]
