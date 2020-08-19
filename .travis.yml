@@ -43,3 +43,5 @@ script:
 
   - cd "${TRAVIS_BUILD_DIR}/const_format/"
   - cargo test
+
+#
