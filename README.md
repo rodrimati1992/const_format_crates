@@ -29,7 +29,7 @@ const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
 
 assert_eq!(FOO, "John, age 24!");
 
-# const fn compute_age(s: &str) -> usize { s.len() * 6 }
+const fn compute_age(s: &str) -> usize { s.len() * 6 }
 
 ```
 
