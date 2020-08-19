@@ -18,19 +18,35 @@ const FOO: &str = concatcp!(NAME, ", age ", 21u8,"!");
 assert_eq!(FOO, "Bob, age 21!");
 ```
 
+### Formatting
+
+```rust
+use const_format::formatcp;
+
+const NAME: &str = "John";
+
+const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
+
+assert_eq!(FOO, "John, age 24!");
+
+# const fn compute_age(s: &str) -> usize { s.len() * 6 }
+
+```
+
+
 <div id="macro-limitations"></div>
 
 # Limitations
 
 All of the macros from `const_format` have these limitations:
 
-- They cannot concatenate constants that *use* generic parameters,
+- They cannot take constants that *use* generic parameters,
 so while `Type::<u8>::FOO` is fine `Type::<T>::FOO` is not (`T` being a type parameter).
 
 - Integer arguments must have a type inferrable from context,
-[more details below](#integer-args).
+[more details in the Integer arguments section](#integer-args).
 
-- They cannot be used in places that take string literals.
+- They cannot be used places that take string literals.
 So `#[doc = "foobar"]` cannot be replaced with `#[doc = concatcp!("foo", "bar") ]`.
 
 <span id="integer-args"></span>
@@ -67,3 +83,4 @@ None yet.
 
 Features that require versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
+
