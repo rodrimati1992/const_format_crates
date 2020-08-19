@@ -5,6 +5,7 @@ use super::{
 use crate::{
     format_str_parsing::{FmtStrComponent, FormatStr, WhichArg},
     parse_utils::ParseBufferExt,
+    utils::{dummy_ident, LinearResult},
 };
 
 use proc_macro2::Span;
@@ -18,22 +19,17 @@ use syn::{
 
 impl Parse for UncheckedFormatArg {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
-        dbg!();
-
         let content;
         let _parentheses = syn::parenthesized!(content in input);
 
         content.parse_unwrap_tt(|content| {
             let ident;
             if content.peek2(Token!(=)) {
-                dbg!();
                 ident = Some(content.parse()?);
                 let _: Token!(=) = content.parse()?;
             } else {
-                dbg!();
                 ident = None;
             };
-            dbg!();
 
             let (expr, span) = content.parse_token_stream_and_span();
 
@@ -82,12 +78,20 @@ impl Parse for FormatArgs {
 
 impl FormatArgs {
     pub fn parse_with(input: ParseStream, prefix: Ident) -> Result<FormatArgs, syn::Error> {
+        let mut res = LinearResult::ok(());
+
         let unchecked_fargs = input.parse::<UncheckedFormatArgs>()?;
 
         let mut first_named_arg = unchecked_fargs.args.len();
 
         let mut named_arg_names = Vec::<Ident>::new();
         let mut args = Vec::<FormatArg>::with_capacity(unchecked_fargs.args.len());
+
+        let arg_span_idents: Vec<(Span, Option<Ident>)> = unchecked_fargs
+            .args
+            .iter()
+            .map(|x| (x.span, x.ident.clone()))
+            .collect();
 
         {
             let mut prev_is_named_arg = false;
@@ -127,6 +131,8 @@ impl FormatArgs {
             }
         }
 
+        let mut unused_args = vec![true; args.len()];
+
         let format_str_span = unchecked_fargs.format_str_span;
         let first_named_arg = first_named_arg;
         let named_arg_names = named_arg_names;
@@ -139,14 +145,15 @@ impl FormatArgs {
 
         let expanded_into: Vec<ExpandInto> = {
             let mut current_pos_arg = 0;
-            let mut get_variable_name = |which_arg: WhichArg| -> Result<Ident, syn::Error> {
+            let mut get_variable_name = |which_arg: WhichArg| -> Ident {
                 match which_arg {
                     WhichArg::Ident(ident) => {
                         if let Some(pos) = named_arg_names.iter().position(|x| *x == ident) {
-                            Ok(named_args[pos].local_variable.clone())
+                            unused_args[pos + first_named_arg] = false;
+                            named_args[pos].local_variable.clone()
                         } else {
                             // `formatcp!("{FOO}")` assumes that FOO is a constant in scope
-                            Ok(ident)
+                            ident
                         }
                     }
                     WhichArg::Positional(opt_pos) => {
@@ -157,11 +164,20 @@ impl FormatArgs {
                         });
 
                         match positional_args.get(pos) {
-                            Some(arg) => Ok(arg.local_variable.clone()),
-                            None => Err(syn::Error::new(
-                                format_str_span,
-                                format!("invalid reference to positional argument `{}`", pos,),
-                            )),
+                            Some(arg) => {
+                                unused_args[pos] = false;
+                                arg.local_variable.clone()
+                            }
+                            None => {
+                                res.push_err(syn::Error::new(
+                                    format_str_span,
+                                    format!(
+                                        "attempting to use nonexistent  positional argument `{}`",
+                                        pos,
+                                    ),
+                                ));
+                                dummy_ident()
+                            }
                         }
                     }
                 }
@@ -170,14 +186,28 @@ impl FormatArgs {
             fmt_str_components
                 .into_iter()
                 .map(|fmt_str_comp| match fmt_str_comp {
-                    FmtStrComponent::Str(str) => Ok(ExpandInto::Str(str)),
-                    FmtStrComponent::Arg(arg) => Ok(ExpandInto::Formatted(ExpandFormatted {
-                        local_variable: get_variable_name(arg.which_arg)?,
+                    FmtStrComponent::Str(str) => ExpandInto::Str(str),
+                    FmtStrComponent::Arg(arg) => ExpandInto::Formatted(ExpandFormatted {
+                        local_variable: get_variable_name(arg.which_arg),
                         format: arg.formatting,
-                    })),
+                    }),
                 })
-                .collect::<Result<Vec<ExpandInto>, syn::Error>>()?
+                .collect()
         };
+
+        for (i, (is_it_unused, (span, ident))) in
+            unused_args.iter().zip(&arg_span_idents).enumerate()
+        {
+            if *is_it_unused {
+                let msg = if let Some(ident) = ident {
+                    format!("the '{}' argument is unused", ident)
+                } else {
+                    format!("argument number {} is unused", i)
+                };
+                res.push_err(syn::Error::new(*span, msg));
+            }
+        }
+        res.take()?;
 
         Ok(FormatArgs {
             args,

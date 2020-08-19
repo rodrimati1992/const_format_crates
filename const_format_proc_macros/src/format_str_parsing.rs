@@ -199,21 +199,14 @@ fn parse_formatting(input: &str, starts_at: usize) -> Result<Formatting, ParseEr
 ///
 /// `starts_at` is the offset of `input` in the formatting string.
 fn parse_ident(ident_str: &str, starts_at: usize) -> Result<WhichArg, ParseError> {
-    let mut ident_chars = ident_str.chars();
-
-    let first = ident_chars.next().unwrap();
-
-    if !first.is_alphabetic() && (first != '_' || ident_str.len() == 1)
-        || ident_chars.any(|c| !c.is_alphanumeric() && c != '_')
-    {
-        Err(ParseError {
+    match syn::parse_str::<Ident>(ident_str) {
+        Ok(x) => Ok(WhichArg::Ident(x)),
+        Err(_) => Err(ParseError {
             pos: starts_at,
             kind: ParseErrorKind::NotAnIdent {
                 what: ident_str.to_string(),
             },
-        })
-    } else {
-        Ok(WhichArg::ident(ident_str))
+        }),
     }
 }
 

@@ -7,6 +7,11 @@ use proc_macro2::TokenStream as TokenStream2;
 
 use quote::{quote, quote_spanned};
 
+#[cfg(test)]
+mod tests;
+
+////////////////////////////////////////////////////////////////////////////////
+
 pub(crate) fn macro_impl(args: WithProcMacroArgs<FormatArgs>) -> Result<TokenStream2, syn::Error> {
     let crate_path = args.crate_path;
     let fmt_args = args.value;

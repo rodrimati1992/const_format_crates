@@ -13,6 +13,22 @@
 //! assert_eq!(FOO, "Bob, age 21!");
 //! ```
 //!
+//! ### Formatting
+//!
+//! ```rust
+//! use const_format::formatcp;
+//!
+//! const NAME: &str = "John";
+//!
+//! const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
+//!
+//! assert_eq!(FOO, "John, age 24!");
+//!
+//! # const fn compute_age(s: &str) -> usize { s.len() * 6 }
+//!
+//! ```
+//!
+//!
 //! <div id="macro-limitations"></div>
 //!
 //! # Limitations
@@ -23,7 +39,7 @@
 //! so while `Type::<u8>::FOO` is fine `Type::<T>::FOO` is not (`T` being a type parameter).
 //!
 //! - Integer arguments must have a type inferrable from context,
-//! [more details below](#integer-args).
+//! [more details in the Integer arguments section](#integer-args).
 //!
 //! - They cannot be used places that take string literals.
 //! So `#[doc = "foobar"]` cannot be replaced with `#[doc = concatcp!("foo", "bar") ]`.
@@ -93,5 +109,3 @@ pub mod pmr {
         utils::Transmute,
     };
 }
-
-const _: &str = formatcp!("{}", a = 1000);

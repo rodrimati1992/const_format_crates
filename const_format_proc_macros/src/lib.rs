@@ -9,6 +9,11 @@ mod format_macro;
 
 mod parse_utils;
 
+mod utils;
+
+#[cfg(test)]
+mod test_utils;
+
 /// Input syntax: `"format string", (arg0), (name = arg1)` (with optional trailing comma).
 ///
 /// The arguments are parenthesized to not require syn to parse `arg0` and `arg1` as syn::Expr,
@@ -19,9 +24,19 @@ mod parse_utils;
 #[doc(hidden)]
 #[proc_macro]
 pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
-    parse_or_compile_err(input, format_macro::macro_impl).into()
+    syn::parse(input)
+        .and_then(format_macro::macro_impl)
+        .unwrap_or_else(|e| {
+            let e = e.to_compile_error();
+            quote::quote!({
+                #e;
+                ""
+            })
+        })
+        .into()
 }
 
+#[allow(dead_code)]
 fn parse_or_compile_err<P, F>(input: TokenStream1, f: F) -> TokenStream2
 where
     P: syn::parse::Parse,
