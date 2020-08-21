@@ -7,6 +7,8 @@ mod format_str_parsing;
 
 mod format_macro;
 
+mod formatting;
+
 mod parse_utils;
 
 mod utils;

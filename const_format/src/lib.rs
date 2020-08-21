@@ -76,18 +76,26 @@
 //!
 //! `const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
 //!
-//! Features that require versions of Rust, or the nightly compiler,
+//! Features that require newer versions of Rust, or the nightly compiler,
 //! need to be explicitly enabled with cargo features.
 //!
 #![no_std]
+// #![cfg_attr(not(test), no_std)]
+#![cfg_attr(feature = "with_fmt", feature(const_mut_refs))]
 
 #[macro_use]
-mod helper_macros;
+mod macros {
+    #[macro_use]
+    mod constructors;
+
+    #[macro_use]
+    mod helper_macros;
+
+    #[macro_use]
+    mod fmt_macros;
+}
 
 mod formatting;
-
-#[macro_use]
-mod fmt_macros;
 
 mod pargument;
 mod pwrapper;
@@ -96,6 +104,12 @@ mod utils;
 #[cfg(test)]
 mod misc_tests;
 
+// #[cfg(test)]
+// mod test_utils;
+
+// #[cfg(feature = "with_fmt")]
+// pub mod fmt;
+
 #[doc(hidden)]
 pub mod pmr {
     pub use const_format_proc_macros::__formatcp_impl;
@@ -103,7 +117,10 @@ pub mod pmr {
     pub use core::ops::Range;
 
     pub use crate::{
-        formatting::{is_escaped_simple, Formatting, LenAndArray, StartAndArray},
+        formatting::{
+            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, FormattingMode, IsAlternate,
+            LenAndArray, StartAndArray, FOR_ESCAPING,
+        },
         pargument::{PArgument, PConvWrapper, PVariant},
         pwrapper::PWrapper,
         utils::Transmute,

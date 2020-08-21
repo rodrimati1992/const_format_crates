@@ -24,12 +24,15 @@ pub(crate) fn macro_impl(args: WithProcMacroArgs<FormatArgs>) -> Result<TokenStr
     });
 
     let arg_pairs = fmt_args.expanded_into.iter().map(|ei| match ei {
-        ExpandInto::Str(str) => quote!(#crate_path::pmr::Formatting::Display, #str),
+        ExpandInto::Str(str) => {
+            quote!(to_pargument_display, #crate_path::pmr::FormattingFlags::DEFAULT, #str)
+        }
         ExpandInto::Formatted(fmted) => {
+            let to_pargument_m = fmted.format.to_pargument_method_name();
             let formatting = fmted.format.tokens(&crate_path);
             let local_variable = &fmted.local_variable;
             let span = local_variable.span();
-            quote_spanned!(span=> #formatting, #local_variable)
+            quote_spanned!(span=> #to_pargument_m, #formatting, #local_variable)
         }
     });
 

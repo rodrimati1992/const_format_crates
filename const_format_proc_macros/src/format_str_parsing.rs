@@ -1,3 +1,5 @@
+use crate::formatting::{FormattingFlags, FormattingMode, IsAlternate};
+
 use syn::Ident;
 
 use std::str::FromStr;
@@ -23,19 +25,13 @@ pub(crate) enum FmtStrComponent {
 #[derive(Debug, PartialEq)]
 pub(crate) struct FmtArg {
     pub(crate) which_arg: WhichArg,
-    pub(crate) formatting: Formatting,
+    pub(crate) formatting: FormattingFlags,
 }
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum WhichArg {
     Ident(syn::Ident),
     Positional(Option<usize>),
-}
-
-#[derive(Debug, PartialEq)]
-pub(crate) enum Formatting {
-    Debug,
-    Display,
 }
 
 /////////////////////////////////////
@@ -45,7 +41,7 @@ impl FmtStrComponent {
     fn str(s: &str) -> Self {
         Self::Str(s.to_string())
     }
-    fn arg(which_arg: WhichArg, formatting: Formatting) -> Self {
+    fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
         Self::Arg(FmtArg {
             which_arg,
             formatting,
@@ -55,7 +51,7 @@ impl FmtStrComponent {
 
 #[allow(dead_code)]
 impl FmtArg {
-    fn new(which_arg: WhichArg, formatting: Formatting) -> Self {
+    fn new(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
         Self {
             which_arg,
             formatting,
@@ -181,17 +177,38 @@ fn parse_which_arg(input: &str, starts_at: usize) -> Result<WhichArg, ParseError
 /// Parses the `?` and other formatters inside formatting arguments (`{}`).
 ///
 /// `starts_at` is the offset of `input` in the formatting string.
-fn parse_formatting(input: &str, starts_at: usize) -> Result<Formatting, ParseError> {
+fn parse_formatting(input: &str, starts_at: usize) -> Result<FormattingFlags, ParseError> {
     match input {
-        "" => Ok(Formatting::Display),
-        "?" => Ok(Formatting::Debug),
-        _ => Err(ParseError {
-            pos: starts_at,
-            kind: ParseErrorKind::UnknownFormatting {
-                what: input.to_string(),
-            },
-        }),
+        "#" => return Ok(FormattingFlags::display(IsAlternate::Yes)),
+        "" => return Ok(FormattingFlags::display(IsAlternate::No)),
+        _ => {}
     }
+
+    let mut bytes = input.as_bytes();
+
+    let make_error = || ParseError {
+        pos: starts_at,
+        kind: ParseErrorKind::UnknownFormatting {
+            what: input.to_string(),
+        },
+    };
+
+    if let [before @ .., b'?'] = bytes {
+        bytes = before;
+    }
+
+    let mut mode = FormattingMode::Regular;
+    let mut is_alternate = IsAlternate::No;
+
+    for byte in bytes {
+        match byte {
+            b'b' if mode.is_regular() => mode = FormattingMode::Binary,
+            b'x' if mode.is_regular() => mode = FormattingMode::Hexadecimal,
+            b'#' => is_alternate = IsAlternate::Yes,
+            _ => return Err(make_error()),
+        }
+    }
+    Ok(FormattingFlags::debug(mode, is_alternate))
 }
 
 // Parses an identifier in a formatting argument.

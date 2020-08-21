@@ -1,5 +1,5 @@
 use crate::{
-    formatting::{is_escaped_simple, Formatting, StartAndArray},
+    formatting::{FormattingFlags, FormattingMode, StartAndArray, FOR_ESCAPING},
     pargument::Integer,
 };
 
@@ -8,6 +8,27 @@ mod tests;
 
 #[derive(Copy, Clone)]
 pub struct PWrapper<T>(pub T);
+
+macro_rules! compute_hex_count {
+    ($bits:expr, $int:expr) => {{
+        let i = ($bits - $int.leading_zeros()) as usize;
+        if i == 0 {
+            1
+        } else {
+            (i >> 2) + ((i & 3) != 0) as usize
+        }
+    }};
+}
+macro_rules! compute_binary_count {
+    ($bits:expr, $int:expr) => {{
+        let i = ($bits - $int.leading_zeros()) as usize;
+        if i == 0 {
+            1
+        } else {
+            i
+        }
+    }};
+}
 
 macro_rules! impl_number_of_digits {
     (num number_of_digits;delegate $n:ident $len:ident)=>{
@@ -38,111 +59,69 @@ macro_rules! impl_number_of_digits {
     (impl_either;
         signed,
         ($This:ty, $Unsigned:ty),
-        $bits:tt ,
+        $bits:tt $(,)?
     )=>{
         impl PWrapper<$This> {
+            pub const fn unsigned_abs(self) -> $Unsigned {
+                self.0.wrapping_abs() as $Unsigned
+            }
+
             #[allow(unused_mut,unused_variables)]
-            pub const fn fmt_len(self, _: Formatting)-> usize {
+            pub const fn const_display_len(self, _: FormattingFlags)-> usize {
                 let mut n = self.0.wrapping_abs() as $Unsigned;
                 let mut len = 1 + (self.0 < 0) as usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
+            }
+
+            #[allow(unused_mut,unused_variables)]
+            pub const fn const_debug_len(self, fmt: FormattingFlags)-> usize {
+                match fmt.mode() {
+                    FormattingMode::Regular=>self.const_display_len(fmt),
+                    FormattingMode::Hexadecimal=>compute_hex_count!($bits, self.0),
+                    FormattingMode::Binary=>compute_binary_count!($bits, self.0),
+                }
             }
         }
     };
     (impl_either;
         unsigned,
         ($This:ty, $Unsigned:ty),
-        $bits:tt ,
+        $bits:tt $(,)?
     )=>{
         impl PWrapper<$This> {
+            pub const fn unsigned_abs(self) -> $Unsigned {
+                self.0
+            }
+
             #[allow(unused_mut,unused_variables)]
-            pub const fn fmt_len(self, _: Formatting)-> usize {
+            pub const fn const_display_len(self, _: FormattingFlags)-> usize {
                 let mut n = self.0;
                 let mut len = 1usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
             }
+
+            #[allow(unused_mut,unused_variables)]
+            pub const fn const_debug_len(self, fmt: FormattingFlags)-> usize {
+                match fmt.mode() {
+                    FormattingMode::Regular=>self.const_display_len(fmt),
+                    FormattingMode::Hexadecimal=>compute_hex_count!($bits, self.0),
+                    FormattingMode::Binary=>compute_binary_count!($bits, self.0),
+                }
+            }
         }
     };
 }
 
-macro_rules! int_to_array_impls {
-    (
-        $( ($signedness:ident, $bits:tt, ($Int:ty, $Unsigned:ty), $array_cap:expr) )*
-    ) => (
-        $(
-            impl_number_of_digits!{
-                impl_either;
-                $signedness,
-                ($Int, $Unsigned),
-                $bits,
-            }
-
-            impl PWrapper<$Int> {
-                const ARR_CAP: usize = $array_cap;
-                int_to_array_impls!{@to_start_array $signedness, $bits, $Int}
-                int_to_array_impls!{@unsigned_abs $signedness, $bits, ($Int, $Unsigned)}
-            }
-        )*
-    );
-    (@unsigned_abs signed, $bits:tt, ($Int:ty, $Unsigned:ty))=>{
-        pub const fn unsigned_abs(self) -> $Unsigned {
-            self.0.wrapping_abs() as $Unsigned
-        }
-    };
-    (@unsigned_abs unsigned, $bits:tt, ($Int:ty, $Unsigned:ty))=>{
-        pub const fn unsigned_abs(self) -> $Unsigned {
-            self.0
-        }
-    };
-    (@write_sign signed, $self:ident, $out:ident )=>{
-        if $self.0 < 0 {
-            $out.start-=1;
-            $out.array[$out.start] = b'-';
-        }
-    };
-    (@write_sign unsigned, $self:ident, $out:ident )=>{
-
-    };
-    (@to_start_array $signedness:ident, $bits:tt, $Int:ty)=>{
-        pub const fn to_start_array(
-            self: Self,
-            _fmt: Formatting,
-        ) -> StartAndArray<[u8; Self::ARR_CAP]> {
-            let mut out = StartAndArray {
-                start: Self::ARR_CAP,
-                array: [0u8; Self::ARR_CAP],
-            };
-
-            let mut n = self.unsigned_abs();
-
-            loop {
-                out.start-=1;
-                let digit = (n % 10) as u8;
-                out.array[out.start] = b'0' + digit;
-                n/=10;
-                if n == 0 { break }
-            }
-
-            int_to_array_impls!(@write_sign $signedness, self, out );
-
-            out
-        }
-    };
-
-}
-
-int_to_array_impls! {
-    (signed  , 8, (i8, u8), 4)
-    (signed  , 16, (i16, u16), 6)
-    (signed  , 32, (i32, u32), 11)
-    (signed  , 64, (i64, u64), 20)
-    (signed  , 128, (i128, u128), 40)
-    (unsigned, 8, (u8, u8), 3)
-    (unsigned, 16, (u16, u16), 5)
-    (unsigned, 32, (u32, u32), 10)
-    (unsigned, 64, (u64, u64), 20)
-    (unsigned, 128, (u128, u128), 40)
-}
+impl_number_of_digits! {impl_either; signed  , (i8, u8), 8}
+impl_number_of_digits! {impl_either; signed  , (i16, u16), 16}
+impl_number_of_digits! {impl_either; signed  , (i32, u32), 32}
+impl_number_of_digits! {impl_either; signed  , (i64, u64), 64}
+impl_number_of_digits! {impl_either; signed  , (i128, u128), 128}
+impl_number_of_digits! {impl_either; unsigned, (u8, u8), 8}
+impl_number_of_digits! {impl_either; unsigned, (u16, u16), 16}
+impl_number_of_digits! {impl_either; unsigned, (u32, u32), 32}
+impl_number_of_digits! {impl_either; unsigned, (u64, u64), 64}
+impl_number_of_digits! {impl_either; unsigned, (u128, u128), 128}
 
 #[cfg(target_pointer_width = "16")]
 type UWord = u16;
@@ -162,69 +141,158 @@ type IWord = i64;
 #[cfg(target_pointer_width = "128")]
 type IWord = i128;
 
+macro_rules! impl_for_xsize {
+    ($XSize:ident, $XWord:ident) => {
+        impl PWrapper<$XSize> {
+            #[inline(always)]
+            pub const fn const_display_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).const_display_len(fmt)
+            }
+
+            #[inline(always)]
+            pub const fn const_debug_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).const_debug_len(fmt)
+            }
+        }
+    };
+}
+
+impl_for_xsize! {usize, UWord}
+impl_for_xsize! {isize, IWord}
+
 impl PWrapper<usize> {
-    #[inline(always)]
-    pub const fn to_start_array(
-        self,
-        fmt: Formatting,
-    ) -> StartAndArray<[u8; PWrapper::<UWord>::ARR_CAP]> {
-        PWrapper(self.0 as UWord).to_start_array(fmt)
-    }
-
-    #[inline(always)]
-    pub const fn fmt_len(self, fmt: Formatting) -> usize {
-        PWrapper(self.0 as UWord).fmt_len(fmt)
-    }
-
     pub const fn unsigned_abs(self) -> usize {
         self.0
     }
 }
 
 impl PWrapper<isize> {
-    #[inline(always)]
-    pub const fn to_start_array(
-        self,
-        fmt: Formatting,
-    ) -> StartAndArray<[u8; PWrapper::<IWord>::ARR_CAP]> {
-        PWrapper(self.0 as IWord).to_start_array(fmt)
-    }
-
-    #[inline(always)]
-    pub const fn fmt_len(self, fmt: Formatting) -> usize {
-        PWrapper(self.0 as IWord).fmt_len(fmt)
-    }
-
     pub const fn unsigned_abs(self) -> usize {
         self.0.wrapping_abs() as usize
     }
 }
 
+impl Integer {
+    #[inline]
+    const fn as_negative(self) -> i128 {
+        (self.unsigned as i128).wrapping_neg()
+    }
+}
+
 impl PWrapper<Integer> {
-    #[inline(always)]
-    pub const fn to_start_array(
-        self,
-        fmt: Formatting,
-    ) -> StartAndArray<[u8; PWrapper::<u128>::ARR_CAP]> {
-        if self.0.is_negative {
-            let n: i128 = (self.0.unsigned as i128).wrapping_neg();
-            PWrapper(n).to_start_array(fmt)
+    pub const fn to_start_array_binary(self) -> StartAndArray<[u8; 128]> {
+        let mut n = if self.0.is_negative {
+            self.0.as_negative() as u128
         } else {
-            PWrapper(self.0.unsigned).to_start_array(fmt)
+            self.0.unsigned
+        };
+
+        n &= *self.0.mask;
+
+        let mut out = StartAndArray {
+            start: 128,
+            array: [0u8; 128],
+        };
+
+        loop {
+            out.start -= 1;
+            let digit = (n & 1) as u8;
+            out.array[out.start] = b'0' + digit;
+            n = n >> 1;
+            if n == 0 {
+                break;
+            }
         }
+
+        out
+    }
+
+    pub const fn to_start_array_hexadecimal(self) -> StartAndArray<[u8; 32]> {
+        let mut n = if self.0.is_negative {
+            self.0.as_negative() as u128
+        } else {
+            self.0.unsigned
+        };
+
+        n &= *self.0.mask;
+
+        let mut out = StartAndArray {
+            start: 32,
+            array: [0u8; 32],
+        };
+
+        loop {
+            out.start -= 1;
+            let digit = (n & 0xF) as u8;
+            out.array[out.start] = match digit {
+                0..=9 => b'0' + digit,
+                _ => b'A' - 10 + digit,
+            };
+            n = n >> 4;
+            if n == 0 {
+                break;
+            }
+        }
+
+        out
+    }
+
+    pub const fn to_start_array_display(self) -> StartAndArray<[u8; 40]> {
+        let mut out = StartAndArray {
+            start: 40,
+            array: [0u8; 40],
+        };
+
+        let mut n = self.0.unsigned;
+
+        loop {
+            out.start -= 1;
+            let digit = (n % 10) as u8;
+            out.array[out.start] = b'0' + digit;
+            n /= 10;
+            if n == 0 {
+                break;
+            }
+        }
+
+        if self.0.is_negative {
+            out.start -= 1;
+            out.array[out.start] = b'-';
+        }
+
+        out
+    }
+
+    #[inline(always)]
+    pub const fn to_start_array_debug(self) -> StartAndArray<[u8; 40]> {
+        self.to_start_array_display()
     }
 }
 
 impl PWrapper<&'static str> {
     #[inline(always)]
-    pub const fn fmt_len(self, fmt: Formatting) -> usize {
+    pub const fn const_debug_len(self, _: FormattingFlags) -> usize {
         let mut sum = self.0.len();
         let bytes = self.0.as_bytes();
-        if !fmt.is_display() {
-            __for_range! {i in 0..self.0.len() =>
-                sum += is_escaped_simple(bytes[i]) as usize;
+        __for_range! {i in 0..self.0.len() =>
+            let c = bytes[i];
+            if c < 128 {
+                let shifted = 1 << c;
+                if (FOR_ESCAPING.is_escaped & shifted) != 0 {
+                    sum += if (FOR_ESCAPING.is_backslash_escaped & shifted) == 0 {
+                        3 // `\x01` only add 3 characters
+                    } else {
+                        1 // Escaped with a backslash
+                    };
+                }
+
             }
         }
         sum + 2 // The quote characters
+    }
+
+    #[inline(always)]
+    pub const fn const_display_len(self, _: FormattingFlags) -> usize {
+        self.0.len()
     }
 }

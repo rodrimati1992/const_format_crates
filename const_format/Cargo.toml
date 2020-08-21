@@ -21,6 +21,9 @@ include = [
 travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
+# Remember to disable the "with_fmt" feature before releasing this crate!!
+default = ["with_fmt"]
+with_fmt = []
 
 [dependencies.const_format_proc_macros]
 version = "=0.1.0"
@@ -28,3 +31,4 @@ path = "../const_format_proc_macros"
 
 [dev-dependencies]
 arrayvec = {version = "0.5.1", default_features = false}
+fastrand = {version = "1.3", default_features = false}

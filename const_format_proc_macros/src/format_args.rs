@@ -1,8 +1,7 @@
-use crate::format_str_parsing::{FormatStr, Formatting};
+use crate::format_str_parsing::FormatStr;
+use crate::formatting::FormattingFlags;
 
 use proc_macro2::{Span, TokenStream as TokenStream2};
-
-use quote::quote;
 
 use syn::{punctuated::Punctuated, Ident, Token};
 
@@ -37,7 +36,7 @@ pub(crate) enum ExpandInto {
 }
 
 pub(crate) struct ExpandFormatted {
-    pub(crate) format: Formatting,
+    pub(crate) format: FormattingFlags,
     pub(crate) local_variable: Ident,
 }
 
@@ -52,12 +51,3 @@ pub(crate) struct FormatArg {
 }
 
 ////////////////////////////////////////////////
-
-impl Formatting {
-    pub(crate) fn tokens(&self, root_mod: &TokenStream2) -> TokenStream2 {
-        match self {
-            Formatting::Display => quote!(#root_mod::pmr::Formatting::Display),
-            Formatting::Debug => quote!(#root_mod::pmr::Formatting::Debug),
-        }
-    }
-}

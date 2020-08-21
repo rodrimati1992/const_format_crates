@@ -59,12 +59,12 @@ macro_rules! concatcp {
         $crate::concatcp!(
             @with_fmt
             locals()
-            $(($crate::pmr::Formatting::Display, $arg))*
+            $((to_pargument_display, $crate::pmr::FormattingFlags::DEFAULT, $arg))*
         )
     );
     (@with_fmt
         locals($(($local:ident, $local_init:expr))*)
-        $(($fmt:expr, $arg: expr))*
+        $(($to_pargument_fn:ident, $fmt:expr, $arg: expr))*
     )=>({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
@@ -75,7 +75,7 @@ macro_rules! concatcp {
 
             let array = [
                 $({
-                    let arg = $crate::pmr::PConvWrapper($arg).to_pargument($fmt);
+                    let arg = $crate::pmr::PConvWrapper($arg).$to_pargument_fn($fmt);
                     len += arg.fmt_len;
                     arg
                 }),*

@@ -1,40 +1,109 @@
-use crate::{formatting::Formatting, pwrapper::PWrapper};
+use crate::{
+    formatting::{FormattingFlags, FormattingMode as FM},
+    pargument::PConvWrapper,
+    pwrapper::PWrapper,
+};
 
 use arrayvec::ArrayString;
 
-use core::fmt::{Display, Write};
+use core::fmt::{self, Write};
 
-fn count_digits(n: impl Display) -> usize {
+fn get_digits_display(n: impl fmt::Display) -> ArrayString<[u8; 64]> {
     let mut buff = ArrayString::<[u8; 64]>::new();
     write!(buff, "{}", n).unwrap();
-    buff.len()
+    buff
+}
+fn get_hex_digits(n: impl fmt::UpperHex) -> ArrayString<[u8; 64]> {
+    let mut buff = ArrayString::<[u8; 64]>::new();
+    write!(buff, "{:X}", n).unwrap();
+    buff
+}
+fn get_binary_digits(n: impl fmt::Binary) -> ArrayString<[u8; 192]> {
+    let mut buff = ArrayString::<[u8; 192]>::new();
+    write!(buff, "{:b}", n).unwrap();
+    buff
 }
 
-macro_rules! number_of_digits_test_case {
-    ($val:expr) => {
-        assert_eq!(
-            PWrapper($val).fmt_len(Formatting::Display),
-            count_digits($val)
-        );
-    };
-}
+const DEF_FLAGS: FormattingFlags = FormattingFlags::DEFAULT;
 
 macro_rules! check_number_of_digits_ {
     ($ty:ty) => {{
+        fn number_of_digits_test_case(val: $ty) {
+            let display_digits = get_digits_display(val);
+            let hex_digits = get_hex_digits(val);
+            let binary_digits = get_binary_digits(val);
+            let wrapper = PWrapper(val);
+
+            {
+                assert_eq!(
+                    wrapper.const_display_len(DEF_FLAGS),
+                    display_digits.len(),
+                    "const_display_len"
+                );
+                assert_eq!(
+                    wrapper.const_debug_len(DEF_FLAGS),
+                    display_digits.len(),
+                    "const_debug_len "
+                );
+                assert_eq!(
+                    wrapper.const_debug_len(DEF_FLAGS.set_mode(FM::Hexadecimal)),
+                    hex_digits.len(),
+                    "const_debug_len hexadecimal"
+                );
+                assert_eq!(
+                    wrapper.const_debug_len(DEF_FLAGS.set_mode(FM::Binary)),
+                    binary_digits.len(),
+                    "const_debug_len binary"
+                );
+            }
+
+            {
+                let integer = PWrapper(PConvWrapper(val).to_integer());
+
+                let sa = integer.to_start_array_display();
+                assert_eq!(
+                    &sa.array[sa.start..],
+                    display_digits.as_bytes(),
+                    "const_display_len"
+                );
+
+                let sa = integer.to_start_array_debug();
+                assert_eq!(
+                    &sa.array[sa.start..],
+                    display_digits.as_bytes(),
+                    "const_debug_len "
+                );
+
+                let sa = integer.to_start_array_hexadecimal();
+                assert_eq!(
+                    &sa.array[sa.start..],
+                    hex_digits.as_bytes(),
+                    "const_debug_len hexadecimal"
+                );
+
+                let sa = integer.to_start_array_binary();
+                assert_eq!(
+                    &sa.array[sa.start..],
+                    binary_digits.as_bytes(),
+                    "const_debug_len binary"
+                );
+            }
+        }
+
         let zero: $ty = 0;
         let one: $ty = 1;
         let two: $ty = 2;
 
-        number_of_digits_test_case!(zero);
-        number_of_digits_test_case!(one);
-        number_of_digits_test_case!(two);
+        number_of_digits_test_case(zero);
+        number_of_digits_test_case(one);
+        number_of_digits_test_case(two);
 
         let mut n: $ty = 10;
 
         loop {
-            number_of_digits_test_case!(n - 1);
-            number_of_digits_test_case!(n);
-            number_of_digits_test_case!(n + 1);
+            number_of_digits_test_case(n - 1);
+            number_of_digits_test_case(n);
+            number_of_digits_test_case(n + 1);
 
             match n.checked_mul(10) {
                 Some(next) => n = next,
@@ -46,14 +115,14 @@ macro_rules! check_number_of_digits_ {
         let max_s1: $ty = <$ty>::MAX - 1;
         let max_s0: $ty = <$ty>::MAX;
 
-        number_of_digits_test_case!(max_s2);
-        number_of_digits_test_case!(max_s1);
-        number_of_digits_test_case!(max_s0);
+        number_of_digits_test_case(max_s2);
+        number_of_digits_test_case(max_s1);
+        number_of_digits_test_case(max_s0);
     }};
 }
 
 #[test]
-fn number_of_digits() {
+fn pwrapper_methods() {
     check_number_of_digits_!(i8);
     check_number_of_digits_!(u8);
     check_number_of_digits_!(i16);
