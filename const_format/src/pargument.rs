@@ -1,6 +1,6 @@
 use crate::{
     formatting::{Formatting, FormattingFlags},
-    pwrapper::PWrapper,
+    wrapper_types::PWrapper,
 };
 
 /// The uniform representation for every argument of the concatcp macro.

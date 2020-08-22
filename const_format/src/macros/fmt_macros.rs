@@ -144,6 +144,12 @@ macro_rules! concatcp {
 ///
 /// - Use Debug-like formatting: `formatcp!("{:?}", "hello" )`
 ///
+/// - Use Hexsadecimal formatting:
+/// `formatcp!("{:x}", "hello" )` or `formatcp!("{:x?}", "hello" )`.
+///
+/// - Use Binary formatting:
+/// `formatcp!("{:b}", "hello" )` or `formatcp!("{:b?}", "hello" )`.
+///
 /// - Use Display formatting: `formatcp!("{}", "hello" )`
 ///
 /// # Limitations

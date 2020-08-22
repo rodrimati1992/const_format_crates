@@ -1,7 +1,7 @@
 use crate::{
     formatting::{FormattingFlags, FormattingMode as FM},
     pargument::PConvWrapper,
-    pwrapper::PWrapper,
+    wrapper_types::PWrapper,
 };
 
 use arrayvec::ArrayString;

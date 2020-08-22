@@ -81,6 +81,14 @@ macro_rules! impl_number_of_digits {
                     FormattingMode::Binary=>compute_binary_count!($bits, self.0),
                 }
             }
+
+            pub const fn hexadecimal_len(self)-> usize {
+                compute_hex_count!($bits, self.0)
+            }
+
+            pub const fn binary_len(self)-> usize {
+                compute_binary_count!($bits, self.0)
+            }
         }
     };
     (impl_either;
@@ -93,20 +101,26 @@ macro_rules! impl_number_of_digits {
                 self.0
             }
 
-            #[allow(unused_mut,unused_variables)]
             pub const fn const_display_len(self, _: FormattingFlags)-> usize {
                 let mut n = self.0;
                 let mut len = 1usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
             }
 
-            #[allow(unused_mut,unused_variables)]
             pub const fn const_debug_len(self, fmt: FormattingFlags)-> usize {
                 match fmt.mode() {
                     FormattingMode::Regular=>self.const_display_len(fmt),
                     FormattingMode::Hexadecimal=>compute_hex_count!($bits, self.0),
                     FormattingMode::Binary=>compute_binary_count!($bits, self.0),
                 }
+            }
+
+            pub const fn hexadecimal_len(self)-> usize {
+                compute_hex_count!($bits, self.0)
+            }
+
+            pub const fn binary_len(self)-> usize {
+                compute_binary_count!($bits, self.0)
             }
         }
     };
@@ -152,6 +166,16 @@ macro_rules! impl_for_xsize {
             #[inline(always)]
             pub const fn const_debug_len(self, fmt: FormattingFlags) -> usize {
                 PWrapper(self.0 as $XWord).const_debug_len(fmt)
+            }
+
+            #[inline(always)]
+            pub const fn hexadecimal_len(self) -> usize {
+                PWrapper(self.0 as $XWord).hexadecimal_len()
+            }
+
+            #[inline(always)]
+            pub const fn binary_len(self) -> usize {
+                PWrapper(self.0 as $XWord).binary_len()
             }
         }
     };

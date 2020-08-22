@@ -80,7 +80,6 @@
 //! need to be explicitly enabled with cargo features.
 //!
 #![no_std]
-// #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "with_fmt", feature(const_mut_refs))]
 
 #[macro_use]
@@ -98,23 +97,31 @@ mod macros {
 mod formatting;
 
 mod pargument;
-mod pwrapper;
+
 mod utils;
+
+#[cfg(feature = "with_fmt")]
+pub mod marker_traits;
 
 #[cfg(test)]
 mod misc_tests;
 
-// #[cfg(test)]
-// mod test_utils;
+#[cfg(test)]
+mod test_utils;
 
 // #[cfg(feature = "with_fmt")]
 // pub mod fmt;
+
+pub mod wrapper_types;
 
 #[doc(hidden)]
 pub mod pmr {
     pub use const_format_proc_macros::__formatcp_impl;
 
-    pub use core::ops::Range;
+    pub use core::{
+        ops::Range,
+        result::Result::{self, Err, Ok},
+    };
 
     pub use crate::{
         formatting::{
@@ -122,7 +129,7 @@ pub mod pmr {
             LenAndArray, StartAndArray, FOR_ESCAPING,
         },
         pargument::{PArgument, PConvWrapper, PVariant},
-        pwrapper::PWrapper,
         utils::Transmute,
+        wrapper_types::PWrapper,
     };
 }
