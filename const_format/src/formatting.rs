@@ -29,60 +29,100 @@ pub enum FormattingMode {
     Binary,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum IsAlternate {
-    Yes,
-    No,
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
+#[must_use]
 #[derive(Debug, Copy, Clone)]
 pub struct FormattingFlags {
     mode: FormattingMode,
-    is_alternate: IsAlternate,
+    is_alternate: bool,
+    margin: u16,
 }
+
+const INITIAL_MARGIN: u16 = 0;
 
 impl FormattingFlags {
     #[doc(hidden)]
     pub const DEFAULT: Self = Self {
         mode: FormattingMode::Regular,
-        is_alternate: IsAlternate::No,
+        is_alternate: false,
+        margin: INITIAL_MARGIN,
     };
 
-    #[inline]
-    pub const fn display(is_alternate: IsAlternate) -> Self {
-        Self {
-            mode: FormattingMode::Regular,
-            is_alternate,
-        }
-    }
+    /// Constructs a `FormattingFlags`
+    pub const NEW: Self = Self {
+        mode: FormattingMode::Regular,
+        is_alternate: false,
+        margin: INITIAL_MARGIN,
+    };
 
-    #[inline]
-    pub const fn debug(mode: FormattingMode, is_alternate: IsAlternate) -> Self {
-        Self { mode, is_alternate }
-    }
-
+    /// Sets the formatting mode,
+    ///
+    /// This usually doesn't affect the outputted text in display formatting.
     #[inline]
     pub const fn set_mode(mut self, mode: FormattingMode) -> Self {
         self.mode = mode;
         self
     }
 
+    /// Sets the formatting mode to `FormattingMode::Regular`.
+    ///
+    /// This  means that integers are printed as decimal.
     #[inline]
-    pub const fn set_alternate(mut self, is_alternate: IsAlternate) -> Self {
+    pub const fn unset_mode(mut self) -> Self {
+        self.mode = FormattingMode::Regular;
+        self
+    }
+
+    /// Sets the formatting mode to `FormattingMode::Hexadecimal`.
+    ///
+    /// This  means that integers are printed as hexadecimal.
+    #[inline]
+    pub const fn set_hexadecimal_mode(mut self) -> Self {
+        self.mode = FormattingMode::Hexadecimal;
+        self
+    }
+
+    /// Sets the formatting mode to `FormattingMode::Binary`.
+    ///
+    /// This  means that integers are printed as binary.
+    #[inline]
+    pub const fn set_binary_mode(mut self) -> Self {
+        self.mode = FormattingMode::Binary;
+        self
+    }
+
+    #[inline]
+    pub const fn set_alternate(mut self, is_alternate: bool) -> Self {
         self.is_alternate = is_alternate;
         self
     }
 
     #[inline]
-    pub const fn mode(&self) -> FormattingMode {
+    pub const fn increment_margin(mut self) -> Self {
+        self.margin += 4;
+        self
+    }
+
+    #[inline]
+    pub const fn decrement_margin(mut self) -> Self {
+        self.margin -= 4;
+        self
+    }
+
+    #[inline]
+    pub const fn mode(self) -> FormattingMode {
         self.mode
     }
 
     #[inline]
-    pub const fn is_alternate(&self) -> IsAlternate {
+    pub const fn is_alternate(self) -> bool {
         self.is_alternate
+    }
+
+    #[inline]
+    pub const fn margin(self) -> usize {
+        self.margin as usize
     }
 }
 

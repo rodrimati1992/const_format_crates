@@ -1,16 +1,12 @@
 use crate::{
     formatting::{hex_as_ascii, ForEscaping, FormattingFlags, FormattingMode, FOR_ESCAPING},
-    marker_traits::IsU8Array,
     utils::min_usize,
     wrapper_types::{AsciiStr, PWrapper},
 };
 
-use super::Error;
+use super::{Error, Formatter};
 
 use core::ops::Range;
-
-#[cfg(test)]
-mod tests;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +20,7 @@ pub struct StrWriter<A: ?Sized = [u8]> {
 
 impl<A> StrWriter<A> {
     /// Constructs a `StrWriter` from a `u8` array
-    pub const fn new(array: A, _proof: IsU8Array<A>) -> Self {
+    pub const fn new(array: A) -> Self {
         Self {
             len: 0,
             buffer: array,
@@ -62,13 +58,44 @@ macro_rules! write_integer_fn {
         impl StrWriter{
             $(
                 write_integer_fn!{
-                    @inner
+                    @methods
                     $display_fn, $debug_fn, $sign, ($ty, $Unsigned), stringify!($ty)
                 }
             )*
         }
+
+        $(
+            write_integer_fn!{
+                @pwrapper
+                $display_fn, $debug_fn, $sign, ($ty, $Unsigned), stringify!($ty)
+            }
+        )*
     };
-    (@inner
+    (@pwrapper
+        $display_fn:ident,
+        $debug_fn:ident,
+        $sign:ident,
+        ($ty:ident, $Unsigned:ident),
+        $ty_name:expr
+    )=>{
+        impl PWrapper<$ty> {
+            /// Writes a
+            #[doc = $ty_name]
+            /// with Display formatting.
+            pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+                f.w().$display_fn(self.0)
+            }
+
+            /// Writes a
+            #[doc = $ty_name]
+            /// with Debug formatting.
+            pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+                let flags = f.flags();
+                f.w().$debug_fn(self.0, flags)
+            }
+        }
+    };
+    (@methods
         $display_fn:ident,
         $debug_fn:ident,
         $sign:ident,
@@ -108,13 +135,18 @@ macro_rules! write_integer_fn {
         #[doc = $ty_name]
         /// with Debug formatting.
         pub const fn $debug_fn(&mut self, n: $ty, flags: FormattingFlags) -> Result<(), Error> {
-            const fn hex(this: &mut StrWriter, n: $ty) -> Result<(), Error> {
-                let len = PWrapper(n).hexadecimal_len();
+            const fn hex(this: &mut StrWriter, n: $ty, is_alternate: bool) -> Result<(), Error> {
+                let len = PWrapper(n).hexadecimal_len() + ((is_alternate as usize) << 1);
 
                 let mut cursor = this.len + len;
 
                 if cursor > this.buffer.len() {
                     return Err(Error::NotEnoughSpace);
+                }
+
+                if is_alternate {
+                    this.buffer[this.len] = b'0';
+                    this.buffer[this.len + 1] = b'x';
                 }
 
                 write_integer_fn!(@as_unsigned $sign, n, $Unsigned);
@@ -131,13 +163,18 @@ macro_rules! write_integer_fn {
                 Ok(())
             }
 
-            const fn binary(this: &mut StrWriter, n: $ty) -> Result<(), Error> {
-                let len = PWrapper(n).binary_len();
+            const fn binary(this: &mut StrWriter, n: $ty,is_alternate: bool) -> Result<(), Error> {
+                let len = PWrapper(n).binary_len() + ((is_alternate as usize) << 1);
 
                 let mut cursor = this.len + len;
 
                 if cursor > this.buffer.len() {
                     return Err(Error::NotEnoughSpace);
+                }
+
+                if is_alternate {
+                    this.buffer[this.len] = b'0';
+                    this.buffer[this.len + 1] = b'b';
                 }
 
                 write_integer_fn!(@as_unsigned $sign, n, $Unsigned);
@@ -156,8 +193,8 @@ macro_rules! write_integer_fn {
 
             match flags.mode() {
                 FormattingMode::Regular=>self.$display_fn(n),
-                FormattingMode::Hexadecimal=>hex(self, n),
-                FormattingMode::Binary=>binary(self, n),
+                FormattingMode::Hexadecimal=>hex(self, n, flags.is_alternate()),
+                FormattingMode::Binary=>binary(self, n, flags.is_alternate()),
             }
         }
     };
@@ -222,7 +259,7 @@ const fn is_valid_str_index(s: &[u8], index: usize) -> bool {
 }
 
 #[inline]
-const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
+pub(super) const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
     let len = s.len();
     let end = min_usize(range.end, len);
     min_usize(range.start, end)..end
@@ -275,6 +312,29 @@ impl StrWriter {
         let bytes = ascii.as_bytes();
 
         self.write_str_inner(bytes, 0, bytes.len())
+    }
+
+    /// Writes an ascii `character`, `repeated` times.
+    pub const fn write_ascii_repeated(
+        &mut self,
+        mut character: u8,
+        repeated: usize,
+    ) -> Result<(), Error> {
+        // Truncating non-ascii u8s
+        character = character & 0b111_1111;
+
+        let end = self.len + repeated;
+
+        if end > self.buffer.len() {
+            return Err(Error::NotEnoughSpace);
+        }
+
+        while self.len < end {
+            self.buffer[self.len] = character;
+            self.len += 1;
+        }
+
+        Ok(())
     }
 
     #[inline(always)]
@@ -420,27 +480,36 @@ impl StrWriter {
 }
 
 impl StrWriter {
+    #[inline(always)]
     pub fn capacity(&self) -> usize {
         self.buffer.len()
     }
 
+    #[inline(always)]
     pub fn as_str(&self) -> &str {
         // All the methods that modify the buffer must ensure utf8 validity,
         // only methods from this module need to ensure this.
         unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
     }
 
+    #[inline(always)]
     pub fn as_bytes(&self) -> &[u8] {
         &self.buffer[..self.len]
     }
 
-    /// Truncates the StrWriter to `length`.
+    #[inline(always)]
+    pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
+        Formatter::new(flags, self)
+    }
+
+    /// Truncates this `StrWriter` to `length`.
     ///
     /// If `length` is greater than the current length, this does nothing.
     ///
     /// # Errors
     ///
     /// Returns an `Error::NotOnCharBoundary` if `length` is not on a char boundary.
+    #[inline]
     pub const fn truncate(&mut self, length: usize) -> Result<(), Error> {
         if length <= self.len {
             if !is_valid_str_index(&self.buffer, length) {
@@ -450,5 +519,11 @@ impl StrWriter {
             self.len = length;
         }
         Ok(())
+    }
+
+    /// Truncates this `StrWriter` to length 0.
+    #[inline]
+    pub const fn clear(&mut self) {
+        self.len = 0;
     }
 }

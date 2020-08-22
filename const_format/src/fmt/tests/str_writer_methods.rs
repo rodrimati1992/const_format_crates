@@ -1,9 +1,7 @@
-use super::saturate_range;
-
 use crate::{
+    fmt::str_writer::saturate_range,
     fmt::{Error, FormattingFlags, FormattingMode, StrWriter},
     formatting::Formatting,
-    marker_traits::IsU8Array,
     test_utils::{RngExt, ALL_ASCII, ALL_ASCII_ESCAPED},
     wrapper_types::{AsciiStr, PWrapper},
 };
@@ -19,7 +17,7 @@ macro_rules! write_integer_tests {
         $(($display_fn:ident, $debug_fn:ident, $type:ident))*
     ) => ({
         $({
-            let writer: &mut StrWriter = &mut StrWriter::new([0; 1024], IsU8Array::NEW);
+            let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
             let snapshot = writer.len();
             let mut string = ArrayString::<[u8; 1024]>::new();
 
@@ -150,8 +148,8 @@ fn test_unescaped_str_fn(
 
         for end in 0..input.len() {
             for start in 0..end + 2 {
-                let writer: &mut StrWriter = &mut StrWriter::new([0; 192], IsU8Array::NEW);
-                let toosmall: &mut StrWriter = &mut StrWriter::new([0; 8], IsU8Array::NEW);
+                let writer: &mut StrWriter = &mut StrWriter::new([0; 192]);
+                let toosmall: &mut StrWriter = &mut StrWriter::new([0; 8]);
                 let range = start..end;
                 let sat_range = saturate_range(input_bytes, &range);
 
@@ -249,7 +247,7 @@ fn write_str_debug() {
     }
 
     // Testing that all ascii characters are escaped as expected
-    let writer: &mut StrWriter = &mut StrWriter::new([0; 512], IsU8Array::NEW);
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
     let snapshot = writer.len();
     {
         writer.truncate(snapshot).unwrap();
@@ -345,17 +343,9 @@ fn returns_error() {
         ($str:expr, $extra:expr) => {{
             const S: &str = $str;
             const EXTRA: usize = ZEROES_AROUND_STR + S.len() + $extra + 2;
-            test_case_(
-                &mut StrWriter::new([0; EXTRA - 2], IsU8Array::NEW),
-                S,
-                EXTRA,
-            );
-            test_case_(
-                &mut StrWriter::new([0; EXTRA - 1], IsU8Array::NEW),
-                S,
-                EXTRA,
-            );
-            test_case_(&mut StrWriter::new([0; EXTRA], IsU8Array::NEW), S, EXTRA);
+            test_case_(&mut StrWriter::new([0; EXTRA - 2]), S, EXTRA);
+            test_case_(&mut StrWriter::new([0; EXTRA - 1]), S, EXTRA);
+            test_case_(&mut StrWriter::new([0; EXTRA]), S, EXTRA);
         }};
     }
 
@@ -370,7 +360,7 @@ fn returns_error() {
 
 #[test]
 fn truncation() {
-    let writer: &mut StrWriter = &mut StrWriter::new([0; 4096], IsU8Array::NEW);
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 4096]);
 
     let snapshot = writer.len();
 

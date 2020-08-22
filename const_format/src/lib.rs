@@ -83,25 +83,13 @@
 #![cfg_attr(feature = "with_fmt", feature(const_mut_refs))]
 
 #[macro_use]
-mod macros {
-    #[macro_use]
-    mod constructors;
-
-    #[macro_use]
-    mod helper_macros;
-
-    #[macro_use]
-    mod fmt_macros;
-}
+mod macros;
 
 mod formatting;
 
 mod pargument;
 
 mod utils;
-
-#[cfg(feature = "with_fmt")]
-pub mod marker_traits;
 
 #[cfg(test)]
 mod misc_tests;
@@ -125,8 +113,8 @@ pub mod pmr {
 
     pub use crate::{
         formatting::{
-            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, FormattingMode, IsAlternate,
-            LenAndArray, StartAndArray, FOR_ESCAPING,
+            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, FormattingMode, LenAndArray,
+            StartAndArray, FOR_ESCAPING,
         },
         pargument::{PArgument, PConvWrapper, PVariant},
         utils::Transmute,

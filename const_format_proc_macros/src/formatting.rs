@@ -1,6 +1,6 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 
-use quote::quote;
+use quote::{quote, ToTokens, TokenStreamExt};
 
 use syn::Ident;
 
@@ -21,13 +21,15 @@ impl FormattingMode {
     pub(crate) fn is_regular(self) -> bool {
         matches!(self, FormattingMode::Regular)
     }
+}
 
-    pub(crate) fn tokens(self, root_mod: &TokenStream2) -> TokenStream2 {
-        match self {
-            Self::Regular => quote!(#root_mod::pmr::FormattingMode::Regular),
-            Self::Hexadecimal => quote!(#root_mod::pmr::FormattingMode::Hexadecimal),
-            Self::Binary => quote!(#root_mod::pmr::FormattingMode::Binary),
-        }
+impl ToTokens for FormattingMode {
+    fn to_tokens(&self, ts: &mut TokenStream2) {
+        ts.append_all(match self {
+            Self::Regular => return,
+            Self::Hexadecimal => quote!(.set_hexadecimal_mode()),
+            Self::Binary => quote!(.set_binary_mode()),
+        });
     }
 }
 
@@ -97,25 +99,17 @@ impl FormattingFlags {
 
     pub(crate) fn tokens(self, root_mod: &TokenStream2) -> TokenStream2 {
         let is_alternate_tokens = match self.is_alternate {
-            IsAlternate::Yes => quote!(#root_mod::pmr::IsAlternate::Yes),
-            IsAlternate::No => quote!(#root_mod::pmr::IsAlternate::No),
+            IsAlternate::Yes => quote!(.set_alternate(true)),
+            IsAlternate::No => quote!(.set_alternate(false)),
         };
 
+        let mut ret = quote!(#root_mod::pmr::FormattingFlags::NEW);
+
         match self.formatting {
-            Formatting::Display => quote!(
-                #root_mod::pmr::FormattingFlags::display(
-                    #is_alternate_tokens,
-                )
-            ),
-            Formatting::Debug(mode) => {
-                let mode_tokens = mode.tokens(root_mod);
-                quote!(
-                    #root_mod::pmr::FormattingFlags::debug(
-                        #mode_tokens,
-                        #is_alternate_tokens,
-                    )
-                )
-            }
+            Formatting::Display => {}
+            Formatting::Debug(mode) => mode.to_tokens(&mut ret),
         }
+        is_alternate_tokens.to_tokens(&mut ret);
+        ret
     }
 }

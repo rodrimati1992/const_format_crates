@@ -9,6 +9,16 @@ mod tests;
 #[derive(Copy, Clone)]
 pub struct PWrapper<T>(pub T);
 
+impl<'a, T> PWrapper<&'a [T]> {
+    /// For constructing from a reference to an array.
+    ///
+    /// With slices you can do `PWrapper(slice)` instead.
+    #[inline(always)]
+    pub const fn slice(x: &'a [T]) -> Self {
+        Self { 0: x }
+    }
+}
+
 macro_rules! compute_hex_count {
     ($bits:expr, $int:expr) => {{
         let i = ($bits - $int.leading_zeros()) as usize;

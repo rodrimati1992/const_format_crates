@@ -81,6 +81,6 @@ None yet.
 
 `const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
 
-Features that require versions of Rust, or the nightly compiler,
+Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
