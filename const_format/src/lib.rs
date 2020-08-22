@@ -109,8 +109,8 @@ mod misc_tests;
 #[cfg(test)]
 mod test_utils;
 
-// #[cfg(feature = "with_fmt")]
-// pub mod fmt;
+#[cfg(feature = "with_fmt")]
+pub mod fmt;
 
 pub mod wrapper_types;
 

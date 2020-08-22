@@ -30,8 +30,8 @@ pub trait RngExt {
         let range = this
             .pick(&[
                 '\u{0000}'..='\u{007F}',
-                '\u{007F}'..='\u{07FF}',
-                '\u{07FF}'..='\u{FFFF}',
+                '\u{0080}'..='\u{07FF}',
+                '\u{0800}'..='\u{FFFF}',
                 '\u{10000}'..='\u{10FFFF}',
             ])
             .clone();
