@@ -125,10 +125,10 @@ macro_rules! __impl_debug_inner {
             where[ $($where:tt)* ];
         )
         (
-            struct $type_name:ident (
+            struct $type_name:ident $((
                 $( $field_name:ident $(=> $field_expr:expr )? ),*
                 $(,)?
-            )$(;)?
+            ))?$(;)?
         )
     ) => (
 
@@ -138,16 +138,16 @@ macro_rules! __impl_debug_inner {
             $($where)*
         {
             pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
-                let Self( $($field_name,)* ..) = self;
+                let Self $( ( $($field_name,)* ..) )? = self;
 
                 let mut f = f.debug_tuple(stringify!($type_name));
-                $(
+                $($(
                     $crate::__impl_debug_field!(
                         @call_len_tuple
                         f,
                         $field_name $(=> $field_expr )?,
                     );
-                )*
+                )*)?
                 f.finish();
             }
 
@@ -155,20 +155,202 @@ macro_rules! __impl_debug_inner {
                 &self,
                 f: &mut $crate::fmt::Formatter<'_>,
             ) -> $crate::pmr::Result<(), $crate::fmt::Error> {
-                let Self( $($field_name,)* ..) = self;
+                let Self $( ( $($field_name,)* ..) )? = self;
 
                 let mut f = $crate::try_!(f.debug_tuple(stringify!($type_name)));
-                $(
+                $($(
                     $crate::__impl_debug_field!(
                         @call_fmt_tuple
                         f,
                         $field_name $(=> $field_expr )?,
                     );
-                )*
+                )*)?
                 f.finish()
             }
         }
     );
+    (@an_impl
+        (
+            $(#[$impl_attr:meta])*
+            impl[$($impl_:tt)*] $type:ty
+            where[ $($where:tt)* ];
+        )
+        (
+            enum $type_name:ident {
+                $(
+                    $variant:ident $( {$($brace_ts:tt)*} )? $( ($($paren_ts:tt)*) )?
+                ),*
+                $(,)?
+            }
+        )
+    ) => (
+        $(#[$impl_attr])*
+        impl<$($impl_)*> $type
+        where
+            $($where)*
+        {
+            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
+                match self {
+                    $(
+                        $crate::__impl_debug_enum!(
+                            @pat
+                            $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
+                        ) => {
+                            $crate::__impl_debug_enum!{
+                                @len_method
+                                f = f;
+                                $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
+                            }
+                        }
+                    )*
+                }
+            }
+
+            pub const fn const_debug_fmt(
+                &self,
+                f: &mut $crate::fmt::Formatter<'_>,
+            ) -> $crate::pmr::Result<(), $crate::fmt::Error> {
+                match self {
+                    $(
+                        $crate::__impl_debug_enum!(
+                            @pat
+                            $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
+                        ) => {
+                            $crate::__impl_debug_enum!{
+                                @fmt_method
+                                f = f;
+                                $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
+                            }
+                        }
+                    )*
+                }
+            }
+        }
+    );
+    (@an_impl
+        (
+            $(#[$impl_attr:meta])*
+            impl[$($impl_:tt)*] $type:ty
+            where[ $($where:tt)* ];
+        )
+        (
+            delegating = |$self:ident| $expr:expr
+        )
+    ) => (
+        $(#[$impl_attr])*
+        impl<$($impl_)*> $type
+        where
+            $($where)*
+        {
+            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
+                let $self = self;
+                $expr.const_debug_len(f)
+            }
+
+            pub const fn const_debug_fmt(
+                &self,
+                f: &mut $crate::fmt::Formatter<'_>,
+            ) -> $crate::pmr::Result<(), $crate::fmt::Error> {
+                let $self = self;
+                $expr.const_debug_fmt(f)
+            }
+        }
+    )
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __impl_debug_enum {
+    (@pat
+        $variant:ident {
+            $( $field_name:tt $(:$renamed:ident)? $(=> $field_expr:expr )? ),*
+            $(,)?
+        }
+    )=>{
+        Self::$variant{
+            $( $field_name $(:$renamed)?, )*
+            ..
+        }
+    };
+    (@pat
+        $variant:ident $((
+            $( $field_name:tt $(=> $field_expr:expr )? ),*
+            $(,)?
+        ))?
+    )=>{
+        Self::$variant $((
+            $( $field_name, )*
+            ..
+        ))?
+    };
+    (@len_method
+        f = $f:ident;
+        $variant:ident {
+            $( $field_name:tt $(:$renamed:ident)? $(=> $field_expr:expr )? ),*
+            $(,)?
+        }
+    )=>{
+        let mut $f = $f.debug_struct(stringify!($variant));
+        $(
+            $crate::__impl_debug_field!(
+                @call_len
+                $f,
+                $field_name $(: $renamed)? $(=> $field_expr )?,
+            );
+        )*
+        $f.finish()
+    };
+    (@len_method
+        f = $f:ident;
+        $variant:ident $((
+            $( $field_name:tt $(=> $field_expr:expr )? ),*
+            $(,)?
+        ))?
+    )=>{
+        let mut $f = $f.debug_tuple(stringify!($variant));
+        $($(
+            $crate::__impl_debug_field!(
+                @call_len_tuple
+                $f,
+                $field_name $(=> $field_expr )?,
+            );
+        )*)?
+        $f.finish()
+    };
+    (@fmt_method
+        f = $f:ident;
+        $variant:ident {
+            $( $field_name:tt $(:$renamed:ident)? $(=> $field_expr:expr )? ),*
+            $(,)?
+        }
+    )=>{
+        let mut $f = $crate::try_!($f.debug_struct(stringify!($variant)));
+        $(
+            $crate::__impl_debug_field!(
+                @call_fmt
+                $f,
+                $field_name $(: $renamed)? $(=> $field_expr )?,
+            );
+        )*
+        $f.finish()
+    };
+    (@fmt_method
+        f = $f:ident;
+        $variant:ident $((
+            $( $field_name:tt $(=> $field_expr:expr )? ),*
+            $(,)?
+        ))?
+    )=>{
+        let mut $f = $crate::try_!($f.debug_tuple(stringify!($variant)));
+        $($(
+            $crate::__impl_debug_field!(
+                @call_fmt_tuple
+                $f,
+                $field_name $(=> $field_expr )?,
+            );
+        )*)?
+        $f.finish()
+    };
 }
 
 #[doc(hidden)]
