@@ -243,7 +243,7 @@ impl Integer {
 }
 
 impl PWrapper<Integer> {
-    pub const fn to_start_array_binary(self) -> StartAndArray<[u8; 128]> {
+    pub const fn to_start_array_binary(self, flags: FormattingFlags) -> StartAndArray<[u8; 130]> {
         let mut n = if self.0.is_negative {
             self.0.as_negative() as u128
         } else {
@@ -253,8 +253,8 @@ impl PWrapper<Integer> {
         n &= *self.0.mask;
 
         let mut out = StartAndArray {
-            start: 128,
-            array: [0u8; 128],
+            start: 130,
+            array: [0u8; 130],
         };
 
         loop {
@@ -267,10 +267,20 @@ impl PWrapper<Integer> {
             }
         }
 
+        if flags.is_alternate() {
+            out.start -= 1;
+            out.array[out.start] = b'b';
+            out.start -= 1;
+            out.array[out.start] = b'0';
+        }
+
         out
     }
 
-    pub const fn to_start_array_hexadecimal(self) -> StartAndArray<[u8; 32]> {
+    pub const fn to_start_array_hexadecimal(
+        self,
+        flags: FormattingFlags,
+    ) -> StartAndArray<[u8; 34]> {
         let mut n = if self.0.is_negative {
             self.0.as_negative() as u128
         } else {
@@ -280,8 +290,8 @@ impl PWrapper<Integer> {
         n &= *self.0.mask;
 
         let mut out = StartAndArray {
-            start: 32,
-            array: [0u8; 32],
+            start: 34,
+            array: [0u8; 34],
         };
 
         loop {
@@ -295,6 +305,13 @@ impl PWrapper<Integer> {
             if n == 0 {
                 break;
             }
+        }
+
+        if flags.is_alternate() {
+            out.start -= 1;
+            out.array[out.start] = b'x';
+            out.start -= 1;
+            out.array[out.start] = b'0';
         }
 
         out

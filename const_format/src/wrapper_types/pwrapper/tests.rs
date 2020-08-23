@@ -74,14 +74,14 @@ macro_rules! check_number_of_digits_ {
                     "const_debug_len "
                 );
 
-                let sa = integer.to_start_array_hexadecimal();
+                let sa = integer.to_start_array_hexadecimal(FormattingFlags::NEW);
                 assert_eq!(
                     &sa.array[sa.start..],
                     hex_digits.as_bytes(),
                     "const_debug_len hexadecimal"
                 );
 
-                let sa = integer.to_start_array_binary();
+                let sa = integer.to_start_array_binary(FormattingFlags::NEW);
                 assert_eq!(
                     &sa.array[sa.start..],
                     binary_digits.as_bytes(),

@@ -31,11 +31,11 @@ macro_rules! __write_pvariant {
                     &debug_display
                 }
                 $crate::pmr::FormattingMode::Binary => {
-                    bin = wrapper.to_start_array_binary();
+                    bin = wrapper.to_start_array_binary($parg.fmt_flags);
                     &bin
                 }
                 $crate::pmr::FormattingMode::Hexadecimal => {
-                    hex = wrapper.to_start_array_hexadecimal();
+                    hex = wrapper.to_start_array_hexadecimal($parg.fmt_flags);
                     &hex
                 }
             },
