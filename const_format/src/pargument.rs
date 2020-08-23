@@ -29,11 +29,11 @@ pub struct PConvWrapper<T>(pub T);
 macro_rules! pconvwrapper_impls {
     ( $( ($Signed:ty, $Unsigned:ty) )* ) => (
         pconvwrapper_impls!{
-            @inner to_pargument_display, const_display_len, Formatting::Display;
+            @inner to_pargument_display, compute_display_len, Formatting::Display;
             $(($Signed, $Unsigned))*
         }
         pconvwrapper_impls!{
-            @inner to_pargument_debug, const_debug_len, Formatting::Debug;
+            @inner to_pargument_debug, compute_debug_len, Formatting::Debug;
             $(($Signed, $Unsigned))*
         }
 
@@ -115,7 +115,7 @@ impl PConvWrapper<&'static str> {
     #[inline]
     pub const fn to_pargument_display(self, fmt_flags: FormattingFlags) -> PArgument {
         PArgument {
-            fmt_len: PWrapper(self.0).const_display_len(fmt_flags),
+            fmt_len: PWrapper(self.0).compute_display_len(fmt_flags),
             fmt_flags,
             fmt: Formatting::Display,
             elem: PVariant::Str(self.0),
@@ -124,7 +124,7 @@ impl PConvWrapper<&'static str> {
     #[inline]
     pub const fn to_pargument_debug(self, fmt_flags: FormattingFlags) -> PArgument {
         PArgument {
-            fmt_len: PWrapper(self.0).const_debug_len(fmt_flags),
+            fmt_len: PWrapper(self.0).compute_debug_len(fmt_flags),
             fmt_flags,
             fmt: Formatting::Debug,
             elem: PVariant::Str(self.0),

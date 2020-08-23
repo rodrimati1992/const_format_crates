@@ -36,22 +36,22 @@ macro_rules! check_number_of_digits_ {
 
             {
                 assert_eq!(
-                    wrapper.const_display_len(DEF_FLAGS),
+                    wrapper.compute_display_len(DEF_FLAGS),
                     display_digits.len(),
                     "const_display_len"
                 );
                 assert_eq!(
-                    wrapper.const_debug_len(DEF_FLAGS),
+                    wrapper.compute_debug_len(DEF_FLAGS),
                     display_digits.len(),
                     "const_debug_len "
                 );
                 assert_eq!(
-                    wrapper.const_debug_len(DEF_FLAGS.set_mode(FM::Hexadecimal)),
+                    wrapper.compute_debug_len(DEF_FLAGS.set_mode(FM::Hexadecimal)),
                     hex_digits.len(),
                     "const_debug_len hexadecimal"
                 );
                 assert_eq!(
-                    wrapper.const_debug_len(DEF_FLAGS.set_mode(FM::Binary)),
+                    wrapper.compute_debug_len(DEF_FLAGS.set_mode(FM::Binary)),
                     binary_digits.len(),
                     "const_debug_len binary"
                 );

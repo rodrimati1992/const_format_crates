@@ -3,6 +3,9 @@ use crate::{
     pargument::Integer,
 };
 
+#[cfg(feature = "with_fmt")]
+use crate::fmt::FormattingLength;
+
 #[cfg(test)]
 mod tests;
 
@@ -20,23 +23,21 @@ impl<'a, T> PWrapper<&'a [T]> {
 }
 
 macro_rules! compute_hex_count {
-    ($bits:expr, $int:expr) => {{
+    ($bits:expr, $int:expr, $with_0x:expr) => {{
+        let with_0x = ($with_0x as usize) << 1;
         let i = ($bits - $int.leading_zeros()) as usize;
-        if i == 0 {
+        (if i == 0 {
             1
         } else {
             (i >> 2) + ((i & 3) != 0) as usize
-        }
+        }) + with_0x
     }};
 }
 macro_rules! compute_binary_count {
-    ($bits:expr, $int:expr) => {{
+    ($bits:expr, $int:expr, $with_0b:expr) => {{
+        let with_0b = ($with_0b as usize) << 1;
         let i = ($bits - $int.leading_zeros()) as usize;
-        if i == 0 {
-            1
-        } else {
-            i
-        }
+        (if i == 0 { 1 } else { i }) + with_0b
     }};
 }
 
@@ -65,40 +66,65 @@ macro_rules! impl_number_of_digits {
         if $n >= 10{            $len += 1;}
         $len
     }};
+    (@shared $This:ty, $bits:tt)=>{
+        #[cfg(feature = "with_fmt")]
+        impl PWrapper<$This> {
+            pub const fn const_display_len(&self, f: &mut FormattingLength) {
+                let len = self.compute_display_len(f.flags());
+                f.add_len(len);
+            }
 
+            #[inline(always)]
+            pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+                let len = self.compute_debug_len(f.flags());
+                f.add_len(len);
+            }
+        }
+
+        impl PWrapper<$This> {
+            #[allow(unused_mut,unused_variables)]
+            #[doc(hidden)]
+            pub const fn compute_debug_len(self, fmt: FormattingFlags)-> usize {
+                match fmt.mode() {
+                    FormattingMode::Regular=>
+                        self.compute_display_len(fmt),
+                    FormattingMode::Hexadecimal=>
+                        compute_hex_count!($bits, self.0, fmt.is_alternate()),
+                    FormattingMode::Binary=>
+                        compute_binary_count!($bits, self.0, fmt.is_alternate()),
+                }
+            }
+
+            pub const fn hexadecimal_len(self, fmt: FormattingFlags)-> usize {
+                compute_hex_count!($bits, self.0, fmt.is_alternate())
+            }
+
+            pub const fn binary_len(self, fmt: FormattingFlags)-> usize {
+                compute_binary_count!($bits, self.0, fmt.is_alternate())
+            }
+        }
+    };
     (impl_either;
         signed,
         ($This:ty, $Unsigned:ty),
         $bits:tt $(,)?
     )=>{
+        impl_number_of_digits!{@shared $This, $bits}
+
         impl PWrapper<$This> {
             pub const fn unsigned_abs(self) -> $Unsigned {
                 self.0.wrapping_abs() as $Unsigned
             }
 
             #[allow(unused_mut,unused_variables)]
-            pub const fn const_display_len(self, _: FormattingFlags)-> usize {
+            #[doc(hidden)]
+            pub const fn compute_display_len(self, _: FormattingFlags)-> usize {
                 let mut n = self.0.wrapping_abs() as $Unsigned;
                 let mut len = 1 + (self.0 < 0) as usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
             }
 
-            #[allow(unused_mut,unused_variables)]
-            pub const fn const_debug_len(self, fmt: FormattingFlags)-> usize {
-                match fmt.mode() {
-                    FormattingMode::Regular=>self.const_display_len(fmt),
-                    FormattingMode::Hexadecimal=>compute_hex_count!($bits, self.0),
-                    FormattingMode::Binary=>compute_binary_count!($bits, self.0),
-                }
-            }
 
-            pub const fn hexadecimal_len(self)-> usize {
-                compute_hex_count!($bits, self.0)
-            }
-
-            pub const fn binary_len(self)-> usize {
-                compute_binary_count!($bits, self.0)
-            }
         }
     };
     (impl_either;
@@ -106,31 +132,18 @@ macro_rules! impl_number_of_digits {
         ($This:ty, $Unsigned:ty),
         $bits:tt $(,)?
     )=>{
+        impl_number_of_digits!{@shared $This, $bits}
+
         impl PWrapper<$This> {
             pub const fn unsigned_abs(self) -> $Unsigned {
                 self.0
             }
 
-            pub const fn const_display_len(self, _: FormattingFlags)-> usize {
+            #[doc(hidden)]
+            pub const fn compute_display_len(self, _: FormattingFlags)-> usize {
                 let mut n = self.0;
                 let mut len = 1usize;
                 impl_number_of_digits!(num number_of_digits;$bits n len)
-            }
-
-            pub const fn const_debug_len(self, fmt: FormattingFlags)-> usize {
-                match fmt.mode() {
-                    FormattingMode::Regular=>self.const_display_len(fmt),
-                    FormattingMode::Hexadecimal=>compute_hex_count!($bits, self.0),
-                    FormattingMode::Binary=>compute_binary_count!($bits, self.0),
-                }
-            }
-
-            pub const fn hexadecimal_len(self)-> usize {
-                compute_hex_count!($bits, self.0)
-            }
-
-            pub const fn binary_len(self)-> usize {
-                compute_binary_count!($bits, self.0)
             }
         }
     };
@@ -167,25 +180,41 @@ type IWord = i128;
 
 macro_rules! impl_for_xsize {
     ($XSize:ident, $XWord:ident) => {
+        #[cfg(feature = "with_fmt")]
+        impl PWrapper<$XSize> {
+            pub const fn const_display_len(&self, f: &mut FormattingLength) {
+                let len = self.compute_display_len(f.flags());
+                f.add_len(len);
+            }
+
+            #[inline(always)]
+            pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+                let len = self.compute_debug_len(f.flags());
+                f.add_len(len);
+            }
+        }
+
         impl PWrapper<$XSize> {
             #[inline(always)]
-            pub const fn const_display_len(self, fmt: FormattingFlags) -> usize {
-                PWrapper(self.0 as $XWord).const_display_len(fmt)
+            #[doc(hidden)]
+            pub const fn compute_display_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).compute_display_len(fmt)
             }
 
             #[inline(always)]
-            pub const fn const_debug_len(self, fmt: FormattingFlags) -> usize {
-                PWrapper(self.0 as $XWord).const_debug_len(fmt)
+            #[doc(hidden)]
+            pub const fn compute_debug_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).compute_debug_len(fmt)
             }
 
             #[inline(always)]
-            pub const fn hexadecimal_len(self) -> usize {
-                PWrapper(self.0 as $XWord).hexadecimal_len()
+            pub const fn hexadecimal_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).hexadecimal_len(fmt)
             }
 
             #[inline(always)]
-            pub const fn binary_len(self) -> usize {
-                PWrapper(self.0 as $XWord).binary_len()
+            pub const fn binary_len(self, fmt: FormattingFlags) -> usize {
+                PWrapper(self.0 as $XWord).binary_len(fmt)
             }
         }
     };
@@ -303,13 +332,11 @@ impl PWrapper<Integer> {
     }
 }
 
-impl PWrapper<&'static str> {
-    #[inline(always)]
-    pub const fn const_debug_len(self, _: FormattingFlags) -> usize {
+impl PWrapper<&[u8]> {
+    pub const fn compute_utf8_debug_len(self) -> usize {
         let mut sum = self.0.len();
-        let bytes = self.0.as_bytes();
         __for_range! {i in 0..self.0.len() =>
-            let c = bytes[i];
+            let c = self.0[i];
             if c < 128 {
                 let shifted = 1 << c;
                 if (FOR_ESCAPING.is_escaped & shifted) != 0 {
@@ -324,9 +351,18 @@ impl PWrapper<&'static str> {
         }
         sum + 2 // The quote characters
     }
+}
+
+impl PWrapper<&str> {
+    #[inline(always)]
+    #[doc(hidden)]
+    pub const fn compute_debug_len(self, _: FormattingFlags) -> usize {
+        PWrapper(self.0.as_bytes()).compute_utf8_debug_len()
+    }
 
     #[inline(always)]
-    pub const fn const_display_len(self, _: FormattingFlags) -> usize {
+    #[doc(hidden)]
+    pub const fn compute_display_len(self, _: FormattingFlags) -> usize {
         self.0.len()
     }
 }

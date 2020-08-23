@@ -29,6 +29,15 @@ pub enum FormattingMode {
     Binary,
 }
 
+impl FormattingMode {
+    #[cfg(test)]
+    pub(crate) const ALL: &'static [Self; 3] = &[
+        FormattingMode::Regular,
+        FormattingMode::Hexadecimal,
+        FormattingMode::Binary,
+    ];
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[must_use]

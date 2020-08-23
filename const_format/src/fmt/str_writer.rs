@@ -107,7 +107,7 @@ macro_rules! write_integer_fn {
         /// with Display formatting.
         pub const fn $display_fn(&mut self, number: $ty) -> Result<(), Error> {
             let n = PWrapper(number);
-            let len = n.const_display_len(FormattingFlags::DEFAULT);
+            let len = n.compute_display_len(FormattingFlags::DEFAULT);
 
             let mut cursor = self.len + len;
 
@@ -135,8 +135,9 @@ macro_rules! write_integer_fn {
         #[doc = $ty_name]
         /// with Debug formatting.
         pub const fn $debug_fn(&mut self, n: $ty, flags: FormattingFlags) -> Result<(), Error> {
-            const fn hex(this: &mut StrWriter, n: $ty, is_alternate: bool) -> Result<(), Error> {
-                let len = PWrapper(n).hexadecimal_len() + ((is_alternate as usize) << 1);
+            const fn hex(this: &mut StrWriter, n: $ty,  f: FormattingFlags) -> Result<(), Error> {
+                let is_alternate = f.is_alternate();
+                let len = PWrapper(n).hexadecimal_len(f);
 
                 let mut cursor = this.len + len;
 
@@ -163,8 +164,9 @@ macro_rules! write_integer_fn {
                 Ok(())
             }
 
-            const fn binary(this: &mut StrWriter, n: $ty,is_alternate: bool) -> Result<(), Error> {
-                let len = PWrapper(n).binary_len() + ((is_alternate as usize) << 1);
+            const fn binary(this: &mut StrWriter, n: $ty, f: FormattingFlags) -> Result<(), Error> {
+                let is_alternate = f.is_alternate();
+                let len = PWrapper(n).binary_len(f);
 
                 let mut cursor = this.len + len;
 
@@ -193,8 +195,8 @@ macro_rules! write_integer_fn {
 
             match flags.mode() {
                 FormattingMode::Regular=>self.$display_fn(n),
-                FormattingMode::Hexadecimal=>hex(self, n, flags.is_alternate()),
-                FormattingMode::Binary=>binary(self, n, flags.is_alternate()),
+                FormattingMode::Hexadecimal=>hex(self, n, flags),
+                FormattingMode::Binary=>binary(self, n, flags),
             }
         }
     };

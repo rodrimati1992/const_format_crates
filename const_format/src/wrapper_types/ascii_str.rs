@@ -1,5 +1,10 @@
 // use crate::fmt::Error;
 
+#[cfg(feature = "with_fmt")]
+use crate::fmt::{Error, Formatter, FormattingLength};
+
+use crate::wrapper_types::PWrapper;
+
 use core::fmt::{self, Display};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,6 +68,30 @@ impl Display for NotAsciiError {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[cfg(feature = "with_fmt")]
+impl AsciiStr<'_> {
+    pub const fn const_display_len(&self, f: &mut FormattingLength) {
+        f.add_len(self.0.len());
+    }
+
+    #[inline(always)]
+    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+        f.add_len(PWrapper(self.0).compute_utf8_debug_len());
+    }
+
+    /// Writes a `&str` with Display formatting.
+    pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.w().write_whole_ascii(*self)
+    }
+
+    /// Writes a `&str` with Debug formatting.
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.w().write_whole_ascii_debug(*self)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -103,6 +132,75 @@ mod tests {
                 if let Ok(ascii) = res {
                     assert_eq!(ascii.as_bytes(), string.as_bytes());
                 }
+            }
+        }
+    }
+
+    #[cfg(feature = "with_fmt")]
+    #[test]
+    fn formatting() {
+        use crate::fmt::{FormattingFlags, FormattingMode, StrWriter};
+
+        const fn inner_debug(
+            ascii: AsciiStr<'_>,
+            writer: &mut StrWriter,
+            flags: FormattingFlags,
+        ) -> Result<usize, Error> {
+            try_!(ascii.const_debug_fmt(&mut writer.make_formatter(flags)));
+
+            let mut fmt_len = FormattingLength::new(flags);
+            ascii.const_debug_len(&mut fmt_len);
+
+            Ok(fmt_len.len())
+        }
+
+        const fn inner_display(
+            ascii: AsciiStr<'_>,
+            writer: &mut StrWriter,
+            flags: FormattingFlags,
+        ) -> Result<usize, Error> {
+            try_!(ascii.const_display_fmt(&mut writer.make_formatter(flags)));
+
+            let mut fmt_len = FormattingLength::new(flags);
+            ascii.const_display_len(&mut fmt_len);
+
+            Ok(fmt_len.len())
+        }
+
+        fn test_case(
+            ascii: AsciiStr<'_>,
+            writer: &mut StrWriter,
+            flags: FormattingFlags,
+            expected_debug: &str,
+            expected_display: &str,
+        ) {
+            writer.clear();
+            let len = inner_debug(ascii, writer, flags).unwrap();
+
+            assert_eq!(writer.as_str(), expected_debug);
+            assert_eq!(writer.len(), len, "{}", writer.as_str());
+
+            writer.clear();
+            let len = inner_display(ascii, writer, flags).unwrap();
+
+            assert_eq!(writer.as_str(), expected_display);
+            assert_eq!(writer.len(), len, "{}", writer.as_str());
+        }
+
+        let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+
+        let foo = AsciiStr::new("\0\x10hello\tworld\n".as_bytes()).unwrap();
+
+        for mode in FormattingMode::ALL.iter().copied() {
+            for is_alt in [false, true].iter().copied() {
+                let flag = FormattingFlags::NEW.set_mode(mode).set_alternate(is_alt);
+                test_case(
+                    foo,
+                    writer,
+                    flag,
+                    "\"\\x00\\x10hello\\tworld\\n\"",
+                    foo.as_str(),
+                );
             }
         }
     }

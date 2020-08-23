@@ -1,5 +1,5 @@
 use crate::{
-    fmt::{Error, Formatter, FormattingFlags, FormattingMode, StrWriter},
+    fmt::{Error, Formatter, FormattingFlags, FormattingLength, FormattingMode, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -11,6 +11,14 @@ struct Foo {
 }
 
 impl Foo {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+        let mut f = f.debug_struct("Foo");
+        PWrapper(self.x).const_debug_len(f.field("x"));
+        PWrapper(self.y).const_debug_len(f.field("y"));
+        PWrapper(self.z).const_debug_len(f.field("z"));
+        f.finish()
+    }
+
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let mut f = try_!(f.debug_struct("Foo"));
         try_!(PWrapper(self.x).const_debug_fmt(try_!(f.field("x"))));
@@ -29,6 +37,15 @@ struct Bar {
 }
 
 impl Bar {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+        let mut f = f.debug_struct("Bar");
+        PWrapper(self.x).const_debug_len(f.field("x"));
+        PWrapper(self.y).const_debug_len(f.field("y"));
+        PWrapper::slice(&self.z).const_debug_len(f.field("z"));
+        self.foo.const_debug_len(f.field("foo"));
+        f.finish()
+    }
+
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let mut f = try_!(f.debug_struct("Bar"));
         try_!(PWrapper(self.x).const_debug_fmt(try_!(f.field("x"))));
@@ -42,10 +59,25 @@ impl Bar {
 #[test]
 fn check_debug_formatting() {
     // Ensuring that all of this code can run at compile-time
-    const fn inner(bar: &Bar, writer: &mut StrWriter, flags: FormattingFlags) -> Result<(), Error> {
+    const fn inner(
+        bar: &Bar,
+        writer: &mut StrWriter,
+        flags: FormattingFlags,
+    ) -> Result<usize, Error> {
         try_!(bar.const_debug_fmt(&mut writer.make_formatter(flags)));
 
-        Ok(())
+        let mut fmt_len = FormattingLength::new(flags);
+        bar.const_debug_len(&mut fmt_len);
+
+        Ok(fmt_len.len())
+    }
+
+    fn test_case(bar: &Bar, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {
+        writer.clear();
+        let len = inner(&bar, writer, flags).unwrap();
+
+        assert_eq!(writer.as_str(), expected);
+        assert_eq!(writer.len(), len, "{}", writer.as_str());
     }
 
     let foo = Foo {
@@ -66,55 +98,42 @@ fn check_debug_formatting() {
     let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
 
     // decimal + not alternate
-    {
-        writer.clear();
-        inner(&bar, writer, flags.set_alternate(false)).unwrap();
+    test_case(
+        &bar,
+        writer,
+        flags.set_alternate(false),
+        "\
+            Bar { \
+                x: 21, y: \"foo\\tbar\", z: [34, 55, 89, 144, 233], \
+                foo: Foo { x: 100, y: \"hello\\nworld\", z: [3, 5, 8, 13] } \
+            }\
+        ",
+    );
 
-        assert_eq!(
-            writer.as_str(),
-            "\
-                Bar { \
-                    x: 21, y: \"foo\\tbar\", z: [34, 55, 89, 144, 233], \
-                    foo: Foo { x: 100, y: \"hello\\nworld\", z: [3, 5, 8, 13] } \
-                }\
-            ",
-        );
-    }
     // hexadecimal + not alternate
-    {
-        writer.clear();
-        inner(
-            &bar,
-            writer,
-            flags.set_alternate(false).set_hexadecimal_mode(),
-        )
-        .unwrap();
+    test_case(
+        &bar,
+        writer,
+        flags.set_alternate(false).set_hexadecimal_mode(),
+        "\
+            Bar { \
+                x: 15, y: \"foo\\tbar\", z: [22, 37, 59, 90, E9], \
+                foo: Foo { x: 64, y: \"hello\\nworld\", z: [3, 5, 8, D] } \
+            }\
+        ",
+    );
 
-        assert_eq!(
-            writer.as_str(),
-            "\
-                Bar { \
-                    x: 15, y: \"foo\\tbar\", z: [22, 37, 59, 90, E9], \
-                    foo: Foo { x: 64, y: \"hello\\nworld\", z: [3, 5, 8, D] } \
-                }\
-            ",
-        );
-    }
-    // binary + not alternate
-    {
-        writer.clear();
-        inner(&bar, writer, flags.set_alternate(false).set_binary_mode()).unwrap();
-
-        assert_eq!(
-            writer.as_str(),
-            "\
-                Bar { \
-                    x: 10101, y: \"foo\\tbar\", z: [100010, 110111, 1011001, 10010000, 11101001], \
-                    foo: Foo { x: 1100100, y: \"hello\\nworld\", z: [11, 101, 1000, 1101] } \
-                }\
-            ",
-        );
-    }
+    test_case(
+        &bar,
+        writer,
+        flags.set_alternate(false).set_binary_mode(),
+        "\
+            Bar { \
+                x: 10101, y: \"foo\\tbar\", z: [100010, 110111, 1011001, 10010000, 11101001], \
+                foo: Foo { x: 1100100, y: \"hello\\nworld\", z: [11, 101, 1000, 1101] } \
+            }\
+        ",
+    );
 
     const ALTERNATE: &str = "\
 Bar {
@@ -184,38 +203,136 @@ Bar {
     },
 }";
 
-    {
-        writer.clear();
-        inner(&bar, writer, flags.set_alternate(true)).unwrap();
+    test_case(&bar, writer, flags.set_alternate(true), ALTERNATE);
+    test_case(
+        &bar,
+        writer,
+        flags.set_alternate(true).set_hexadecimal_mode(),
+        ALTERNATE_HEX,
+    );
+    test_case(
+        &bar,
+        writer,
+        flags.set_alternate(true).set_binary_mode(),
+        ALTERNATE_BINARY,
+    );
+}
 
-        assert_eq!(writer.as_str(), ALTERNATE, "\n\n{}\n\n", writer.as_str());
+////////////////////////////////////////////////////////////////////////////////
+
+pub struct Set(&'static [Foo]);
+
+impl Set {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+        let mut f = f.debug_set();
+        __for_range! {i in 0..self.0.len()=>
+            self.0[i].const_debug_len(f.entry());
+        }
+        f.finish()
     }
-    {
-        writer.clear();
-        inner(
-            &bar,
-            writer,
-            flags.set_alternate(true).set_hexadecimal_mode(),
-        )
-        .unwrap();
 
-        assert_eq!(
-            writer.as_str(),
-            ALTERNATE_HEX,
-            "\n\n{}\n\n",
-            writer.as_str()
-        );
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = try_!(f.debug_set());
+        __for_range! {i in 0..self.0.len()=>
+            try_!(self.0[i].const_debug_fmt(try_!(f.entry())));
+        }
+        f.finish()
+    }
+}
+
+#[test]
+fn check_set_formatting() {
+    const fn inner(
+        set: &Set,
+        writer: &mut StrWriter,
+        flags: FormattingFlags,
+    ) -> Result<usize, Error> {
+        try_!(set.const_debug_fmt(&mut writer.make_formatter(flags)));
+
+        let mut fmt_len = FormattingLength::new(flags);
+        set.const_debug_len(&mut fmt_len);
+
+        Ok(fmt_len.len())
     }
 
-    {
+    fn test_case(bar: &Set, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {
         writer.clear();
-        inner(&bar, writer, flags.set_alternate(true).set_binary_mode()).unwrap();
+        let len = inner(&bar, writer, flags).unwrap();
 
-        assert_eq!(
-            writer.as_str(),
-            ALTERNATE_BINARY,
-            "\n\n{}\n\n",
-            writer.as_str()
-        );
+        assert_eq!(writer.as_str(), expected);
+        assert_eq!(writer.len(), len, "{}", writer.as_str());
     }
+
+    let flags = FormattingFlags::DEFAULT;
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
+
+    let set = Set(&[Foo {
+        x: 100,
+        y: "hello\nworld",
+        z: &[],
+    }]);
+
+    test_case(
+        &set,
+        writer,
+        flags,
+        "{Foo { x: 100, y: \"hello\\nworld\", z: [] }}",
+    );
+    test_case(
+        &set,
+        writer,
+        flags.set_hexadecimal_mode(),
+        "{Foo { x: 64, y: \"hello\\nworld\", z: [] }}",
+    );
+    test_case(
+        &set,
+        writer,
+        flags.set_binary_mode(),
+        "{Foo { x: 1100100, y: \"hello\\nworld\", z: [] }}",
+    );
+
+    const ALTERNATE: &str = "\
+{
+    Foo {
+        x: 100,
+        y: \"hello\\nworld\",
+        z: [],
+    },
+}\
+    ";
+
+    const ALTERNATE_HEX: &str = "\
+{
+    Foo {
+        x: 0x64,
+        y: \"hello\\nworld\",
+        z: [],
+    },
+}\
+    ";
+
+    const ALTERNATE_BINARY: &str = "\
+{
+    Foo {
+        x: 0b1100100,
+        y: \"hello\\nworld\",
+        z: [],
+    },
+}\
+    ";
+
+    test_case(&set, writer, flags.set_alternate(true), ALTERNATE);
+    test_case(
+        &set,
+        writer,
+        flags.set_alternate(true).set_hexadecimal_mode(),
+        ALTERNATE_HEX,
+    );
+    test_case(
+        &set,
+        writer,
+        flags.set_alternate(true).set_binary_mode(),
+        ALTERNATE_BINARY,
+    );
 }

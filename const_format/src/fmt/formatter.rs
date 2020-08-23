@@ -100,12 +100,14 @@ macro_rules! field_method_impl {
 
 macro_rules! finish_method_impl {
     ($self: ident, $close_token:expr, $space_close:expr) => {{
-        let margin = $self.fmt.flags.margin();
         $self.fmt.decrement_margin();
         if $self.wrote_field {
             if $self.fmt.flags.is_alternate() {
                 try_!($self.fmt.writer.write_whole_str(",\n"));
-                try_!($self.fmt.writer.write_ascii_repeated(b' ', margin - 4));
+                try_!($self
+                    .fmt
+                    .writer
+                    .write_ascii_repeated(b' ', $self.fmt.flags.margin()));
                 $self.fmt.writer.write_whole_str($close_token)
             } else {
                 $self.fmt.writer.write_whole_str($space_close)
@@ -158,12 +160,12 @@ impl<'f, 'w> DebugTuple<'f, 'w> {
 
 macro_rules! finish_listset_method_impl {
     ($self: ident, $close_token:expr, $open_close:expr) => {{
-        let margin = $self.fmt.flags.margin();
         $self.fmt.decrement_margin();
+        let margin = $self.fmt.flags.margin();
         if $self.wrote_field {
             if $self.fmt.flags.is_alternate() {
                 try_!($self.fmt.writer.write_whole_str(",\n"));
-                try_!($self.fmt.writer.write_ascii_repeated(b' ', margin - 4));
+                try_!($self.fmt.writer.write_ascii_repeated(b' ', margin));
             }
             $self.fmt.writer.write_whole_str($close_token)
         } else {
@@ -205,3 +207,5 @@ impl<'f, 'w> DebugSet<'f, 'w> {
         finish_listset_method_impl!(self, "}", "{}")
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
