@@ -91,6 +91,9 @@ mod pargument;
 
 mod utils;
 
+#[cfg(feature = "with_fmt")]
+mod marker_traits;
+
 #[cfg(test)]
 mod misc_tests;
 
@@ -109,6 +112,11 @@ pub mod pmr {
     pub use core::{
         ops::Range,
         result::Result::{self, Err, Ok},
+    };
+
+    #[cfg(feature = "with_fmt")]
+    pub use crate::marker_traits::type_kind::{
+        GetTypeKind, IsNotStdKind, IsStdKind, TypeKindMarker,
     };
 
     pub use crate::{

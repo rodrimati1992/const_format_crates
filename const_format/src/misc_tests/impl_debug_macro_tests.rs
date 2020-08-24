@@ -16,15 +16,12 @@ struct Delegating<T>(T);
 struct BracedStruct<T: 'static> {
     a: T,
     b: &'static [T],
-    c: TupleStruct<T, UnDebug>,
+    c: TupleStruct<T>,
     d: UnitStruct,
 }
-
-struct TupleStruct<T, U>(T, u32, PhantomData<U>);
+struct TupleStruct<T>(T, u32);
 
 struct UnitStruct;
-
-struct UnDebug;
 
 impl_debug! {
     impl[] BracedStruct<u32>;
@@ -42,9 +39,9 @@ impl_debug! {
 
 impl_debug! {
     #[allow(dead_code)]
-    impl[] TupleStruct<u64, UnDebug>;
+    impl[] TupleStruct<u64>;
 
-    impl[] TupleStruct<u32, UnDebug>;
+    impl[] TupleStruct<u32>;
 
     struct TupleStruct (
         a => PWrapper(*a),
@@ -118,7 +115,7 @@ fn struct_debug_impl() {
     let foo = BracedStruct {
         a: 10,
         b: &[20, 30],
-        c: TupleStruct(40, 50, PhantomData),
+        c: TupleStruct(40, 50),
         d: UnitStruct,
     };
 
@@ -170,6 +167,70 @@ BracedStruct {
             .set_alternate(true)
             .set_hexadecimal_mode(),
         ALT_HEX,
+    );
+}
+
+struct BracedStructNE<T: 'static> {
+    a: T,
+    b: &'static [T],
+    c: TupleStructNE<T, UnDebug>,
+    d: UnitStruct,
+    e: u8,
+    f: (),
+}
+
+struct UnDebug;
+
+struct TupleStructNE<T, U>(T, u32, PhantomData<U>);
+
+impl_debug! {
+    impl[] BracedStructNE<u32>;
+
+    #[allow(dead_code)]
+    impl[] BracedStructNE<u64>;
+
+    struct BracedStructNE {
+        a => PWrapper(*a),
+        b: hello => PWrapper(*hello),
+        c: world,
+        d,
+        ..
+    }
+}
+
+impl_debug! {
+    #[allow(dead_code)]
+    impl[] TupleStructNE<u64, UnDebug>;
+
+    impl[] TupleStructNE<u32, UnDebug>;
+
+    struct TupleStructNE (
+        a => PWrapper(*a),
+        b => PWrapper(*b),
+        ..
+    )
+}
+
+#[test]
+fn struct_nonexhaustive_debug_impl() {
+    declare_test_case_fns!(BracedStructNE<u32>);
+
+    let foo = BracedStructNE {
+        a: 10,
+        b: &[20, 30],
+        c: TupleStructNE(40, 50, PhantomData),
+        d: UnitStruct,
+        e: 0,
+        f: (),
+    };
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
+
+    test_case(
+        &foo,
+        writer,
+        FormattingFlags::NEW.set_alternate(false),
+        "BracedStructNE { a: 10, b: [20, 30], c: TupleStructNE(40, 50), d: UnitStruct }",
     );
 }
 
@@ -270,6 +331,79 @@ fn enum_debug_impl() {
         );
     }
 }
+
+enum EnumA_NE<T> {
+    Tupled(T, u8, ()),
+    Braced {
+        a: u16,
+        b: u16,
+        c: UnitStruct,
+        d: UnitStruct,
+        e: (),
+        f: (),
+    },
+    Unit,
+}
+
+impl_debug! {
+    impl[] EnumA_NE<u32>;
+
+    #[allow(dead_code)]
+    impl[] EnumA_NE<u64>;
+
+    enum EnumA_NE {
+        Tupled(
+            a => PWrapper(*a),
+            b => PWrapper(*b),
+            ..
+        ),
+        Braced{
+            a => PWrapper(*a),
+            b: bb => PWrapper(*bb),
+            c,
+            d: cc,
+            ..
+        },
+        ..
+    }
+}
+
+#[test]
+fn enum_nonexhaustive_debug_impl() {
+    declare_test_case_fns!(EnumA_NE<u32>);
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
+
+    {
+        let tupled = EnumA_NE::Tupled(3, 5, ());
+
+        test_case(&tupled, writer, FormattingFlags::NEW, "Tupled(3, 5)");
+    }
+    {
+        let braced = EnumA_NE::Braced {
+            a: 8,
+            b: 13,
+            c: UnitStruct,
+            d: UnitStruct,
+            e: (),
+            f: (),
+        };
+
+        test_case(
+            &braced,
+            writer,
+            FormattingFlags::NEW,
+            "Braced { a: 8, b: 13, c: UnitStruct, d: UnitStruct }",
+        );
+    }
+    {
+        let braced = EnumA_NE::Unit;
+
+        test_case(&braced, writer, FormattingFlags::NEW, "<unknown_variant>");
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 struct StructWE<T>(EnumA<T>);
 
