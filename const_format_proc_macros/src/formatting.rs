@@ -51,7 +51,7 @@ pub(crate) struct FormattingFlags {
 
 impl FormattingFlags {
     #[inline]
-    pub(crate) fn display(is_alternate: IsAlternate) -> Self {
+    pub(crate) const fn display(is_alternate: IsAlternate) -> Self {
         Self {
             formatting: Formatting::Display,
             is_alternate,
@@ -59,7 +59,7 @@ impl FormattingFlags {
     }
 
     #[inline]
-    pub(crate) fn debug(mode: FormattingMode, is_alternate: IsAlternate) -> Self {
+    pub(crate) const fn debug(mode: FormattingMode, is_alternate: IsAlternate) -> Self {
         Self {
             formatting: Formatting::Debug(mode),
             is_alternate,
@@ -68,6 +68,8 @@ impl FormattingFlags {
 }
 
 impl FormattingFlags {
+    pub(crate) const NEW: Self = Self::display(IsAlternate::No);
+
     pub(crate) fn to_pargument_method_name(self) -> Ident {
         let name = match self.formatting {
             Formatting::Display => "to_pargument_display",
@@ -97,19 +99,21 @@ impl FormattingFlags {
         Ident::new(name, Span::mixed_site())
     }
 
-    pub(crate) fn tokens(self, root_mod: &TokenStream2) -> TokenStream2 {
-        let is_alternate_tokens = match self.is_alternate {
-            IsAlternate::Yes => quote!(.set_alternate(true)),
-            IsAlternate::No => quote!(.set_alternate(false)),
+    pub(crate) fn tokens(self, crate_path: &TokenStream2) -> TokenStream2 {
+        use self::{FormattingMode as FM, IsAlternate as IA};
+
+        let formatting = match self.formatting {
+            Formatting::Display => FormattingMode::Regular,
+            Formatting::Debug(mode) => mode,
         };
 
-        let mut ret = quote!(#root_mod::pmr::FormattingFlags::NEW);
-
-        match self.formatting {
-            Formatting::Display => {}
-            Formatting::Debug(mode) => mode.to_tokens(&mut ret),
+        match (self.is_alternate, formatting) {
+            (IA::No, FM::Regular) => quote!(#crate_path::fmt::FormattingFlags::__REG),
+            (IA::No, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__HEX),
+            (IA::No, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__BIN),
+            (IA::Yes, FM::Regular) => quote!(#crate_path::fmt::FormattingFlags::__A_REG),
+            (IA::Yes, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__A_HEX),
+            (IA::Yes, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__A_BIN),
         }
-        is_alternate_tokens.to_tokens(&mut ret);
-        ret
     }
 }

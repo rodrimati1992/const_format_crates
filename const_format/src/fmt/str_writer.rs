@@ -483,7 +483,7 @@ impl StrWriter {
 
 impl StrWriter {
     #[inline(always)]
-    pub fn capacity(&self) -> usize {
+    pub const fn capacity(&self) -> usize {
         self.buffer.len()
     }
 

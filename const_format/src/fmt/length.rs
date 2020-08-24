@@ -1,13 +1,43 @@
 use crate::fmt::FormattingFlags;
 
-pub struct FormattingLength {
-    flags: FormattingFlags,
+pub struct ComputeStrLength {
     len: usize,
 }
 
-impl FormattingLength {
-    pub const fn new(flags: FormattingFlags) -> Self {
-        Self { flags, len: 0 }
+impl ComputeStrLength {
+    pub const fn new() -> Self {
+        Self { len: 0 }
+    }
+
+    pub const fn make_formatting_length(&mut self, flags: FormattingFlags) -> FormattingLength<'_> {
+        FormattingLength {
+            flags,
+            len: &mut self.len,
+        }
+    }
+
+    pub const fn add_len(&mut self, len: usize) {
+        self.len += len;
+    }
+
+    pub const fn len(&self) -> usize {
+        self.len
+    }
+}
+
+pub struct FormattingLength<'s> {
+    flags: FormattingFlags,
+    len: &'s mut usize,
+}
+
+impl<'s> FormattingLength<'s> {
+    /// Returns a new `FormattingLength` with `flags` as its formatting flags.
+    #[inline(always)]
+    pub fn replaced_flags(&mut self, flags: FormattingFlags) -> FormattingLength<'_> {
+        FormattingLength {
+            flags,
+            len: self.len,
+        }
     }
 
     #[inline(always)]
@@ -17,13 +47,13 @@ impl FormattingLength {
 
     #[inline(always)]
     pub const fn add_len(&mut self, len: usize) -> &mut Self {
-        self.len += len;
+        *self.len += len;
         self
     }
 
     #[inline(always)]
     pub const fn len(&self) -> usize {
-        self.len
+        *self.len
     }
 
     #[inline(always)]
@@ -33,7 +63,7 @@ impl FormattingLength {
     }
 
     #[inline]
-    pub const fn debug_struct(&mut self, name: &str) -> DebugStructLength<'_> {
+    pub const fn debug_struct(&mut self, name: &str) -> DebugStructLength<'_, 's> {
         DebugStructLength {
             fmt: self.increment_margin().add_len(name.len()),
             wrote_field: false,
@@ -41,7 +71,7 @@ impl FormattingLength {
     }
 
     #[inline]
-    pub const fn debug_tuple(&mut self, name: &str) -> DebugTupleLength<'_> {
+    pub const fn debug_tuple(&mut self, name: &str) -> DebugTupleLength<'_, 's> {
         DebugTupleLength {
             fmt: self.increment_margin().add_len(name.len()),
             wrote_field: false,
@@ -49,7 +79,7 @@ impl FormattingLength {
     }
 
     #[inline]
-    pub const fn debug_list(&mut self) -> DebugListLength<'_> {
+    pub const fn debug_list(&mut self) -> DebugListLength<'_, 's> {
         DebugListLength {
             fmt: self.increment_margin(),
             wrote_field: false,
@@ -57,7 +87,7 @@ impl FormattingLength {
     }
 
     #[inline]
-    pub const fn debug_set(&mut self) -> DebugSetLength<'_> {
+    pub const fn debug_set(&mut self) -> DebugSetLength<'_, 's> {
         DebugSetLength {
             fmt: self.increment_margin(),
             wrote_field: false,
@@ -112,13 +142,13 @@ macro_rules! finish_method_impl {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct DebugStructLength<'f> {
-    fmt: &'f mut FormattingLength,
+pub struct DebugStructLength<'f, 's> {
+    fmt: &'f mut FormattingLength<'s>,
     wrote_field: bool,
 }
 
-impl DebugStructLength<'_> {
-    pub const fn field(&mut self, name: &str) -> &mut FormattingLength {
+impl<'f, 's> DebugStructLength<'f, 's> {
+    pub const fn field(&mut self, name: &str) -> &mut FormattingLength<'s> {
         const COLON_SPACE_LEN: usize = ": ".len();
 
         field_method_impl!(
@@ -134,13 +164,13 @@ impl DebugStructLength<'_> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct DebugTupleLength<'f> {
-    fmt: &'f mut FormattingLength,
+pub struct DebugTupleLength<'f, 's> {
+    fmt: &'f mut FormattingLength<'s>,
     wrote_field: bool,
 }
 
-impl DebugTupleLength<'_> {
-    pub const fn field(&mut self) -> &mut FormattingLength {
+impl<'f, 's> DebugTupleLength<'f, 's> {
+    pub const fn field(&mut self) -> &mut FormattingLength<'s> {
         field_method_impl!(self, "(", "(\n"; )
     }
 
@@ -170,13 +200,13 @@ macro_rules! finish_listset_method_impl {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct DebugListLength<'f> {
-    fmt: &'f mut FormattingLength,
+pub struct DebugListLength<'f, 's> {
+    fmt: &'f mut FormattingLength<'s>,
     wrote_field: bool,
 }
 
-impl DebugListLength<'_> {
-    pub const fn entry(&mut self) -> &mut FormattingLength {
+impl<'f, 's> DebugListLength<'f, 's> {
+    pub const fn entry(&mut self) -> &mut FormattingLength<'s> {
         field_method_impl!(self, "[", "[\n";)
     }
 
@@ -187,13 +217,13 @@ impl DebugListLength<'_> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct DebugSetLength<'f> {
-    fmt: &'f mut FormattingLength,
+pub struct DebugSetLength<'f, 's> {
+    fmt: &'f mut FormattingLength<'s>,
     wrote_field: bool,
 }
 
-impl DebugSetLength<'_> {
-    pub const fn entry(&mut self) -> &mut FormattingLength {
+impl<'f, 's> DebugSetLength<'f, 's> {
+    pub const fn entry(&mut self) -> &mut FormattingLength<'s> {
         field_method_impl!(self, "{", "{\n";)
     }
 

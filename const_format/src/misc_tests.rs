@@ -1,4 +1,4 @@
-mod formatcp_macro;
+mod formatc_macros;
 mod shared_cp_macro_tests;
 
 #[cfg(feature = "with_fmt")]

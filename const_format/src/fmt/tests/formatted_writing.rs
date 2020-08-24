@@ -1,5 +1,8 @@
 use crate::{
-    fmt::{Error, Formatter, FormattingFlags, FormattingLength, FormattingMode, StrWriter},
+    fmt::{
+        ComputeStrLength, Error, Formatter, FormattingFlags, FormattingLength, FormattingMode,
+        StrWriter,
+    },
     wrapper_types::PWrapper,
 };
 
@@ -11,7 +14,7 @@ struct Foo {
 }
 
 impl Foo {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         let mut f = f.debug_struct("Foo");
         PWrapper(self.x).const_debug_len(f.field("x"));
         PWrapper(self.y).const_debug_len(f.field("y"));
@@ -37,7 +40,7 @@ struct Bar {
 }
 
 impl Bar {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         let mut f = f.debug_struct("Bar");
         PWrapper(self.x).const_debug_len(f.field("x"));
         PWrapper(self.y).const_debug_len(f.field("y"));
@@ -66,10 +69,10 @@ fn check_debug_formatting() {
     ) -> Result<usize, Error> {
         try_!(bar.const_debug_fmt(&mut writer.make_formatter(flags)));
 
-        let mut fmt_len = FormattingLength::new(flags);
-        bar.const_debug_len(&mut fmt_len);
+        let mut str_len = ComputeStrLength::new();
+        bar.const_debug_len(&mut str_len.make_formatting_length(flags));
 
-        Ok(fmt_len.len())
+        Ok(str_len.len())
     }
 
     fn test_case(bar: &Bar, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {
@@ -223,7 +226,7 @@ Bar {
 pub struct Set(&'static [Foo]);
 
 impl Set {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         let mut f = f.debug_set();
         __for_range! {i in 0..self.0.len()=>
             self.0[i].const_debug_len(f.entry());
@@ -249,10 +252,10 @@ fn check_set_formatting() {
     ) -> Result<usize, Error> {
         try_!(set.const_debug_fmt(&mut writer.make_formatter(flags)));
 
-        let mut fmt_len = FormattingLength::new(flags);
-        set.const_debug_len(&mut fmt_len);
+        let mut str_len = ComputeStrLength::new();
+        set.const_debug_len(&mut str_len.make_formatting_length(flags));
 
-        Ok(fmt_len.len())
+        Ok(str_len.len())
     }
 
     fn test_case(bar: &Set, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {

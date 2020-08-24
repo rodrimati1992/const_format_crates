@@ -69,13 +69,13 @@ macro_rules! impl_number_of_digits {
     (@shared $This:ty, $bits:tt)=>{
         #[cfg(feature = "with_fmt")]
         impl PWrapper<$This> {
-            pub const fn const_display_len(&self, f: &mut FormattingLength) {
+            pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
                 let len = self.compute_display_len(f.flags());
                 f.add_len(len);
             }
 
             #[inline(always)]
-            pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+            pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
                 let len = self.compute_debug_len(f.flags());
                 f.add_len(len);
             }
@@ -182,13 +182,13 @@ macro_rules! impl_for_xsize {
     ($XSize:ident, $XWord:ident) => {
         #[cfg(feature = "with_fmt")]
         impl PWrapper<$XSize> {
-            pub const fn const_display_len(&self, f: &mut FormattingLength) {
+            pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
                 let len = self.compute_display_len(f.flags());
                 f.add_len(len);
             }
 
             #[inline(always)]
-            pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+            pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
                 let len = self.compute_debug_len(f.flags());
                 f.add_len(len);
             }

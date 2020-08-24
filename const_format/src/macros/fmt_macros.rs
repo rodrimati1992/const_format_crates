@@ -249,3 +249,22 @@ macro_rules! formatcp {
         )
     );
 }
+
+#[macro_export]
+#[cfg(feature = "with_fmt")]
+macro_rules! formatc {
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
+        $crate::formatc!(
+            @inner
+            (($crate))
+            $format_string
+            $(, $(($expr),)+)?
+        )
+    );
+    (@inner (($path:path)) $($everything:tt)*  ) => ({
+        $crate::pmr::__formatc_impl!{
+            (($path))
+            $($everything)*
+        }
+    });
+}

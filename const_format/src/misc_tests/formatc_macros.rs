@@ -1,6 +1,6 @@
 use crate::test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED};
 
-use arrayvec::ArrayString;
+use arrayvec::{ArrayString, ArrayVec};
 
 use core::fmt::Write;
 
@@ -38,6 +38,9 @@ fn debug_formatting() {
                 write!(string, "{:?}", $expr).unwrap();
 
                 assert_eq!(formatcp!("{:?}", $expr), string.as_str());
+
+                #[cfg(feature = "with_fmt")]
+                assert_eq!(formatc!("{:?}", $expr), string.as_str());
             )*
         )
     }
@@ -61,13 +64,32 @@ fn debug_formatting() {
     ////////////////////////////
     //  Let's debug format all ascii characters!
 
-    let escapedes = [
-        formatcp!("{:?}", ALL_ASCII),
-        formatcp!("{:x}", ALL_ASCII),
-        formatcp!("{:b}", ALL_ASCII),
-        formatcp!("{:x?}", ALL_ASCII),
-        formatcp!("{:b?}", ALL_ASCII),
-    ];
+    let mut escapedes = ArrayVec::<[&str; 16]>::new();
+
+    escapedes.extend(
+        [
+            formatcp!("{:?}", ALL_ASCII),
+            formatcp!("{:x}", ALL_ASCII),
+            formatcp!("{:b}", ALL_ASCII),
+            formatcp!("{:x?}", ALL_ASCII),
+            formatcp!("{:b?}", ALL_ASCII),
+        ]
+        .iter()
+        .copied(),
+    );
+
+    #[cfg(feature = "with_fmt")]
+    escapedes.extend(
+        [
+            formatc!("{:?}", ALL_ASCII),
+            formatc!("{:x}", ALL_ASCII),
+            formatc!("{:b}", ALL_ASCII),
+            formatc!("{:x?}", ALL_ASCII),
+            formatc!("{:b?}", ALL_ASCII),
+        ]
+        .iter()
+        .copied(),
+    );
 
     for escaped in escapedes.iter().copied() {
         assert_eq!(&escaped[..1], "\"");
@@ -78,6 +100,12 @@ fn debug_formatting() {
 
 macro_rules! binary_hex_test_case {
     ($ty:ident, $buffer:ident) => {{
+        binary_hex_test_case! {@inner formatcp, $ty, $buffer};
+
+        #[cfg(feature = "with_fmt")]
+        binary_hex_test_case! {@inner formatc, $ty, $buffer};
+    }};
+    (@inner $themacro:ident, $ty:ident, $buffer:ident) => {{
         const P: &[$ty] = &[
             $ty::MIN,
             $ty::MIN + 1,
@@ -90,7 +118,7 @@ macro_rules! binary_hex_test_case {
             $ty::MAX,
         ];
 
-        let cp_string = formatcp!(
+        let cp_string = $themacro!(
             "{0:?}_{0:x?}_{0:b?}_{0:#x?}_{0:#b?}_\
              {1:?}_{1:x?}_{1:b?}_{1:#x?}_{1:#b?}_\
              {2:?}_{2:x?}_{2:b?}_{2:#x?}_{2:#b?}_\

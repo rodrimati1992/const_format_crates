@@ -50,6 +50,16 @@ pub struct FormattingFlags {
 
 const INITIAL_MARGIN: u16 = 0;
 
+#[doc(hidden)]
+impl FormattingFlags {
+    pub const __REG: Self = Self::NEW.set_alternate(false).unset_mode();
+    pub const __HEX: Self = Self::NEW.set_alternate(false).set_hexadecimal_mode();
+    pub const __BIN: Self = Self::NEW.set_alternate(false).set_binary_mode();
+
+    pub const __A_REG: Self = Self::NEW.set_alternate(true).unset_mode();
+    pub const __A_HEX: Self = Self::NEW.set_alternate(true).set_hexadecimal_mode();
+    pub const __A_BIN: Self = Self::NEW.set_alternate(true).set_binary_mode();
+}
 impl FormattingFlags {
     #[doc(hidden)]
     pub const DEFAULT: Self = Self {

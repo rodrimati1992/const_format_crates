@@ -1,5 +1,5 @@
 use crate::{
-    fmt::{Error, FormattingFlags, FormattingLength, StrWriter},
+    fmt::{ComputeStrLength, Error, FormattingFlags, FormattingLength, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -34,10 +34,10 @@ macro_rules! test_fmt {
         ) -> Result<usize, Error> {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
 
-            let mut fmt_len = FormattingLength::new(flags);
-            this.const_debug_len(&mut fmt_len);
+            let mut str_len = ComputeStrLength::new();
+            this.const_debug_len(&mut str_len.make_formatting_length(flags));
 
-            Ok(fmt_len.len())
+            Ok(str_len.len())
         }
 
         fn test_case(this: &PWrapper<$Ty>, expected: &str, expected_hex: &str) {

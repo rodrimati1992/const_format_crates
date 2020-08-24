@@ -38,6 +38,22 @@ pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
         .into()
 }
 
+#[doc(hidden)]
+#[proc_macro]
+pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
+    syn::parse(input)
+        .and_then(format_macro::formatc_macro_impl)
+        // .map(|x|{println!("{}", x);x})
+        .unwrap_or_else(|e| {
+            let e = e.to_compile_error();
+            quote::quote!({
+                #e;
+                ""
+            })
+        })
+        .into()
+}
+
 #[allow(dead_code)]
 fn parse_or_compile_err<P, F>(input: TokenStream1, f: F) -> TokenStream2
 where

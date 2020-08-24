@@ -28,7 +28,7 @@ impl PWrapper<Range<usize>> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         PWrapper(self.0.start).const_debug_len(f);
         f.add_len(Self::RANGE_LEN);
         PWrapper(self.0.end).const_debug_len(f);
@@ -62,7 +62,7 @@ impl PWrapper<RangeFrom<usize>> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         PWrapper(self.0.start).const_debug_len(f);
         f.add_len(Self::RANGE_LEN);
     }
@@ -94,7 +94,7 @@ impl PWrapper<RangeTo<usize>> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         f.add_len(Self::RANGE_LEN);
         PWrapper(self.0.end).const_debug_len(f);
     }
@@ -129,7 +129,7 @@ impl PWrapper<RangeToInclusive<usize>> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         f.add_len(Self::RANGE_LEN);
         PWrapper(self.0.end).const_debug_len(f);
     }
@@ -161,7 +161,7 @@ impl PWrapper<RangeInclusive<usize>> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         PWrapper(*self.0.start()).const_debug_len(f);
         f.add_len(Self::RANGE_LEN);
         PWrapper(*self.0.end()).const_debug_len(f);
@@ -195,7 +195,7 @@ impl PWrapper<RangeFull> {
     const RANGE_LEN: usize = Self::RANGE.len();
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         f.add_len(Self::RANGE_LEN);
     }
 

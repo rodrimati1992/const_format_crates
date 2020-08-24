@@ -22,6 +22,29 @@ macro_rules! try_ {
     };
 }
 
+/// Equivalent to `Result::unwrap_or_else` but allows returning from the enclosing function.
+#[macro_export]
+macro_rules! unwrap_or_else {
+    ($e:expr, |$error:ident| $orelse:expr ) => {
+        match $e {
+            $crate::pmr::Ok(x) => x,
+            $crate::pmr::Err($error) => $orelse,
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! block {
+    ( $lifetime:lifetime: $($code:tt)* ) => (
+        $lifetime: loop{
+            break{
+                $($code)*
+            };
+        }
+    )
+}
+
 /// Coerces a reference to a type that has a `const_*_fmt` method.
 ///
 /// # Behavior

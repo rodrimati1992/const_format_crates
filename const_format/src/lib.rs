@@ -103,20 +103,28 @@ mod test_utils;
 #[cfg(feature = "with_fmt")]
 pub mod fmt;
 
+#[cfg(feature = "with_fmt")]
+pub mod msg;
+
 pub mod wrapper_types;
 
 #[doc(hidden)]
 pub mod pmr {
     pub use const_format_proc_macros::__formatcp_impl;
 
+    #[cfg(feature = "with_fmt")]
+    pub use const_format_proc_macros::__formatc_impl;
+
     pub use core::{
         ops::Range,
+        option::Option::{None, Some},
         result::Result::{self, Err, Ok},
     };
 
     #[cfg(feature = "with_fmt")]
-    pub use crate::marker_traits::type_kind::{
-        GetTypeKind, IsNotStdKind, IsStdKind, TypeKindMarker,
+    pub use crate::{
+        fmt::{ComputeStrLength, Error, StrWriter},
+        marker_traits::type_kind::{GetTypeKind, IsNotStdKind, IsStdKind, TypeKindMarker},
     };
 
     pub use crate::{
@@ -128,4 +136,8 @@ pub mod pmr {
         utils::Transmute,
         wrapper_types::PWrapper,
     };
+}
+
+fn foo() {
+    formatc!("{:?}", fmt::examples::ErroneousFmt);
 }

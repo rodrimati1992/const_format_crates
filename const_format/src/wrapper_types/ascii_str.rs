@@ -70,21 +70,19 @@ impl Display for NotAsciiError {
 
 #[cfg(feature = "with_fmt")]
 impl AsciiStr<'_> {
-    pub const fn const_display_len(&self, f: &mut FormattingLength) {
+    pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
         f.add_len(self.0.len());
     }
 
     #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength) {
+    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
         f.add_len(PWrapper(self.0).compute_utf8_debug_len());
     }
 
-    /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.w().write_whole_ascii(*self)
     }
 
-    /// Writes a `&str` with Debug formatting.
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.w().write_whole_ascii_debug(*self)
     }
@@ -95,6 +93,9 @@ impl AsciiStr<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "with_fmt")]
+    use crate::fmt::ComputeStrLength;
 
     use arrayvec::ArrayString;
 
@@ -148,10 +149,10 @@ mod tests {
         ) -> Result<usize, Error> {
             try_!(ascii.const_debug_fmt(&mut writer.make_formatter(flags)));
 
-            let mut fmt_len = FormattingLength::new(flags);
-            ascii.const_debug_len(&mut fmt_len);
+            let mut str_len = ComputeStrLength::new();
+            ascii.const_debug_len(&mut str_len.make_formatting_length(flags));
 
-            Ok(fmt_len.len())
+            Ok(str_len.len())
         }
 
         const fn inner_display(
@@ -161,10 +162,10 @@ mod tests {
         ) -> Result<usize, Error> {
             try_!(ascii.const_display_fmt(&mut writer.make_formatter(flags)));
 
-            let mut fmt_len = FormattingLength::new(flags);
-            ascii.const_display_len(&mut fmt_len);
+            let mut str_len = ComputeStrLength::new();
+            ascii.const_display_len(&mut str_len.make_formatting_length(flags));
 
-            Ok(fmt_len.len())
+            Ok(str_len.len())
         }
 
         fn test_case(
