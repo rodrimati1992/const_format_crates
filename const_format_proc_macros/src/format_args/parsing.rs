@@ -1,5 +1,6 @@
 use super::{
     ExpandFormatted, ExpandInto, FormatArg, FormatArgs, UncheckedFormatArg, UncheckedFormatArgs,
+    WriteArgs,
 };
 
 use crate::{
@@ -212,6 +213,26 @@ impl FormatArgs {
         Ok(FormatArgs {
             args,
             expanded_into,
+        })
+    }
+}
+
+////////////////////////////////////////////////
+
+impl Parse for WriteArgs {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
+        let prefix = Ident::new("const_fmt_local_", Span::call_site());
+
+        let content;
+        let _parentheses = syn::parenthesized!(content in input);
+        let (writer_expr, _span) =
+            content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?;
+
+        let format_args = FormatArgs::parse_with(input, prefix)?;
+
+        Ok(Self {
+            writer_expr,
+            format_args,
         })
     }
 }

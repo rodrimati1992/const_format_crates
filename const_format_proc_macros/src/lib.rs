@@ -16,6 +16,14 @@ mod utils;
 #[cfg(test)]
 mod test_utils;
 
+fn compile_err_empty_str(e: syn::Error) -> TokenStream2 {
+    let e = e.to_compile_error();
+    quote::quote!({
+        #e;
+        ""
+    })
+}
+
 /// Input syntax: `"format string", (arg0), (name = arg1)` (with optional trailing comma).
 ///
 /// The arguments are parenthesized to not require syn to parse `arg0` and `arg1` as syn::Expr,
@@ -28,13 +36,7 @@ mod test_utils;
 pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
     syn::parse(input)
         .and_then(format_macro::macro_impl)
-        .unwrap_or_else(|e| {
-            let e = e.to_compile_error();
-            quote::quote!({
-                #e;
-                ""
-            })
-        })
+        .unwrap_or_else(compile_err_empty_str)
         .into()
 }
 
@@ -43,14 +45,16 @@ pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
 pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
     syn::parse(input)
         .and_then(format_macro::formatc_macro_impl)
-        // .map(|x|{println!("{}", x);x})
-        .unwrap_or_else(|e| {
-            let e = e.to_compile_error();
-            quote::quote!({
-                #e;
-                ""
-            })
-        })
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
+
+#[doc(hidden)]
+#[proc_macro]
+pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
+    syn::parse(input)
+        .and_then(format_macro::writec_macro_impl)
+        .unwrap_or_else(compile_err_empty_str)
         .into()
 }
 

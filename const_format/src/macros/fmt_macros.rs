@@ -268,3 +268,23 @@ macro_rules! formatc {
         }
     });
 }
+
+#[macro_export]
+#[cfg(feature = "with_fmt")]
+macro_rules! writec {
+    ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
+        $crate::writec!(
+            @inner
+            (($crate))
+            ($writer)
+            $format_string
+            $(, $(($expr),)+)?
+        )
+    );
+    (@inner (($path:path)) $($everything:tt)*  ) => ({
+        $crate::pmr::__writec_impl!{
+            (($path))
+            $($everything)*
+        }
+    });
+}

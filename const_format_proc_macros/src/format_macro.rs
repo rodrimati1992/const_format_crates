@@ -1,6 +1,5 @@
 use crate::{
-    format_args::{ExpandInto, FormatArgs},
-    formatting::FormattingFlags,
+    format_args::{ExpandInto, FormatArgs, WriteArgs},
     parse_utils::WithProcMacroArgs,
 };
 
@@ -59,68 +58,23 @@ pub(crate) fn formatc_macro_impl(
 
     let fmt_args = args.value;
 
-    let formatting = fmt_args
-        .expanded_into
-        .iter()
-        .map(|ei| {
-            match ei {
-                ExpandInto::Str { .. } => FormattingFlags::NEW,
-                ExpandInto::Formatted(fmted) => fmted.format,
-            }
-            .tokens(&cratep)
-        })
-        .collect::<Vec<TokenStream2>>();
-
-    let formatting = formatting.as_slice();
-
     let locals_a = fmt_args.args.iter().map(|arg| &arg.local_variable);
     let locals_b = locals_a.clone();
     let expr_a = fmt_args.args.iter().map(|arg| &arg.expr);
     let expr_b = expr_a.clone();
 
-    let error_scope = quote!('error_scope);
     let strlen = Ident::new("strlen", Span::mixed_site());
     let strwriter = Ident::new("strwriter", Span::mixed_site());
 
     let length_computation = fmt_args
         .expanded_into
         .iter()
-        .zip(formatting)
-        .map(|(ei, flags)| match ei {
-            ExpandInto::Str(str) => {
-                let len = str.len();
-                quote!( #strlen.add_len(#len); )
-            }
-            ExpandInto::Formatted(fmted) => {
-                let len_method = fmted.format.len_method_name();
-                let local_variable = &fmted.local_variable;
-                let span = local_variable.span();
+        .map(|ei| ei.len_call(&cratep, &strlen));
 
-                quote_spanned!(span=>
-                    #cratep::coerce_to_fmt!(#local_variable)
-                        .#len_method(&mut #strlen.make_formatting_length(#flags));
-                )
-            }
-        });
-
-    let writing_formatted =
-        fmt_args
-            .expanded_into
-            .iter()
-            .zip(formatting)
-            .map(|(ei, flags)| match ei {
-                ExpandInto::Str(str) => quote!( #strwriter.write_whole_str(#str) ),
-                ExpandInto::Formatted(fmted) => {
-                    let fmt_method = fmted.format.fmt_method_name();
-                    let local_variable = &fmted.local_variable;
-                    let span = local_variable.span();
-
-                    quote_spanned!(span=>
-                        #cratep::coerce_to_fmt!(&#local_variable)
-                            .#fmt_method(&mut #strwriter.make_formatter(#flags))
-                    )
-                }
-            });
+    let writing_formatted = fmt_args
+        .expanded_into
+        .iter()
+        .map(|ei| ei.fmt_call(&cratep, &strwriter));
 
     Ok(quote!({
         const fn len_NHPMWYD3NJA() ->  usize {
@@ -137,22 +91,18 @@ pub(crate) fn formatc_macro_impl(
         const fn str_writer_NHPMWYD3NJA(
         )-> #cratep::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
             let mut #strwriter = #cratep::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
-            let mut error = #cratep::block!{ #error_scope:
-                let #strwriter: &mut #cratep::pmr::StrWriter = &mut #strwriter;
-
-                match (#(&(#expr_b),)*) {
-                    (#(#locals_b,)*) => {
-                        #(
-                            #cratep::unwrap_or_else!(
-                                #writing_formatted,
-                                |e| break #error_scope Some(e)
-                            );
-                        )*
-                    }
-                }
-                #cratep::pmr::None::<#cratep::pmr::Error>
+            let mut error = match (#(&(#expr_b),)*) {
+                (#(#locals_b,)*) => loop {
+                    let #strwriter: &mut #cratep::pmr::StrWriter = &mut #strwriter;
+                    #(
+                        #cratep::unwrap_or_else!(
+                            #writing_formatted,
+                            |e| break Some(e)
+                        );
+                    )*
+                    break #cratep::pmr::None::<#cratep::pmr::Error>;
+                },
             };
-
 
             #cratep::msg::ErrorTupleAndStrWriter{
                 error: #cratep::msg::ErrorTuple::new(error, &#strwriter),
@@ -194,4 +144,44 @@ pub(crate) fn formatc_macro_impl(
 
         STR_NHPMWYD3NJA
     }))
+}
+
+pub(crate) fn writec_macro_impl(
+    args: WithProcMacroArgs<WriteArgs>,
+) -> Result<TokenStream2, syn::Error> {
+    let cratep = args.crate_path;
+    // Had to launder the path, to not get weird errors about crate being a visibility modifier.
+    let cratep = syn::parse_str::<TokenStream2>(&cratep.to_string()).unwrap();
+
+    let writer_expr = args.value.writer_expr;
+    let FormatArgs {
+        expanded_into,
+        args,
+    } = args.value.format_args;
+
+    let locals = args.iter().map(|arg| &arg.local_variable);
+    let expr = args.iter().map(|arg| &arg.expr);
+
+    let strwriter = Ident::new("strwriter", Span::mixed_site());
+
+    let writing_formatted = expanded_into
+        .iter()
+        .map(|ei| ei.fmt_call(&cratep, &strwriter));
+
+    Ok(quote! {
+        match ((#writer_expr).strwriter(), #(&(#expr),)*) {
+            (#strwriter, #(#locals,)*) => {
+                loop {
+                    let #strwriter: &mut #cratep::pmr::StrWriter = #strwriter;
+                    #(
+                        #cratep::unwrap_or_else!(
+                            #writing_formatted,
+                            |e| break Err(e)
+                        );
+                    )*
+                    break Ok(());
+                }
+            }
+        }
+    })
 }

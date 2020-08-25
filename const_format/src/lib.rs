@@ -113,7 +113,7 @@ pub mod pmr {
     pub use const_format_proc_macros::__formatcp_impl;
 
     #[cfg(feature = "with_fmt")]
-    pub use const_format_proc_macros::__formatc_impl;
+    pub use const_format_proc_macros::{__formatc_impl, __writec_impl};
 
     pub use core::{
         ops::Range,
@@ -136,8 +136,4 @@ pub mod pmr {
         utils::Transmute,
         wrapper_types::PWrapper,
     };
-}
-
-fn foo() {
-    formatc!("{:?}", fmt::examples::ErroneousFmt);
 }

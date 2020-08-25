@@ -34,7 +34,6 @@ pub(crate) trait ParseBufferExt {
     fn parse_unwrap_tt<F, T>(&self, f: F) -> Result<T, syn::Error>
     where
         F: FnOnce(ParseStream) -> Result<T, syn::Error>,
-        T: Parse,
     {
         let input = self.as_parse_buffer();
         if input.peek(syn::token::Group) {

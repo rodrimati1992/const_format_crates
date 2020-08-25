@@ -33,18 +33,6 @@ macro_rules! unwrap_or_else {
     };
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! block {
-    ( $lifetime:lifetime: $($code:tt)* ) => (
-        $lifetime: loop{
-            break{
-                $($code)*
-            };
-        }
-    )
-}
-
 /// Coerces a reference to a type that has a `const_*_fmt` method.
 ///
 /// # Behavior

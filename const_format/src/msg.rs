@@ -84,16 +84,3 @@ type_level_error! {
 
     NotOnCharBoundary => NotOnCharBoundary<>,
 }
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! make_error_tuple {
-    ($tuple:expr) => {
-        <
-                    <
-                        $crate::msg::ErrorPicker<[(); $tuple.error_variant], [(); $tuple.capacity]>
-                        as $crate::msg::ErrorAsType
-                    >::Type
-                >::NEW
-    };
-}

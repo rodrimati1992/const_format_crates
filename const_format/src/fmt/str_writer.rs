@@ -49,6 +49,11 @@ impl<A: ?Sized> StrWriter<A> {
     pub const fn buffer(&self) -> &A {
         &self.buffer
     }
+
+    #[inline(always)]
+    pub const fn strwriter(&mut self) -> &mut Self {
+        self
+    }
 }
 
 macro_rules! write_integer_fn {

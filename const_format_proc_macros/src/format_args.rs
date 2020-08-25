@@ -5,6 +5,8 @@ use proc_macro2::{Span, TokenStream as TokenStream2};
 
 use syn::{punctuated::Punctuated, Ident, Token};
 
+use quote::{quote, quote_spanned};
+
 ////////////////////////////////////////////////
 
 mod parsing;
@@ -30,6 +32,12 @@ pub(crate) struct FormatArgs {
     pub(crate) expanded_into: Vec<ExpandInto>,
 }
 
+/// The arguments of `writec`
+pub(crate) struct WriteArgs {
+    pub(crate) writer_expr: TokenStream2,
+    pub(crate) format_args: FormatArgs,
+}
+
 pub(crate) enum ExpandInto {
     Str(String),
     Formatted(ExpandFormatted),
@@ -51,3 +59,47 @@ pub(crate) struct FormatArg {
 }
 
 ////////////////////////////////////////////////
+
+impl ExpandInto {
+    pub(crate) fn formatting_flags(&self) -> FormattingFlags {
+        match self {
+            Self::Str { .. } => FormattingFlags::NEW,
+            Self::Formatted(fmted) => fmted.format,
+        }
+    }
+    pub(crate) fn len_call(&self, cratep: &TokenStream2, strlen: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags().tokens(cratep);
+        match self {
+            ExpandInto::Str(str) => {
+                let len = str.len();
+                quote!( #strlen.add_len(#len); )
+            }
+            ExpandInto::Formatted(fmted) => {
+                let len_method = fmted.format.len_method_name();
+                let local_variable = &fmted.local_variable;
+                let span = local_variable.span();
+
+                quote_spanned!(span=>
+                    #cratep::coerce_to_fmt!(#local_variable)
+                        .#len_method(&mut #strlen.make_formatting_length(#flags));
+                )
+            }
+        }
+    }
+    pub(crate) fn fmt_call(&self, cratep: &TokenStream2, strwriter: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags().tokens(cratep);
+        match self {
+            ExpandInto::Str(str) => quote!( #strwriter.write_whole_str(#str) ),
+            ExpandInto::Formatted(fmted) => {
+                let fmt_method = fmted.format.fmt_method_name();
+                let local_variable = &fmted.local_variable;
+                let span = local_variable.span();
+
+                quote_spanned!(span=>
+                    #cratep::coerce_to_fmt!(&#local_variable)
+                        .#fmt_method(&mut #strwriter.make_formatter(#flags))
+                )
+            }
+        }
+    }
+}
