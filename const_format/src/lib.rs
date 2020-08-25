@@ -116,6 +116,9 @@ pub mod pmr {
     pub use const_format_proc_macros::{__formatc_impl, __writec_impl};
 
     pub use core::{
+        cmp::Reverse,
+        convert::identity,
+        num::Wrapping,
         ops::Range,
         option::Option::{None, Some},
         result::Result::{self, Err, Ok},

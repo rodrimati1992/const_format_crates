@@ -357,3 +357,13 @@ impl PWrapper<&str> {
         self.0.len()
     }
 }
+
+#[cfg(feature = "with_fmt")]
+const _: () = {
+    use crate::marker_traits::type_kind::{GetTypeKind, IsNotStdKind};
+
+    impl<P> GetTypeKind for PWrapper<P> {
+        type Kind = IsNotStdKind;
+        type This = Self;
+    }
+};

@@ -1,7 +1,7 @@
 #![allow(non_camel_case_types)]
 
 use crate::{
-    fmt::{ComputeStrLength, Error, FormattingFlags, StrWriter},
+    fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -25,44 +25,52 @@ struct TupleStruct<T>(T, u32);
 
 struct UnitStruct;
 
-impl_debug! {
+impl_fmt! {
     impl[] BracedStruct<u32>;
 
     #[allow(dead_code)]
     impl[] BracedStruct<u64>;
 
-    struct BracedStruct {
-        a => PWrapper(*a),
-        b: hello => PWrapper(*hello),
-        c: world,
-        d,
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = f.debug_struct("BracedStruct");
+        try_!(PWrapper(self.a).const_debug_fmt(f.field("a")));
+        try_!(PWrapper(self.b).const_debug_fmt(f.field("b")));
+        try_!(self.c.const_debug_fmt(f.field("c")));
+        try_!(self.d.const_debug_fmt(f.field("d")));
+        f.finish()
     }
 }
 
-impl_debug! {
+impl_fmt! {
     #[allow(dead_code)]
     impl[] TupleStruct<u64>;
 
     impl[] TupleStruct<u32>;
 
-    struct TupleStruct (
-        a => PWrapper(*a),
-        b => PWrapper(*b),
-    )
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = f.debug_tuple("TupleStruct");
+        try_!(PWrapper(self.0).const_debug_fmt(f.field()));
+        try_!(PWrapper(self.1).const_debug_fmt(f.field()));
+        f.finish()
+    }
 }
 
-impl_debug! {
+impl_fmt! {
     impl[] UnitStruct;
 
-    struct UnitStruct
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.debug_tuple("UnitStruct").finish()
+    }
 }
 
 macro_rules! declare_test_case_fns {
     ( $Ty:ty ) => {
-        impl_debug! {
+        impl_fmt! {
             impl[] Delegating<&$Ty>;
 
-            delegating = |x| x.0
+            const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+                self.0.const_debug_fmt(f)
+            }
         }
 
         const fn inner_delegating(
@@ -186,32 +194,35 @@ struct UnDebug;
 
 struct TupleStructNE<T, U>(T, u32, PhantomData<U>);
 
-impl_debug! {
-    impl[] BracedStructNE<u32>;
+impl_fmt! {
+    impl BracedStructNE<u32>;
 
     #[allow(dead_code)]
     impl[] BracedStructNE<u64>;
 
-    struct BracedStructNE {
-        a => PWrapper(*a),
-        b: hello => PWrapper(*hello),
-        c: world,
-        d,
-        ..
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = f.debug_struct("BracedStructNE");
+        try_!(PWrapper(self.a).const_debug_fmt(f.field("a")));
+        try_!(PWrapper(self.b).const_debug_fmt(f.field("b")));
+        try_!(self.c.const_debug_fmt(f.field("c")));
+        try_!(self.d.const_debug_fmt(f.field("d")));
+        f.finish()
     }
 }
 
-impl_debug! {
+impl_fmt! {
     #[allow(dead_code)]
     impl[] TupleStructNE<u64, UnDebug>;
 
-    impl[] TupleStructNE<u32, UnDebug>;
+    impl[T,] TupleStructNE<u32, T>
+    where[ T: 'static, ];
 
-    struct TupleStructNE (
-        a => PWrapper(*a),
-        b => PWrapper(*b),
-        ..
-    )
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = f.debug_tuple("TupleStructNE");
+        try_!(PWrapper(self.0).const_debug_fmt(f.field()));
+        try_!(PWrapper(self.1).const_debug_fmt(f.field()));
+        f.finish()
+    }
 }
 
 #[test]
@@ -219,7 +230,7 @@ fn struct_nonexhaustive_debug_impl() {
     declare_test_case_fns!(BracedStructNE<u32>);
 
     let foo = BracedStructNE {
-        a: 10,
+        a: 10u32,
         b: &[20, 30],
         c: TupleStructNE(40, 50, PhantomData),
         d: UnitStruct,
@@ -250,24 +261,30 @@ enum EnumA<T> {
     Unit,
 }
 
-impl_debug! {
+impl_fmt! {
     impl[] EnumA<u32>;
 
     #[allow(dead_code)]
     impl[] EnumA<u64>;
 
-    enum EnumA {
-        Tupled(
-            a => PWrapper(*a),
-            b => PWrapper(*b),
-        ),
-        Braced{
-            a => PWrapper(*a),
-            b: bb => PWrapper(*bb),
-            c,
-            d: cc,
-        },
-        Unit,
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self {
+            Self::Tupled(f0, f1)=>{
+                let mut f = f.debug_tuple("Tupled");
+                try_!(PWrapper(*f0).const_debug_fmt(f.field()));
+                try_!(PWrapper(*f1).const_debug_fmt(f.field()));
+                f.finish()
+            }
+            Self::Braced {a,b,c,d} => {
+                let mut f = f.debug_struct("Braced");
+                try_!(PWrapper(*a).const_debug_fmt(f.field("a")));
+                try_!(PWrapper(*b).const_debug_fmt(f.field("b")));
+                try_!(c.const_debug_fmt(f.field("c")));
+                try_!(d.const_debug_fmt(f.field("d")));
+                f.finish()
+            }
+            Self::Unit => f.debug_struct("Unit").finish()
+        }
     }
 }
 
@@ -349,26 +366,31 @@ enum EnumA_NE<T> {
     Unit,
 }
 
-impl_debug! {
+impl_fmt! {
     impl[] EnumA_NE<u32>;
 
     #[allow(dead_code)]
     impl[] EnumA_NE<u64>;
 
-    enum EnumA_NE {
-        Tupled(
-            a => PWrapper(*a),
-            b => PWrapper(*b),
-            ..
-        ),
-        Braced{
-            a => PWrapper(*a),
-            b: bb => PWrapper(*bb),
-            c,
-            d: cc,
-            ..
-        },
-        ..
+
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self {
+            Self::Tupled(f0, f1,..)=>{
+                let mut f = f.debug_tuple("Tupled");
+                try_!(PWrapper(*f0).const_debug_fmt(f.field()));
+                try_!(PWrapper(*f1).const_debug_fmt(f.field()));
+                f.finish()
+            }
+            Self::Braced {a,b,c,d,..} => {
+                let mut f = f.debug_struct("Braced");
+                try_!(PWrapper(*a).const_debug_fmt(f.field("a")));
+                try_!(PWrapper(*b).const_debug_fmt(f.field("b")));
+                try_!(c.const_debug_fmt(f.field("c")));
+                try_!(d.const_debug_fmt(f.field("d")));
+                f.finish()
+            }
+            Self::Unit => f.debug_struct("<unknown_variant>").finish()
+        }
     }
 }
 
@@ -411,13 +433,17 @@ fn enum_nonexhaustive_debug_impl() {
 
 struct StructWE<T>(EnumA<T>);
 
-impl_debug! {
+impl_fmt! {
     impl[] StructWE<u32>;
 
     #[allow(dead_code)]
     impl[] StructWE<u64>;
 
-    struct StructWE( e )
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut f = f.debug_tuple("StructWE");
+        try_!(self.0.const_debug_fmt(f.field()));
+        f.finish()
+    }
 }
 
 #[test]

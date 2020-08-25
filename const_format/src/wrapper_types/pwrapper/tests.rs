@@ -136,3 +136,23 @@ fn pwrapper_methods() {
     check_number_of_digits_!(u128);
     check_number_of_digits_!(i128);
 }
+
+#[cfg(feature = "with_fmt")]
+#[test]
+fn wrapped_formatting() {
+    use crate::fmt::{Error, StrWriter};
+
+    const fn inner(writer: &mut StrWriter) -> Result<(), Error> {
+        try_!(writec!(writer, "{},", PWrapper(3u8)));
+        try_!(writec!(writer, "{},", PWrapper(5u16)));
+        try_!(writec!(writer, "{},", PWrapper(8u32)));
+        try_!(writec!(writer, "{},", PWrapper("hello")));
+        Ok(())
+    }
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+
+    inner(writer).unwrap();
+
+    assert_eq!(writer.as_str(), "3,5,8,hello,");
+}

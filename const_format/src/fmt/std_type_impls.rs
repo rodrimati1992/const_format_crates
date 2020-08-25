@@ -69,7 +69,7 @@ use core::{
     ptr::NonNull,
 };
 
-impl_debug! {
+impl_fmt! {
     is_std_type;
 
     impl[T,] Option<NonNull<T>>;
@@ -100,9 +100,15 @@ impl_debug! {
     impl[] Option<bool>;
     impl['a,] Option<&'a str>;
 
-    enum Option {
-        Some( a => PWrapper(*a) ),
-        None
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self.0 {
+            Some(x) => {
+                let mut f = f.debug_tuple("Some");
+                try_!(PWrapper(x).const_debug_fmt(f.field()));
+                f.finish()
+            },
+            None => f.write_whole_str("None"),
+        }
     }
 }
 
@@ -188,29 +194,33 @@ impl_std_marker_type! {
 
 use core::{cmp::Ordering, sync::atomic::Ordering as AtomicOrdering};
 
-impl_debug! {
+impl_fmt! {
     is_std_type;
 
-    impl[] AtomicOrdering;
+    impl AtomicOrdering;
 
-    enum AtomicOrdering {
-        Relaxed,
-        Release,
-        Acquire,
-        AcqRel,
-        SeqCst,
-        ..
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self.0 {
+            AtomicOrdering::Relaxed => f.write_whole_str("Relaxed"),
+            AtomicOrdering::Release => f.write_whole_str("Release"),
+            AtomicOrdering::Acquire => f.write_whole_str("Acquire"),
+            AtomicOrdering::AcqRel => f.write_whole_str("AcqRel"),
+            AtomicOrdering::SeqCst => f.write_whole_str("SeqCst"),
+            _ => f.write_whole_str("<core::atomic::Ordering>"),
+        }
     }
 }
 
-impl_debug! {
+impl_fmt! {
     is_std_type;
 
-    impl[] Ordering;
+    impl Ordering;
 
-    enum Ordering {
-        Less,
-        Equal,
-        Greater,
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self.0 {
+            Ordering::Less => f.write_whole_str("Less"),
+            Ordering::Equal => f.write_whole_str("Equal"),
+            Ordering::Greater => f.write_whole_str("Greater"),
+        }
     }
 }

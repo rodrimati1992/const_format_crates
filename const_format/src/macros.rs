@@ -1,4 +1,8 @@
 #[macro_use]
+#[cfg(feature = "with_fmt")]
+mod call_debug_fmt;
+
+#[macro_use]
 mod constructors;
 
 #[macro_use]
@@ -9,7 +13,7 @@ mod fmt_macros;
 
 #[macro_use]
 #[cfg(feature = "with_fmt")]
-mod impl_debug;
+mod impl_fmt;
 
 /// Equivalent to the old `try` macro, or the `?` operator.
 #[macro_export]
@@ -49,12 +53,15 @@ macro_rules! unwrap_or_else {
 #[macro_export]
 macro_rules! coerce_to_fmt {
     ($reference:expr) => {{
-        let reference = $reference;
-        let mut marker = $crate::pmr::TypeKindMarker::NEW;
-        if false {
-            marker = marker.infer_type(reference);
+        match $reference {
+            ref reference => {
+                let mut marker = $crate::pmr::TypeKindMarker::NEW;
+                if false {
+                    marker = marker.infer_type(reference);
+                }
+                marker.coerce(marker.unreference(reference))
+            }
         }
-        marker.coerce(marker.unreference(reference))
     }};
 }
 

@@ -1,4 +1,4 @@
-use crate::fmt::{FormattingFlags, StrWriter};
+use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter};
 
 #[test]
 fn coercion() {
@@ -35,8 +35,10 @@ fn coercion() {
 
 struct UnitStruct;
 
-impl_debug! {
+impl_fmt! {
     impl[] UnitStruct;
 
-    struct UnitStruct
+    const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.write_whole_str("UnitStruct")
+    }
 }
