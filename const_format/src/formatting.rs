@@ -129,6 +129,11 @@ impl FormattingFlags {
         self
     }
 
+    pub(crate) const fn copy_margin_of(mut self, other: FormattingFlags) -> Self {
+        self.margin = other.margin;
+        self
+    }
+
     #[inline]
     pub const fn mode(self) -> FormattingMode {
         self.mode

@@ -1,15 +1,12 @@
 use crate::{
-    fmt::{ComputeStrLength, Error, FormattingFlags, FormattingLength, StrWriter},
+    fmt::{ComputeStrLength, Error, FormattingFlags, StrWriter},
     wrapper_types::PWrapper,
 };
 
 use core::{
     cmp::Ordering,
     marker::{PhantomData, PhantomPinned},
-    num::{
-        NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize, NonZeroU128,
-        NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
-    },
+    num::NonZeroU8,
     ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive},
     ptr::NonNull,
     sync::atomic::Ordering as AtomicOrdering,
@@ -35,7 +32,7 @@ macro_rules! test_fmt {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
 
             let mut str_len = ComputeStrLength::new();
-            this.const_debug_len(&mut str_len.make_formatting_length(flags));
+            try_!(this.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
             Ok(str_len.len())
         }

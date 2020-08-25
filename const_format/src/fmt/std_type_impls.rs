@@ -1,5 +1,5 @@
 use crate::{
-    fmt::{Error, Formatter, FormattingLength},
+    fmt::{Error, Formatter},
     marker_traits::type_kind::IsStdKind,
     wrapper_types::PWrapper,
 };
@@ -9,43 +9,21 @@ mod ranges;
 ////////////////////////////////////////////////////////////////////////////////
 
 impl PWrapper<&str> {
-    #[inline(always)]
-    pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(self.0.len());
-    }
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        let len = self.compute_debug_len(f.flags());
-        f.add_len(len);
-    }
-
     /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().write_whole_str(self.0)
+        f.write_whole_str(self.0)
     }
 
     /// Writes a `&str` with Debug formatting.
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().write_whole_str_debug(self.0)
+        f.write_whole_str_debug(self.0)
     }
 }
 
 impl PWrapper<bool> {
-    pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-        const TRUE: usize = "true".len();
-        const FALSE: usize = "false".len();
-        f.add_len(if self.0 { TRUE } else { FALSE });
-    }
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        self.const_display_len(f)
-    }
-
     /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().write_whole_str(if self.0 { "true" } else { "false" })
+        f.write_whole_str(if self.0 { "true" } else { "false" })
     }
 
     /// Writes a `&str` with Debug formatting.
@@ -59,18 +37,10 @@ macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
     $(
 
         impl PWrapper<&[$elem]> {
-            pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
+            pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                 let mut f = f.debug_list();
                 __for_range!{i in 0..self.0.len() =>
-                    PWrapper(self.0[i]).const_debug_len(f.entry());
-                }
-                f.finish()
-            }
-
-            pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-                let mut f = try_!(f.debug_list());
-                __for_range!{i in 0..self.0.len() =>
-                    try_!(PWrapper(self.0[i]).const_debug_fmt(try_!(f.entry())));
+                    try_!(PWrapper(self.0[i]).const_debug_fmt(f.entry()));
                 }
                 f.finish()
             }
@@ -142,11 +112,6 @@ macro_rules! non_zero_impls {
             std_kind_impl!{ impl[] $ty }
 
             impl PWrapper<$ty> {
-                #[inline(always)]
-                pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-                    PWrapper(self.0.get()).const_debug_len(f)
-                }
-
                 /// Writes a `&str` with Debug formatting.
                 #[inline(always)]
                 pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -167,27 +132,16 @@ std_kind_impl! { impl[T,] *mut T }
 // Unfortunately, can't print pointer addresses at compile-time.
 impl<T> PWrapper<*mut T> {
     const PTR: &'static str = "<pointer>";
-    const PTR_LEN: usize = Self::PTR.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(Self::PTR_LEN);
-    }
 
     /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        PWrapper(Self::PTR).const_display_fmt(f)
+        f.write_whole_str(Self::PTR)
     }
 }
 
 std_kind_impl! { impl[T,] *const T }
 impl<T> PWrapper<*const T> {
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(self.0 as *mut T).const_debug_len(f)
-    }
-
     /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -197,11 +151,6 @@ impl<T> PWrapper<*const T> {
 
 std_kind_impl! { impl[T,] NonNull<T> }
 impl<T> PWrapper<NonNull<T>> {
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(self.0.as_ptr()).const_debug_len(f)
-    }
-
     /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -218,12 +167,6 @@ macro_rules! impl_std_marker_type {
 
             impl<$($impl_)*> PWrapper<$type> {
                 const NAME: &'static str = $tyname;
-                const NAME_LEN: usize = Self::NAME.len();
-
-                #[inline(always)]
-                pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-                    f.add_len(Self::NAME_LEN);
-                }
 
                 /// Writes a `&str` with Debug formatting.
                 #[inline(always)]

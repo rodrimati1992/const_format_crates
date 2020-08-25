@@ -159,21 +159,6 @@ macro_rules! __impl_debug_inner {
         where
             $($where)*
         {
-            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
-                $crate::__impl_debug_inner!(@project_field self, this, $is_std_type);
-                let Self{ $($field_name $(: $renamed )? ,)* $(.. $(@$nonexh@)? )?} = this;
-
-                let mut f = f.debug_struct(stringify!($type_name));
-                $(
-                    $crate::__impl_debug_field!(
-                        @call_len
-                        f,
-                        $field_name $(: $renamed)? $(=> $field_expr )?,
-                    );
-                )*
-                f.finish();
-            }
-
             pub const fn const_debug_fmt(
                 &self,
                 f: &mut $crate::fmt::Formatter<'_>,
@@ -181,7 +166,7 @@ macro_rules! __impl_debug_inner {
                 $crate::__impl_debug_inner!(@project_field self, this, $is_std_type);
                 let Self{ $($field_name $(: $renamed )? ,)* ..} = this;
 
-                let mut f = $crate::try_!(f.debug_struct(stringify!($type_name)));
+                let mut f = f.debug_struct(stringify!($type_name));
                 $(
                     $crate::__impl_debug_field!(
                         @call_fmt
@@ -214,21 +199,6 @@ macro_rules! __impl_debug_inner {
         where
             $($where)*
         {
-            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
-                $crate::__impl_debug_inner!(@project_field self, this, $is_std_type);
-                let Self $( ( $($field_name,)* $(.. $(@$nonexh@)? )? ) )? = this;
-
-                let mut f = f.debug_tuple(stringify!($type_name));
-                $($(
-                    $crate::__impl_debug_field!(
-                        @call_len_tuple
-                        f,
-                        $field_name $(=> $field_expr )?,
-                    );
-                )*)?
-                f.finish();
-            }
-
             pub const fn const_debug_fmt(
                 &self,
                 f: &mut $crate::fmt::Formatter<'_>,
@@ -236,7 +206,7 @@ macro_rules! __impl_debug_inner {
                 $crate::__impl_debug_inner!(@project_field self, this, $is_std_type);
                 let Self $( ( $($field_name,)* ..) )? = this;
 
-                let mut f = $crate::try_!(f.debug_tuple(stringify!($type_name)));
+                let mut f = f.debug_tuple(stringify!($type_name));
                 $($(
                     $crate::__impl_debug_field!(
                         @call_fmt_tuple
@@ -270,28 +240,6 @@ macro_rules! __impl_debug_inner {
         where
             $($where)*
         {
-            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
-                $crate::__impl_debug_inner!(@project_field self, this, $is_std_type);
-
-                match this {
-                    $(
-                        $crate::__impl_debug_enum!(
-                            @pat
-                            $type_name :: $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
-                        ) => {
-                            $crate::__impl_debug_enum!{
-                                @len_method
-                                f = f;
-                                $variant $( {$($brace_ts)*} )? $( ($($paren_ts)*) )?
-                            }
-                        }
-                    )*
-                    $(
-                        _ $(@$nonexh@)? => { f.add_len("<unknown_variant>".len()); }
-                    )?
-                }
-            }
-
             pub const fn const_debug_fmt(
                 &self,
                 f: &mut $crate::fmt::Formatter<'_>,
@@ -312,7 +260,7 @@ macro_rules! __impl_debug_inner {
                         }
                     )*
                     $(
-                        _ $(@$nonexh@)? => f.w().write_whole_str("<unknown_variant>"),
+                        _ $(@$nonexh@)? => f.write_whole_str("<unknown_variant>"),
                     )?
                 }
             }
@@ -334,11 +282,6 @@ macro_rules! __impl_debug_inner {
         where
             $($where)*
         {
-            pub const fn const_debug_len(&self, f: &mut $crate::fmt::FormattingLength) {
-                let $self = self;
-                $expr.const_debug_len(f)
-            }
-
             pub const fn const_debug_fmt(
                 &self,
                 f: &mut $crate::fmt::Formatter<'_>,
@@ -433,7 +376,7 @@ macro_rules! __impl_debug_enum {
             $(,)?
         }
     )=>{
-        let mut $f = $crate::try_!($f.debug_struct(stringify!($variant)));
+        let mut $f = $f.debug_struct(stringify!($variant));
         $(
             $crate::__impl_debug_field!(
                 @call_fmt
@@ -451,7 +394,7 @@ macro_rules! __impl_debug_enum {
             $(,)?
         ))?
     )=>{
-        let mut $f = $crate::try_!($f.debug_tuple(stringify!($variant)));
+        let mut $f = $f.debug_tuple(stringify!($variant));
         $($(
             $crate::__impl_debug_field!(
                 @call_fmt_tuple
@@ -466,38 +409,21 @@ macro_rules! __impl_debug_enum {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __impl_debug_field {
-    (@call_len $fmt:ident, $field_name:ident $(,)?) => {
-        $field_name.const_debug_len($fmt.field(stringify!($field_name)));
-    };
-    (@call_len $fmt:ident, $field_name:ident : $renamed:ident $(,)?) => {
-        $renamed.const_debug_len($fmt.field(stringify!($field_name)));
-    };
-    (@call_len $fmt:ident, $field_name:ident $(: $renamed:ident)? => $expr:expr $(,)?) => {
-        $expr.const_debug_len($fmt.field(stringify!($field_name)));
-    };
     (@call_fmt $fmt:ident, $field_name:ident $(,)?) => {
-        $crate::try_!(
-            $field_name.const_debug_fmt($crate::try_!($fmt.field(stringify!($field_name))))
-        );
+        $crate::try_!($field_name.const_debug_fmt($fmt.field(stringify!($field_name))));
     };
     (@call_fmt $fmt:ident, $field_name:ident : $renamed:ident $(,)?) => {
-        $crate::try_!($renamed.const_debug_fmt($crate::try_!($fmt.field(stringify!($field_name)))));
+        $crate::try_!($renamed.const_debug_fmt($fmt.field(stringify!($field_name))));
     };
     (@call_fmt $fmt:ident, $field_name:ident $(: $renamed:ident)? => $expr:expr $(,)?) => {
-        $crate::try_!($expr.const_debug_fmt($crate::try_!($fmt.field(stringify!($field_name)))));
+        $crate::try_!($expr.const_debug_fmt($fmt.field(stringify!($field_name))));
     };
 
     // Tuple fields
-    (@call_len_tuple $fmt:ident, $field_name:ident $(,)?) => {
-        $field_name.const_debug_len($fmt.field());
-    };
-    (@call_len_tuple $fmt:ident, $field_name:ident => $expr:expr $(,)?) => {
-        $expr.const_debug_len($fmt.field());
-    };
     (@call_fmt_tuple $fmt:ident, $field_name:ident $(,)?) => {
-        $crate::try_!($field_name.const_debug_fmt($crate::try_!($fmt.field())));
+        $crate::try_!($field_name.const_debug_fmt($fmt.field()));
     };
     (@call_fmt_tuple $fmt:ident, $field_name:ident => $expr:expr $(,)?) => {
-        $crate::try_!($expr.const_debug_fmt($crate::try_!($fmt.field())));
+        $crate::try_!($expr.const_debug_fmt($fmt.field()));
     };
 }

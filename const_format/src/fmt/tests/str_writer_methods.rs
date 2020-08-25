@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use crate::{
     fmt::str_writer::saturate_range,
     fmt::{Error, FormattingFlags, FormattingMode, StrWriter},

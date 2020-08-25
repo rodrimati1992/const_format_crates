@@ -88,7 +88,7 @@ macro_rules! write_integer_fn {
             #[doc = $ty_name]
             /// with Display formatting.
             pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-                f.w().$display_fn(self.0)
+                f.$display_fn(self.0)
             }
 
             /// Writes a
@@ -96,7 +96,7 @@ macro_rules! write_integer_fn {
             /// with Debug formatting.
             pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                 let flags = f.flags();
-                f.w().$debug_fn(self.0, flags)
+                f.$debug_fn(self.0, flags)
             }
         }
     };
@@ -504,9 +504,15 @@ impl StrWriter {
         &self.buffer[..self.len]
     }
 
+    // For borrowing this mutably in macros, without getting nested mutable references.
+    #[inline(always)]
+    pub const fn borrow_mutably(&mut self) -> &mut Self {
+        self
+    }
+
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::new(flags, self)
+        Formatter::with_strwriter(flags, self)
     }
 
     /// Truncates this `StrWriter` to `length`.
@@ -534,3 +540,5 @@ impl StrWriter {
         self.len = 0;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////

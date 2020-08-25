@@ -80,8 +80,8 @@ impl ExpandInto {
                 let span = local_variable.span();
 
                 quote_spanned!(span=>
-                    #cratep::coerce_to_fmt!(#local_variable)
-                        .#len_method(&mut #strlen.make_formatting_length(#flags));
+                    let _ = #cratep::coerce_to_fmt!(#local_variable)
+                        .#len_method(&mut #strlen.make_formatter(#flags));
                 )
             }
         }

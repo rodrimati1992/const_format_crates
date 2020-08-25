@@ -1,5 +1,5 @@
 use crate::{
-    fmt::{Error, Formatter, FormattingLength},
+    fmt::{Error, Formatter},
     marker_traits::type_kind::{GetTypeKind, IsStdKind, TypeKindMarker},
     wrapper_types::PWrapper,
 };
@@ -25,14 +25,6 @@ impl<T> TypeKindMarker<IsStdKind, Range<usize>, T> {
 
 impl PWrapper<Range<usize>> {
     const RANGE: &'static str = "..";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(self.0.start).const_debug_len(f);
-        f.add_len(Self::RANGE_LEN);
-        PWrapper(self.0.end).const_debug_len(f);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -59,13 +51,6 @@ impl<T> TypeKindMarker<IsStdKind, RangeFrom<usize>, T> {
 
 impl PWrapper<RangeFrom<usize>> {
     const RANGE: &'static str = "..";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(self.0.start).const_debug_len(f);
-        f.add_len(Self::RANGE_LEN);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -91,13 +76,6 @@ impl<T> TypeKindMarker<IsStdKind, RangeTo<usize>, T> {
 
 impl PWrapper<RangeTo<usize>> {
     const RANGE: &'static str = "..";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(Self::RANGE_LEN);
-        PWrapper(self.0.end).const_debug_len(f);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -126,13 +104,6 @@ impl<T> TypeKindMarker<IsStdKind, RangeToInclusive<usize>, T> {
 
 impl PWrapper<RangeToInclusive<usize>> {
     const RANGE: &'static str = "..=";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(Self::RANGE_LEN);
-        PWrapper(self.0.end).const_debug_len(f);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -158,14 +129,6 @@ impl<T> TypeKindMarker<IsStdKind, RangeInclusive<usize>, T> {
 
 impl PWrapper<RangeInclusive<usize>> {
     const RANGE: &'static str = "..=";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(*self.0.start()).const_debug_len(f);
-        f.add_len(Self::RANGE_LEN);
-        PWrapper(*self.0.end()).const_debug_len(f);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -192,12 +155,6 @@ impl<T> TypeKindMarker<IsStdKind, RangeFull, T> {
 
 impl PWrapper<RangeFull> {
     const RANGE: &'static str = "..";
-    const RANGE_LEN: usize = Self::RANGE.len();
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(Self::RANGE_LEN);
-    }
 
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {

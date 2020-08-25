@@ -169,10 +169,9 @@ pub(crate) fn writec_macro_impl(
         .map(|ei| ei.fmt_call(&cratep, &strwriter));
 
     Ok(quote! {
-        match ((#writer_expr).strwriter(), #(&(#expr),)*) {
+        match ((#writer_expr).borrow_mutably(), #(&(#expr),)*) {
             (#strwriter, #(#locals,)*) => {
                 loop {
-                    let #strwriter: &mut #cratep::pmr::StrWriter = #strwriter;
                     #(
                         #cratep::unwrap_or_else!(
                             #writing_formatted,

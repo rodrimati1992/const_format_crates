@@ -1,5 +1,7 @@
+#![allow(non_camel_case_types)]
+
 use crate::{
-    fmt::{ComputeStrLength, Error, FormattingFlags, FormattingLength, StrWriter},
+    fmt::{ComputeStrLength, Error, FormattingFlags, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -71,7 +73,7 @@ macro_rules! declare_test_case_fns {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
 
             let mut str_len = ComputeStrLength::new();
-            this.const_debug_len(&mut str_len.make_formatting_length(flags));
+            try_!(this.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
             Ok(str_len.len())
         }
@@ -84,7 +86,7 @@ macro_rules! declare_test_case_fns {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
 
             let mut str_len = ComputeStrLength::new();
-            this.const_debug_len(&mut str_len.make_formatting_length(flags));
+            try_!(this.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
             Ok(str_len.len())
         }
@@ -170,6 +172,7 @@ BracedStruct {
     );
 }
 
+#[allow(dead_code)]
 struct BracedStructNE<T: 'static> {
     a: T,
     b: &'static [T],
@@ -332,6 +335,7 @@ fn enum_debug_impl() {
     }
 }
 
+#[allow(dead_code)]
 enum EnumA_NE<T> {
     Tupled(T, u8, ()),
     Braced {

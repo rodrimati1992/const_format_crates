@@ -65,7 +65,6 @@ fn write_from_consts() {
     };
 
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().clear();
         const X: u32 = FOO.x;
         const Y: &str = FOO.y;
         try_!(writec!(f, "{X:},{X:?},{X:#x},{X:#b},{Y},{Y:?}"));
@@ -83,7 +82,6 @@ fn write_from_consts() {
 #[test]
 fn named_parameters() {
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().clear();
         try_!(writec!(
             f,
             "{x},{y},{},{},{x:b},{y:x},{:?}",

@@ -1,9 +1,7 @@
 // use crate::fmt::Error;
 
 #[cfg(feature = "with_fmt")]
-use crate::fmt::{Error, Formatter, FormattingLength};
-
-use crate::wrapper_types::PWrapper;
+use crate::fmt::{Error, Formatter};
 
 use core::fmt::{self, Display};
 
@@ -34,12 +32,19 @@ impl<'a> AsciiStr<'a> {
         Ok(AsciiStr(s))
     }
 
+    #[inline(always)]
+    pub const fn len(self) -> usize {
+        self.0.len()
+    }
+
     /// Accessor for the wrapped ascii string.
+    #[inline(always)]
     pub const fn as_bytes(self) -> &'a [u8] {
         self.0
     }
 
     /// Accessor for the wrapped ascii string.
+    #[inline]
     pub fn as_str(self) -> &'a str {
         unsafe { core::str::from_utf8_unchecked(self.0) }
     }
@@ -70,21 +75,12 @@ impl Display for NotAsciiError {
 
 #[cfg(feature = "with_fmt")]
 impl AsciiStr<'_> {
-    pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(self.0.len());
-    }
-
-    #[inline(always)]
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        f.add_len(PWrapper(self.0).compute_utf8_debug_len());
-    }
-
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().write_whole_ascii(*self)
+        f.write_whole_ascii(*self)
     }
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.w().write_whole_ascii_debug(*self)
+        f.write_whole_ascii_debug(*self)
     }
 }
 
@@ -150,7 +146,7 @@ mod tests {
             try_!(ascii.const_debug_fmt(&mut writer.make_formatter(flags)));
 
             let mut str_len = ComputeStrLength::new();
-            ascii.const_debug_len(&mut str_len.make_formatting_length(flags));
+            try_!(ascii.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
             Ok(str_len.len())
         }
@@ -163,7 +159,7 @@ mod tests {
             try_!(ascii.const_display_fmt(&mut writer.make_formatter(flags)));
 
             let mut str_len = ComputeStrLength::new();
-            ascii.const_display_len(&mut str_len.make_formatting_length(flags));
+            try_!(ascii.const_display_fmt(&mut str_len.make_formatter(flags)));
 
             Ok(str_len.len())
         }

@@ -3,8 +3,7 @@ use crate::{
     pargument::Integer,
 };
 
-#[cfg(feature = "with_fmt")]
-use crate::fmt::FormattingLength;
+use core::ops::Range;
 
 #[cfg(test)]
 mod tests;
@@ -67,20 +66,6 @@ macro_rules! impl_number_of_digits {
         $len
     }};
     (@shared $This:ty, $bits:tt)=>{
-        #[cfg(feature = "with_fmt")]
-        impl PWrapper<$This> {
-            pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-                let len = self.compute_display_len(f.flags());
-                f.add_len(len);
-            }
-
-            #[inline(always)]
-            pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-                let len = self.compute_debug_len(f.flags());
-                f.add_len(len);
-            }
-        }
-
         impl PWrapper<$This> {
             #[allow(unused_mut,unused_variables)]
             #[doc(hidden)]
@@ -180,20 +165,6 @@ type IWord = i128;
 
 macro_rules! impl_for_xsize {
     ($XSize:ident, $XWord:ident) => {
-        #[cfg(feature = "with_fmt")]
-        impl PWrapper<$XSize> {
-            pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-                let len = self.compute_display_len(f.flags());
-                f.add_len(len);
-            }
-
-            #[inline(always)]
-            pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-                let len = self.compute_debug_len(f.flags());
-                f.add_len(len);
-            }
-        }
-
         impl PWrapper<$XSize> {
             #[inline(always)]
             #[doc(hidden)]
@@ -351,9 +322,12 @@ impl PWrapper<Integer> {
 
 impl PWrapper<&[u8]> {
     pub const fn compute_utf8_debug_len(self) -> usize {
+        self.compute_utf8_debug_len_in_range(0..self.0.len())
+    }
+    pub const fn compute_utf8_debug_len_in_range(self, mut range: Range<usize>) -> usize {
         let mut sum = self.0.len();
-        __for_range! {i in 0..self.0.len() =>
-            let c = self.0[i];
+        while range.start < range.end {
+            let c = self.0[range.start];
             if c < 128 {
                 let shifted = 1 << c;
                 if (FOR_ESCAPING.is_escaped & shifted) != 0 {
@@ -363,8 +337,8 @@ impl PWrapper<&[u8]> {
                         1 // Escaped with a backslash
                     };
                 }
-
             }
+            range.start += 1;
         }
         sum + 2 // The quote characters
     }

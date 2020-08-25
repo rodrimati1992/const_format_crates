@@ -92,8 +92,8 @@ impl FormattingFlags {
     #[allow(dead_code)]
     pub(crate) fn len_method_name(self) -> Ident {
         let name = match self.formatting {
-            Formatting::Display => "const_display_len",
-            Formatting::Debug { .. } => "const_debug_len",
+            Formatting::Display => "const_display_fmt",
+            Formatting::Debug { .. } => "const_debug_fmt",
         };
 
         Ident::new(name, Span::mixed_site())

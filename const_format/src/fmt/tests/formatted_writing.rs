@@ -1,8 +1,5 @@
 use crate::{
-    fmt::{
-        ComputeStrLength, Error, Formatter, FormattingFlags, FormattingLength, FormattingMode,
-        StrWriter,
-    },
+    fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -14,19 +11,11 @@ struct Foo {
 }
 
 impl Foo {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        let mut f = f.debug_struct("Foo");
-        PWrapper(self.x).const_debug_len(f.field("x"));
-        PWrapper(self.y).const_debug_len(f.field("y"));
-        PWrapper(self.z).const_debug_len(f.field("z"));
-        f.finish()
-    }
-
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        let mut f = try_!(f.debug_struct("Foo"));
-        try_!(PWrapper(self.x).const_debug_fmt(try_!(f.field("x"))));
-        try_!(PWrapper(self.y).const_debug_fmt(try_!(f.field("y"))));
-        try_!(PWrapper(self.z).const_debug_fmt(try_!(f.field("z"))));
+        let mut f = f.debug_struct("Foo");
+        try_!(PWrapper(self.x).const_debug_fmt(f.field("x")));
+        try_!(PWrapper(self.y).const_debug_fmt(f.field("y")));
+        try_!(PWrapper(self.z).const_debug_fmt(f.field("z")));
         f.finish()
     }
 }
@@ -40,21 +29,12 @@ struct Bar {
 }
 
 impl Bar {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
-        let mut f = f.debug_struct("Bar");
-        PWrapper(self.x).const_debug_len(f.field("x"));
-        PWrapper(self.y).const_debug_len(f.field("y"));
-        PWrapper::slice(&self.z).const_debug_len(f.field("z"));
-        self.foo.const_debug_len(f.field("foo"));
-        f.finish()
-    }
-
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        let mut f = try_!(f.debug_struct("Bar"));
-        try_!(PWrapper(self.x).const_debug_fmt(try_!(f.field("x"))));
-        try_!(PWrapper(self.y).const_debug_fmt(try_!(f.field("y"))));
-        try_!(PWrapper::slice(&self.z).const_debug_fmt(try_!(f.field("z"))));
-        try_!(self.foo.const_debug_fmt(try_!(f.field("foo"))));
+        let mut f = f.debug_struct("Bar");
+        try_!(PWrapper(self.x).const_debug_fmt(f.field("x")));
+        try_!(PWrapper(self.y).const_debug_fmt(f.field("y")));
+        try_!(PWrapper::slice(&self.z).const_debug_fmt(f.field("z")));
+        try_!(self.foo.const_debug_fmt(f.field("foo")));
         f.finish()
     }
 }
@@ -70,7 +50,7 @@ fn check_debug_formatting() {
         try_!(bar.const_debug_fmt(&mut writer.make_formatter(flags)));
 
         let mut str_len = ComputeStrLength::new();
-        bar.const_debug_len(&mut str_len.make_formatting_length(flags));
+        try_!(bar.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
         Ok(str_len.len())
     }
@@ -226,18 +206,10 @@ Bar {
 pub struct Set(&'static [Foo]);
 
 impl Set {
-    pub const fn const_debug_len(&self, f: &mut FormattingLength<'_>) {
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let mut f = f.debug_set();
         __for_range! {i in 0..self.0.len()=>
-            self.0[i].const_debug_len(f.entry());
-        }
-        f.finish()
-    }
-
-    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        let mut f = try_!(f.debug_set());
-        __for_range! {i in 0..self.0.len()=>
-            try_!(self.0[i].const_debug_fmt(try_!(f.entry())));
+            try_!(self.0[i].const_debug_fmt(f.entry()));
         }
         f.finish()
     }
@@ -253,7 +225,7 @@ fn check_set_formatting() {
         try_!(set.const_debug_fmt(&mut writer.make_formatter(flags)));
 
         let mut str_len = ComputeStrLength::new();
-        set.const_debug_len(&mut str_len.make_formatting_length(flags));
+        try_!(set.const_debug_fmt(&mut str_len.make_formatter(flags)));
 
         Ok(str_len.len())
     }

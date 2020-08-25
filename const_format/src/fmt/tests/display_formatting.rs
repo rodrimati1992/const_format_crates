@@ -1,8 +1,5 @@
 use crate::{
-    fmt::{
-        ComputeStrLength, Error, Formatter, FormattingFlags, FormattingLength, FormattingMode,
-        StrWriter,
-    },
+    fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter},
     wrapper_types::PWrapper,
 };
 
@@ -15,16 +12,6 @@ struct DisplayFoo {
 }
 
 impl DisplayFoo {
-    pub const fn const_display_len(&self, f: &mut FormattingLength<'_>) {
-        PWrapper(self.x).const_display_len(f);
-        PWrapper("  ").const_display_len(f);
-        PWrapper(self.y).const_display_len(f);
-        PWrapper("  ").const_display_len(f);
-        PWrapper(self.z).const_display_len(f);
-        PWrapper("  ").const_display_len(f);
-        PWrapper(self.debug).const_debug_len(f);
-    }
-
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         try_!(PWrapper(self.x).const_display_fmt(f));
         try_!(PWrapper("  ").const_display_fmt(f));
@@ -45,7 +32,7 @@ const fn inner(
     try_!(this.const_display_fmt(&mut writer.make_formatter(flags)));
 
     let mut str_len = ComputeStrLength::new();
-    this.const_display_len(&mut str_len.make_formatting_length(flags));
+    try_!(this.const_display_fmt(&mut str_len.make_formatter(flags)));
 
     Ok(str_len.len())
 }
