@@ -11,5 +11,5 @@ pub use self::{
     str_writer::StrWriter,
 };
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "only_new_tests")))]
 mod tests;

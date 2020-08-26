@@ -15,13 +15,12 @@ mod fmt_macros;
 #[cfg(feature = "with_fmt")]
 mod impl_fmt;
 
-/// Equivalent to the old `try` macro, or the `?` operator.
+/// For returning early on an error, otherwise evaluating to `()`.
 #[macro_export]
 macro_rules! try_ {
     ($e:expr) => {
-        match $e {
-            $crate::pmr::Ok(x) => x,
-            $crate::pmr::Err(e) => return Err(e),
+        if let $crate::pmr::Err(e) = $e {
+            return $crate::pmr::Err(e);
         }
     };
 }

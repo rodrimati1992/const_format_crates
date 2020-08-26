@@ -82,6 +82,11 @@
 #![no_std]
 #![cfg_attr(feature = "with_fmt", feature(const_mut_refs))]
 
+extern crate self as const_format;
+
+#[cfg(feature = "derive")]
+pub use const_format_proc_macros::ConstDebug;
+
 #[macro_use]
 mod macros;
 
@@ -126,7 +131,7 @@ pub mod pmr {
 
     #[cfg(feature = "with_fmt")]
     pub use crate::{
-        fmt::{ComputeStrLength, Error, StrWriter},
+        fmt::{ComputeStrLength, Error, Formatter, StrWriter},
         marker_traits::type_kind::{GetTypeKind, IsNotStdKind, IsStdKind, TypeKindMarker},
     };
 

@@ -74,7 +74,9 @@ impl Display for NotAsciiError {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(feature = "with_fmt")]
-impl AsciiStr<'_> {
+impl_fmt! {
+    impl AsciiStr<'_>;
+
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_whole_ascii(*self)
     }

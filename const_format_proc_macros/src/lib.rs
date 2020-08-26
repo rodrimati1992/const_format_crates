@@ -2,7 +2,16 @@ use proc_macro::TokenStream as TokenStream1;
 
 use proc_macro2::TokenStream as TokenStream2;
 
+#[macro_use]
+mod macros;
+
+#[cfg(feature = "derive")]
+mod datastructure;
+
+mod derive_debug;
+
 mod format_args;
+
 mod format_str_parsing;
 
 mod format_macro;
@@ -57,6 +66,17 @@ pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
         .unwrap_or_else(compile_err_empty_str)
         .into()
 }
+
+#[doc(hidden)]
+#[proc_macro_derive(ConstDebug, attributes(cdeb))]
+pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
+    syn::parse(input)
+        .and_then(derive_debug::derive_constdebug_impl)
+        .unwrap_or_else(|e| e.to_compile_error())
+        .into()
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
 fn parse_or_compile_err<P, F>(input: TokenStream1, f: F) -> TokenStream2

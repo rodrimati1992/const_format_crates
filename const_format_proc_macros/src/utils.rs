@@ -1,12 +1,26 @@
 use proc_macro2::Span;
 
+use quote::ToTokens;
+
 use std::{
+    fmt::Display,
     mem::{self, ManuallyDrop},
     ops::{Deref, DerefMut},
 };
 
 pub(crate) fn dummy_ident() -> syn::Ident {
     syn::Ident::new("__dummy__", Span::mixed_site())
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+pub fn spanned_err(tokens: &dyn ToTokens, display: &dyn Display) -> syn::Error {
+    syn::Error::new_spanned(tokens, display)
+}
+
+#[allow(dead_code)]
+pub fn syn_err(span: Span, display: &dyn Display) -> syn::Error {
+    syn::Error::new(span, display)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

@@ -22,8 +22,12 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
 # Remember to disable the "with_fmt" feature before releasing this crate!!
-default = ["with_fmt"]
+default = ["with_fmt", "derive"]
 with_fmt = []
+derive = ["with_fmt"]
+
+# "private" features
+only_new_tests = []
 
 [dependencies.const_format_proc_macros]
 version = "=0.1.0"
