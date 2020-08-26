@@ -25,6 +25,7 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 default = ["with_fmt", "derive"]
 with_fmt = []
 derive = ["with_fmt"]
+debug = ["const_format_proc_macros/debug"]
 
 # "private" features
 only_new_tests = []

@@ -24,6 +24,7 @@ proc-macro = true
 [features]
 default = ["derive"]
 derive = ["syn/derive", "syn/printing"]
+debug = ["syn/extra-traits"]
 
 [dependencies]
 quote = "1.0.7"

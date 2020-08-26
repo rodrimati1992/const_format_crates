@@ -3,7 +3,7 @@ use crate::{
     utils::LinearResult,
 };
 
-use super::syntax::ImplHeader;
+use super::{syntax::ImplHeader, type_detection};
 
 use quote::ToTokens;
 
@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 pub(crate) struct ConstDebugConfig<'a> {
     pub(crate) debug_print: bool,
     pub(crate) impls: Vec<ImplHeader>,
-    pub(crate) field_map: FieldMap<FieldConfig>,
+    pub(crate) field_map: FieldMap<FieldConfig<'a>>,
     _marker: PhantomData<&'a ()>,
 }
 
@@ -40,22 +40,37 @@ impl<'a> ConstDebugConfig<'a> {
 struct ConstDebugAttrs<'a> {
     debug_print: bool,
     impls: Vec<ImplHeader>,
-    field_map: FieldMap<FieldConfig>,
+    field_map: FieldMap<FieldConfig<'a>>,
     errors: LinearResult<()>,
     _marker: PhantomData<&'a ()>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) struct FieldConfig {
-    pub(crate) how_to_fmt: HowToFmt,
+pub(crate) struct FieldConfig<'a> {
+    pub(crate) how_to_fmt: HowToFmt<'a>,
 }
 
-pub(crate) enum HowToFmt {
-    // `coerce_to_fmt!(&field).const_debug_fmt(f)`
+pub(crate) enum HowToFmt<'a> {
+    /// coerce_to_fmt!(&field).const_debug_fmt(f)`
     Regular,
-    // `Doesn't print the field.
+    /// Doesn't print the field.
     Ignore,
+    /// A slice or an array
+    Slice,
+    /// A single field tuple struct, èg: `struct Foo(u32);;`
+    Option_,
+    /// A single field tuple struct, èg: `struct Foo(u32);;`
+    /// The path of the field is parsed from the type, erroring if it's not a path.
+    Newtype(&'a syn::Ident),
+    /// The function used to format the field.
+    With(syn::Path),
+    //// The macro used to format the field,
+    //// it's expected to be callable as `themacro!(var, formatter);`.
+    WithMacro(syn::Path),
+    /// The newtype used to format the field, taking the field by reference.
+    /// eg: `struct Foo<'a>(&'a u32);`.
+    WithWrapper(syn::Path),
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +87,8 @@ pub(crate) fn parse_attrs_for_derive<'a>(
     let mut this = ConstDebugAttrs {
         debug_print: false,
         impls: Vec::new(),
-        field_map: FieldMap::with(ds, |_| FieldConfig {
-            how_to_fmt: HowToFmt::Regular,
+        field_map: FieldMap::with(ds, |f| FieldConfig {
+            how_to_fmt: type_detection::detect_type_formatting(f.ty),
         }),
         errors: LinearResult::ok(()),
         _marker: PhantomData,
@@ -134,15 +149,16 @@ fn parse_attr_list<'a>(
     Ok(())
 }
 
+fn make_err(tokens: &dyn ToTokens) -> syn::Error {
+    spanned_err!(tokens, "unrecognized attribute")
+}
+
 /// Parses the contents of a `#[sabi( .. )]` attribute.
 fn parse_sabi_attr<'a>(
     this: &mut ConstDebugAttrs<'a>,
     pctx: ParseContext<'a>,
     attr: Meta,
 ) -> Result<(), syn::Error> {
-    fn make_err(tokens: &dyn ToTokens) -> syn::Error {
-        spanned_err!(tokens, "unrecognized attribute")
-    }
     match (pctx, attr) {
         (ParseContext::Field { field, .. }, Meta::Path(path)) => {
             let f_config = &mut this.field_map[field.index];
@@ -151,6 +167,39 @@ fn parse_sabi_attr<'a>(
                 f_config.how_to_fmt = HowToFmt::Ignore;
             } else {
                 return Err(make_err(&path));
+            }
+        }
+        (ParseContext::Field { field, .. }, Meta::NameValue(nv)) => {
+            let f_config = &mut this.field_map[field.index];
+
+            if nv.path.is_ident("with") {
+                f_config.how_to_fmt = HowToFmt::With(parse_lit(&nv.lit)?);
+            } else if nv.path.is_ident("with_macro") {
+                f_config.how_to_fmt = HowToFmt::WithMacro(parse_lit(&nv.lit)?);
+            } else if nv.path.is_ident("with_wrapper") {
+                f_config.how_to_fmt = HowToFmt::WithWrapper(parse_lit(&nv.lit)?);
+            } else {
+                return Err(make_err(&nv));
+            }
+        }
+        (ParseContext::Field { field, .. }, Meta::List(list)) => {
+            let f_config = &mut this.field_map[field.index];
+
+            if list.path.is_ident("is_a") {
+                match list.nested.len() {
+                    0 => return Err(make_err(&list)),
+                    1 => (),
+                    _ => return_spanned_err!(
+                        list,
+                        "The `#[cdeb(is_a())` attribute must only specify one kind of type."
+                    ),
+                }
+                with_nested_meta("is_a", list.nested, |attr| {
+                    f_config.how_to_fmt = parse_the_is_a_attribute(attr, field)?;
+                    Ok(())
+                })?;
+            } else {
+                return Err(make_err(&list));
             }
         }
         (ParseContext::TypeAttr { .. }, Meta::Path(path)) => {
@@ -180,6 +229,31 @@ fn parse_sabi_attr<'a>(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+fn parse_the_is_a_attribute<'a>(
+    attr: syn::Meta,
+    f: &Field<'a>,
+) -> Result<HowToFmt<'a>, syn::Error> {
+    match attr {
+        Meta::Path(path) => {
+            if path.is_ident("array") || path.is_ident("slice") {
+                Ok(HowToFmt::Slice)
+            } else if path.is_ident("Option") || path.is_ident("option") {
+                Ok(HowToFmt::Option_)
+            } else if path.is_ident("newtype") {
+                let newtype = type_detection::parse_type_as_ident(f.ty)?;
+                Ok(HowToFmt::Newtype(newtype))
+            } else if path.is_ident("non_std") || path.is_ident("not_std") {
+                Ok(HowToFmt::Regular)
+            } else {
+                Err(make_err(&path))
+            }
+        }
+        _ => Err(make_err(&attr)),
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 fn parse_lit<T>(lit: &syn::Lit) -> Result<T, syn::Error>
 where
     T: syn::parse::Parse,
@@ -204,10 +278,13 @@ fn parse_expr(lit: syn::Lit) -> Result<syn::Expr, syn::Error> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-pub fn with_nested_meta<I, F>(attr_name: &str, iter: I, mut f: F) -> Result<(), syn::Error>
+pub fn with_nested_meta<F>(
+    attr_name: &str,
+    iter: syn::punctuated::Punctuated<NestedMeta, syn::Token!(,)>,
+    mut f: F,
+) -> Result<(), syn::Error>
 where
     F: FnMut(Meta) -> Result<(), syn::Error>,
-    I: IntoIterator<Item = NestedMeta>,
 {
     for repr in iter {
         match repr {

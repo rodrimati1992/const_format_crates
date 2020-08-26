@@ -2,12 +2,13 @@ use crate::datastructure::{DataStructure, DataVariant, Field, StructKind};
 
 use proc_macro2::{Span, TokenStream as TokenStream2};
 
-use quote::{quote, quote_spanned, TokenStreamExt};
+use quote::{quote, quote_spanned, quote_spanned as quote_s, ToTokens, TokenStreamExt};
 
 use syn::{DeriveInput, Ident};
 
 mod attribute_parsing;
 mod syntax;
+mod type_detection;
 
 use self::attribute_parsing::HowToFmt;
 
@@ -82,7 +83,7 @@ pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2,
                     return None;
                 }
 
-                let field_span = f.pattern_ident().span();
+                let fspan = f.pattern_ident().span();
 
                 let field_name_str = match variant.kind {
                     StructKind::Braced => Some(f.ident.to_string()),
@@ -90,14 +91,20 @@ pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2,
                 }
                 .into_iter();
 
-                let mut field_ts = quote_spanned!(field_span=>
+                let mut field_ts = quote_spanned!(fspan=>
                     let mut field_formatter = formatter.field(#(#field_name_str)*);
                 );
 
-                match how_to_fmt {
-                    HowToFmt::Regular => field_ts.append_all(coerce_and_fmt(&cratep, f)),
+                field_ts.append_all(match &how_to_fmt {
+                    HowToFmt::Regular => coerce_and_fmt(&cratep, f),
                     HowToFmt::Ignore => unreachable!(),
-                }
+                    HowToFmt::Slice => fmt_slice(&cratep, f),
+                    HowToFmt::Option_ => fmt_option(&cratep, f),
+                    HowToFmt::Newtype(newtype) => fmt_newtype(&cratep, newtype, f),
+                    HowToFmt::With(with) => call_with_function(&cratep, f, with),
+                    HowToFmt::WithMacro(with) => call_with_macro(&cratep, f, with),
+                    HowToFmt::WithWrapper(with) => call_with_wrapper(&cratep, f, with),
+                });
 
                 Some(field_ts)
             });
@@ -137,17 +144,134 @@ pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2,
 // Copying the definitino of the `const_format::coerce_to_fn` macro here
 // because the compiler points inside the coerce_to_fn macro otherwise
 fn coerce_and_fmt(cratep: &TokenStream2, field: &Field<'_>) -> TokenStream2 {
-    let field_ty = field.ty;
     let var = field.pattern_ident();
-    let field_span = var.span();
+    let fspan = var.span();
 
-    quote_spanned!(field_span=>
-        let marker = <#field_ty as #cratep::pmr::GetTypeKind>::KIND;
+    quote_spanned!(fspan=>
+        let mut marker = #cratep::pmr::TypeKindMarker::NEW;
+        if false {
+            marker = marker.infer_type(#var);
+        }
         #cratep::try_!(
             marker.coerce(marker.unreference(#var))
                 .const_debug_fmt(field_formatter)
         );
     )
+}
+
+fn fmt_slice(cratep: &TokenStream2, field: &Field<'_>) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+
+    let call = call_debug_fmt(
+        cratep,
+        quote_s!(fspan=> &#var[n]),
+        quote_s!(fspan=> slice_fmt.entry()),
+        fspan,
+    );
+
+    quote_spanned!(fspan=>{
+        let mut slice_fmt = field_formatter.debug_list();
+        let mut n = 0;
+        let len = #var.len();
+        while n != len {
+            #call
+            n += 1;
+        }
+        #cratep::try_!(slice_fmt.finish());
+    })
+}
+
+fn fmt_option(cratep: &TokenStream2, field: &Field<'_>) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+
+    let call = call_debug_fmt(
+        cratep,
+        quote_s!(fspan=>val),
+        quote_s!(fspan=>f.field()),
+        fspan,
+    );
+
+    quote_spanned!(fspan=>
+        #cratep::try_!(match #var {
+            #cratep::pmr::Some(val) => {
+                let mut f = field_formatter.debug_tuple("Some");
+                #call
+                f.finish()
+            }
+            #cratep::pmr::None => field_formatter.write_whole_str("None"),
+        });
+    )
+}
+
+fn fmt_newtype(cratep: &TokenStream2, newtype: &syn::Ident, field: &Field<'_>) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+    let ty_str = newtype.to_token_stream().to_string();
+
+    let call = call_debug_fmt(
+        cratep,
+        quote_s!(fspan=> &#var.0 ),
+        quote_s!(fspan=> f.field() ),
+        fspan,
+    );
+
+    quote_spanned!(fspan=>{
+        #cratep::try_!({
+            let mut f = field_formatter.debug_tuple(#ty_str);
+            #call
+            f.finish()
+        });
+    })
+}
+
+fn call_with_function(cratep: &TokenStream2, field: &Field<'_>, func: &syn::Path) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+
+    quote_spanned!(fspan=> #cratep::try_!(#func(#var, field_formatter)); )
+}
+
+fn call_with_macro(cratep: &TokenStream2, field: &Field<'_>, macr: &syn::Path) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+
+    quote_spanned!(fspan=> #cratep::try_!(#macr!(#var, field_formatter)); )
+}
+
+fn call_with_wrapper(
+    cratep: &TokenStream2,
+    field: &Field<'_>,
+    newtype: &syn::Path,
+) -> TokenStream2 {
+    let var = field.pattern_ident();
+    let fspan = var.span();
+
+    quote_spanned!(fspan=>
+        #cratep::try_!(#newtype(#var).const_debug_fmt(field_formatter));
+    )
+}
+
+// Helper of the other `call_` functions
+fn call_debug_fmt(
+    cratep: &TokenStream2,
+    field: impl ToTokens,
+    formatter: impl ToTokens,
+    span: Span,
+) -> TokenStream2 {
+    quote_spanned!(span=>{
+        // Importing it like this because the error span is wrong otherwise
+        use #cratep::pmr::TypeKindMarker as __TypeKindMarker;
+
+        let mut marker = __TypeKindMarker::NEW;
+        if false {
+            marker = marker.infer_type(#field);
+        }
+        #cratep::try_!(
+            marker.coerce(marker.unreference(#field)).const_debug_fmt(#formatter)
+        );
+    })
 }
 
 fn get_where_clause_tokens(where_clause: &Option<syn::WhereClause>) -> TokenStream2 {
