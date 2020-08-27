@@ -251,7 +251,7 @@ pub mod pmr {
 
     #[cfg(feature = "fmt")]
     pub use crate::{
-        fmt::{ComputeStrLength, Error, Formatter, StrWriter},
+        fmt::{ComputeStrLength, Error, Formatter, StrWriter, StrWriterMut},
         format_marker::{FormatMarker, IsNotStdKind, IsStdKind, TypeKindMarker},
     };
 

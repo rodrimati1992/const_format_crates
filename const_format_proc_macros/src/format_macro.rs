@@ -93,7 +93,7 @@ pub(crate) fn formatc_macro_impl(
             let mut #strwriter = #cratep::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
             let mut error = match (#(&(#expr_b),)*) {
                 (#(#locals_b,)*) => loop {
-                    let #strwriter: &mut #cratep::pmr::StrWriter = &mut #strwriter;
+                    let mut #strwriter = #cratep::pmr::StrWriterMut::new(&mut #strwriter);
                     #(
                         #cratep::unwrap_or_else!(
                             #writing_formatted,
@@ -170,7 +170,7 @@ pub(crate) fn writec_macro_impl(
 
     Ok(quote! {
         match ((#writer_expr).borrow_mutably(), #(&(#expr),)*) {
-            (#strwriter, #(#locals,)*) => {
+            (mut #strwriter, #(#locals,)*) => {
                 loop {
                     #(
                         #cratep::unwrap_or_else!(

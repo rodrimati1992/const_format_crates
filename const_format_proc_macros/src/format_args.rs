@@ -86,10 +86,10 @@ impl ExpandInto {
             }
         }
     }
-    pub(crate) fn fmt_call(&self, cratep: &TokenStream2, strwriter: &Ident) -> TokenStream2 {
+    pub(crate) fn fmt_call(&self, cratep: &TokenStream2, formatter: &Ident) -> TokenStream2 {
         let flags = self.formatting_flags().tokens(cratep);
         match self {
-            ExpandInto::Str(str) => quote!( #strwriter.write_whole_str(#str) ),
+            ExpandInto::Str(str) => quote!( #formatter.write_whole_str(#str) ),
             ExpandInto::Formatted(fmted) => {
                 let fmt_method = fmted.format.fmt_method_name();
                 let local_variable = &fmted.local_variable;
@@ -97,7 +97,7 @@ impl ExpandInto {
 
                 quote_spanned!(span=>
                     #cratep::coerce_to_fmt!(&#local_variable)
-                        .#fmt_method(&mut #strwriter.make_formatter(#flags))
+                        .#fmt_method(&mut #formatter.make_formatter(#flags))
                 )
             }
         }

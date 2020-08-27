@@ -1,12 +1,12 @@
 use crate::{
-    fmt::{str_writer::saturate_range, Error, FormattingFlags, StrWriter},
+    fmt::{str_writer_mut::saturate_range, Error, FormattingFlags, StrWriterMut},
     wrapper_types::{AsciiStr, PWrapper},
 };
 
 use core::ops::Range;
 
 enum WriterBackend<'w> {
-    Str(&'w mut StrWriter),
+    Str(StrWriterMut<'w>),
     Length(&'w mut ComputeStrLength),
 }
 
@@ -52,10 +52,26 @@ pub struct Formatter<'w> {
 
 impl<'w> Formatter<'w> {
     #[inline]
-    pub const fn with_strwriter(flags: FormattingFlags, writer: &'w mut StrWriter) -> Self {
+    pub const fn new(flags: FormattingFlags, writer: StrWriterMut<'w>) -> Self {
         Self {
             flags,
             writer: WriterBackend::Str(writer),
+        }
+    }
+
+    ///
+    /// # Safety
+    ///
+    /// The bytes up to `len` in `buffer` must be valid utf8.
+    #[inline]
+    pub const unsafe fn from_custom(
+        flags: FormattingFlags,
+        len: &'w mut usize,
+        buffer: &'w mut [u8],
+    ) -> Self {
+        Self {
+            flags,
+            writer: WriterBackend::Str(StrWriterMut::from_custom(len, buffer)),
         }
     }
 
@@ -151,7 +167,7 @@ macro_rules! field_method_impl {
                 $($write_name_len)*
             }
             WriterBackend::Str($writer)=>{
-                let $writer = &mut **$writer;
+                let $writer = &mut *$writer;
 
                 let is_alternate = $self.fmt.flags.is_alternate();
                 let sep = match ($self.wrote_field, is_alternate) {
@@ -196,7 +212,7 @@ macro_rules! finish_method_impl {
                     Ok(())
                 }
                 WriterBackend::Str(writer) => {
-                    let writer = &mut **writer;
+                    let writer = &mut *writer;
 
                     if $self.fmt.flags.is_alternate() {
                         try_!(writer.write_whole_str(",\n"));
@@ -284,7 +300,7 @@ macro_rules! finish_listset_method_impl {
                 Ok(())
             }
             WriterBackend::Str(writer) => {
-                let writer = &mut **writer;
+                let writer = &mut *writer;
 
                 $self.fmt.flags = $self.fmt.flags.decrement_margin();
                 let margin = $self.fmt.flags.margin();

@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use crate::{
-    fmt::str_writer::saturate_range,
-    fmt::{Error, FormattingFlags, FormattingMode, StrWriter},
+    fmt::str_writer_mut::saturate_range,
+    fmt::{Error, FormattingFlags, FormattingMode, StrWriter, StrWriterMut},
     formatting::Formatting,
     test_utils::{RngExt, ALL_ASCII, ALL_ASCII_ESCAPED},
     wrapper_types::{AsciiStr, PWrapper},
@@ -19,6 +19,7 @@ macro_rules! write_integer_tests {
     ) => ({
         $({
             let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
+            let mut writer = writer.as_mut();
             let snapshot = writer.len();
             let mut string = ArrayString::<[u8; 1024]>::new();
 
@@ -34,11 +35,11 @@ macro_rules! write_integer_tests {
                     // Adding some padding at the end so that numbers can't accidentally overlap
                     writer.$display_fn(number).unwrap();
                     writer.write_whole_str("_").unwrap();
-                    writer.$debug_fn(number, flags.set_mode(FormattingMode::Regular)).unwrap();
+                    writer.$debug_fn(number, flags.unset_mode()).unwrap();
                     writer.write_whole_str("_").unwrap();
-                    writer.$debug_fn(number, flags.set_mode(FormattingMode::Binary)).unwrap();
+                    writer.$debug_fn(number, flags.set_binary_mode()).unwrap();
                     writer.write_whole_str("_").unwrap();
-                    writer.$debug_fn(number, flags.set_mode(FormattingMode::Hexadecimal)).unwrap();
+                    writer.$debug_fn(number, flags.set_hexadecimal_mode()).unwrap();
                     writer.write_whole_str("__").unwrap();
 
                     // TODO:
@@ -129,7 +130,7 @@ fn saturate_range_tests() {
 // fn write_str_debug
 
 struct WriteArgs<'sw, 's> {
-    writer: &'sw mut StrWriter,
+    writer: StrWriterMut<'sw>,
     input: &'s str,
     range: Range<usize>,
     sat_range: Range<usize>,
@@ -150,7 +151,11 @@ fn test_unescaped_str_fn(
         for end in 0..input.len() {
             for start in 0..end + 2 {
                 let writer: &mut StrWriter = &mut StrWriter::new([0; 192]);
+                let mut writer = writer.as_mut();
+
                 let toosmall: &mut StrWriter = &mut StrWriter::new([0; 8]);
+                let toosmall = toosmall.as_mut();
+
                 let range = start..end;
                 let sat_range = saturate_range(input_bytes, &range);
 
@@ -163,7 +168,7 @@ fn test_unescaped_str_fn(
                     sat_range: sat_range.clone(),
                 });
                 let res = write(WriteArgs {
-                    writer,
+                    writer: writer.reborrow(),
                     input,
                     range: range.clone(),
                     sat_range: sat_range.clone(),
@@ -201,24 +206,30 @@ fn test_unescaped_str_fn(
 #[test]
 fn write_str() {
     let rng = Rng::new();
-    test_unescaped_str_fn(Formatting::Display, &mut || rng.unicode_char(), &mut |p| {
-        p.writer.write_str(p.input, &p.range)
-    });
-    test_unescaped_str_fn(Formatting::Display, &mut || rng.unicode_char(), &mut |p| {
-        let input = p.input.get(p.sat_range).ok_or(Error::NotOnCharBoundary)?;
-        p.writer.write_whole_str(input)
-    });
+    test_unescaped_str_fn(
+        Formatting::Display,
+        &mut || rng.unicode_char(),
+        &mut |mut p| p.writer.write_str(p.input, &p.range),
+    );
+    test_unescaped_str_fn(
+        Formatting::Display,
+        &mut || rng.unicode_char(),
+        &mut |mut p| {
+            let input = p.input.get(p.sat_range).ok_or(Error::NotOnCharBoundary)?;
+            p.writer.write_whole_str(input)
+        },
+    );
 }
 
 #[test]
 fn write_ascii() {
     let rng = Rng::new();
     let mut rng_fn = || rng.char_('\0'..='\u{7F}');
-    test_unescaped_str_fn(Formatting::Display, &mut rng_fn, &mut |p| {
+    test_unescaped_str_fn(Formatting::Display, &mut rng_fn, &mut |mut p| {
         let ascii = AsciiStr::new(p.input.as_bytes()).unwrap();
         p.writer.write_ascii(ascii, &p.range)
     });
-    test_unescaped_str_fn(Formatting::Display, &mut rng_fn, &mut |p| {
+    test_unescaped_str_fn(Formatting::Display, &mut rng_fn, &mut |mut p| {
         let ascii = AsciiStr::new(&p.input.as_bytes()[p.sat_range]).unwrap();
         p.writer.write_whole_ascii(ascii)
     });
@@ -238,10 +249,10 @@ fn write_str_debug() {
                 break c;
             }
         };
-        test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |p| {
+        test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |mut p| {
             p.writer.write_str_debug(p.input, &p.range)
         });
-        test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |p| {
+        test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |mut p| {
             let input = p.input.get(p.sat_range).ok_or(Error::NotOnCharBoundary)?;
             p.writer.write_whole_str_debug(input)
         });
@@ -249,6 +260,8 @@ fn write_str_debug() {
 
     // Testing that all ascii characters are escaped as expected
     let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
+    let mut writer = writer.as_mut();
+
     let snapshot = writer.len();
     {
         writer.truncate(snapshot).unwrap();
@@ -279,7 +292,7 @@ fn write_str_debug() {
     // that can be found in ALL_ASCII_ESCAPED
     {
         let rng = Rng::new();
-        fn write_range(rng: &Rng, w: &mut StrWriter) -> Range<usize> {
+        fn write_range(rng: &Rng, mut w: StrWriterMut<'_>) -> Range<usize> {
             let gen_range = || rng.usize(..ALL_ASCII.len())..rng.usize(..ALL_ASCII.len());
             let start = w.len();
             while let Err(_) = w.write_str_debug(ALL_ASCII, &gen_range()) {}
@@ -290,9 +303,9 @@ fn write_str_debug() {
         for _ in 1..1000 {
             writer.truncate(snapshot).unwrap();
 
-            let range_a = write_range(&rng, writer);
-            let range_b = write_range(&rng, writer);
-            let range_c = write_range(&rng, writer);
+            let range_a = write_range(&rng, writer.reborrow());
+            let range_b = write_range(&rng, writer.reborrow());
+            let range_c = write_range(&rng, writer.reborrow());
 
             let written = writer.as_str();
 
@@ -327,12 +340,14 @@ fn returns_error() {
     const ZEROES_AROUND_STR: usize = 2;
 
     fn test_case_(writer: &mut StrWriter, s: &str, extra: usize) {
+        let str_writer_cap = writer.capacity();
+        let mut writer = writer.as_mut();
         writer.write_u8_display(0).unwrap();
         writer.write_u8_display(0).unwrap();
         let res = writer.write_whole_str_debug(s);
         assert_eq!(&writer.as_bytes()[..2], &b"00"[..]);
 
-        if writer.capacity() == extra {
+        if writer.capacity() == extra && str_writer_cap == extra {
             res.unwrap();
         } else {
             res.unwrap_err();
@@ -361,7 +376,8 @@ fn returns_error() {
 
 #[test]
 fn truncation() {
-    let writer: &mut StrWriter = &mut StrWriter::new([0; 4096]);
+    let str_writer: &mut StrWriter = &mut StrWriter::new([0; 4096]);
+    let mut writer = str_writer.as_mut();
 
     let snapshot = writer.len();
 
@@ -402,6 +418,8 @@ fn truncation() {
             "world\u{0000}\u{0080}\u{0800}".as_bytes()
         );
 
+        let writer = &mut *str_writer;
+
         assert_eq!(writer.truncate(10).unwrap_err(), Error::NotOnCharBoundary);
         assert_eq!(writer.truncate(9).unwrap_err(), Error::NotOnCharBoundary);
 
@@ -419,6 +437,7 @@ fn truncation() {
         writer.truncate(with_foo_len).unwrap();
         assert_eq!(writer.len(), 5);
     }
+    writer = str_writer.as_mut();
 
     assert_eq!(writer.as_bytes(), "world".as_bytes());
     writer.truncate(snapshot).unwrap();
@@ -426,6 +445,30 @@ fn truncation() {
 
     writer.truncate(5).unwrap();
     assert_eq!(writer.len(), 0);
+}
+
+#[test]
+fn clear() {
+    let str_writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+
+    {
+        let mut writer = str_writer.as_mut();
+
+        writer.write_whole_str("hello").unwrap();
+    }
+
+    assert_eq!(str_writer.as_bytes(), "hello".as_bytes());
+    str_writer.clear();
+    assert_eq!(str_writer.as_bytes(), "".as_bytes());
+
+    {
+        let mut writer = str_writer.as_mut();
+
+        writer.write_whole_str("hello").unwrap();
+        assert_eq!(writer.as_bytes(), "hello".as_bytes());
+        writer.clear();
+        assert_eq!(writer.as_bytes(), "".as_bytes());
+    }
 }
 
 #[test]
@@ -437,11 +480,11 @@ fn write_ascii_debug() {
             break c;
         }
     };
-    test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |p| {
+    test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |mut p| {
         let ascii = AsciiStr::new(p.input.as_bytes()).unwrap();
         p.writer.write_ascii_debug(ascii, &p.range)
     });
-    test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |p| {
+    test_unescaped_str_fn(Formatting::Debug, &mut rng_fn, &mut |mut p| {
         let ascii = AsciiStr::new(&p.input.as_bytes()[p.sat_range]).unwrap();
         p.writer.write_whole_ascii_debug(ascii)
     });

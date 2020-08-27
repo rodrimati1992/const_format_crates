@@ -1,7 +1,7 @@
 #![allow(non_camel_case_types)]
 
 use crate::{
-    fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter},
+    fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter, StrWriterMut},
     wrapper_types::PWrapper,
 };
 
@@ -75,7 +75,7 @@ macro_rules! declare_test_case_fns {
 
         const fn inner_delegating(
             this: Delegating<&$Ty>,
-            writer: &mut StrWriter,
+            writer: &mut StrWriterMut<'_>,
             flags: FormattingFlags,
         ) -> Result<usize, Error> {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
@@ -88,7 +88,7 @@ macro_rules! declare_test_case_fns {
 
         const fn inner(
             this: &$Ty,
-            writer: &mut StrWriter,
+            writer: &mut StrWriterMut<'_>,
             flags: FormattingFlags,
         ) -> Result<usize, Error> {
             try_!(this.const_debug_fmt(&mut writer.make_formatter(flags)));
@@ -100,6 +100,7 @@ macro_rules! declare_test_case_fns {
         }
 
         fn test_case(this: &$Ty, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {
+            let writer = &mut writer.as_mut();
             {
                 writer.clear();
                 let len = inner(this, writer, flags).unwrap();
