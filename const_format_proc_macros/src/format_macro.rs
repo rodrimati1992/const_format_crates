@@ -170,7 +170,13 @@ pub(crate) fn writec_macro_impl(
 
     Ok(quote! {
         match ((#writer_expr).borrow_mutably(), #(&(#expr),)*) {
-            (mut #strwriter, #(#locals,)*) => {
+            (#strwriter, #(#locals,)*) => {
+                let mut marker = #cratep::pmr::IsAWriteMarker::NEW;
+                if false {
+                    marker = marker.infer_type(&#strwriter);
+                }
+                let mut #strwriter = marker.coerce(#strwriter);
+
                 loop {
                     #(
                         #cratep::unwrap_or_else!(

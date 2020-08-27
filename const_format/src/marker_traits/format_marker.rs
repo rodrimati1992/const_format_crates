@@ -16,7 +16,7 @@ pub trait FormatMarker {
     type Kind;
     type This: ?Sized;
 
-    const KIND: TypeKindMarker<Self::Kind, Self::This, Self> = TypeKindMarker::NEW;
+    const KIND: IsAFormatMarker<Self::Kind, Self::This, Self> = IsAFormatMarker::NEW;
 }
 
 pub struct IsArrayKind<T>(PhantomData<T>);
@@ -31,7 +31,7 @@ macro_rules! std_kind_impls {
                 type This = Self;
             }
 
-            impl<T> TypeKindMarker<IsStdKind, $ty, T> {
+            impl<T> IsAFormatMarker<IsStdKind, $ty, T> {
                 #[inline(always)]
                 pub const fn coerce(self, reference: &$ty) -> PWrapper<$ty> {
                     PWrapper(*reference)
@@ -67,7 +67,7 @@ impl FormatMarker for str {
     type This = Self;
 }
 
-impl<R: ?Sized> TypeKindMarker<IsStdKind, str, R> {
+impl<R: ?Sized> IsAFormatMarker<IsStdKind, str, R> {
     #[inline(always)]
     pub const fn coerce(self, reference: &str) -> PWrapper<&str> {
         PWrapper(reference)
@@ -106,7 +106,7 @@ where
 
 /// Hack used to automcatically wrap standard library types inside [`PWrapper`],
 /// while leaving user defined unwrapped.
-pub struct TypeKindMarker<K, T: ?Sized, R: ?Sized>(
+pub struct IsAFormatMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
         K,
         PhantomData<fn() -> PhantomData<T>>,
@@ -114,22 +114,22 @@ pub struct TypeKindMarker<K, T: ?Sized, R: ?Sized>(
     )>,
 );
 
-impl<K, T: ?Sized, R: ?Sized> Copy for TypeKindMarker<K, T, R> {}
+impl<K, T: ?Sized, R: ?Sized> Copy for IsAFormatMarker<K, T, R> {}
 
-impl<K, T: ?Sized, R: ?Sized> Clone for TypeKindMarker<K, T, R> {
+impl<K, T: ?Sized, R: ?Sized> Clone for IsAFormatMarker<K, T, R> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<R> TypeKindMarker<R::Kind, R::This, R>
+impl<R> IsAFormatMarker<R::Kind, R::This, R>
 where
     R: ?Sized + FormatMarker,
 {
     pub const NEW: Self = Self(PhantomData);
 }
 
-impl<K, T: ?Sized, R: ?Sized> TypeKindMarker<K, T, R> {
+impl<K, T: ?Sized, R: ?Sized> IsAFormatMarker<K, T, R> {
     #[inline(always)]
     pub const fn infer_type(self, _: &R) -> Self {
         self
@@ -143,14 +143,14 @@ impl<K, T: ?Sized, R: ?Sized> TypeKindMarker<K, T, R> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-impl<U, T: ?Sized, R: ?Sized> TypeKindMarker<IsArrayKind<U>, T, R> {
+impl<U, T: ?Sized, R: ?Sized> IsAFormatMarker<IsArrayKind<U>, T, R> {
     #[inline(always)]
     pub const fn coerce(self, slice: &[U]) -> PWrapper<&[U]> {
         PWrapper(slice)
     }
 }
 
-impl<T: ?Sized, R: ?Sized> TypeKindMarker<IsNotStdKind, T, R> {
+impl<T: ?Sized, R: ?Sized> IsAFormatMarker<IsNotStdKind, T, R> {
     #[inline(always)]
     pub const fn coerce(self, reference: &T) -> &T {
         reference

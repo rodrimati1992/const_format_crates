@@ -1,6 +1,6 @@
 use crate::{
     fmt::{Error, Formatter},
-    format_marker::{FormatMarker, IsStdKind, TypeKindMarker},
+    marker_traits::{FormatMarker, IsAFormatMarker, IsStdKind},
     wrapper_types::PWrapper,
 };
 
@@ -13,7 +13,7 @@ impl FormatMarker for Range<usize> {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, Range<usize>, T> {
+impl<T> IsAFormatMarker<IsStdKind, Range<usize>, T> {
     #[inline(always)]
     pub const fn coerce(self, range: &Range<usize>) -> PWrapper<Range<usize>> {
         PWrapper(Range {
@@ -42,7 +42,7 @@ impl FormatMarker for RangeFrom<usize> {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, RangeFrom<usize>, T> {
+impl<T> IsAFormatMarker<IsStdKind, RangeFrom<usize>, T> {
     #[inline(always)]
     pub const fn coerce(self, range: &RangeFrom<usize>) -> PWrapper<RangeFrom<usize>> {
         PWrapper(RangeFrom { start: range.start })
@@ -67,7 +67,7 @@ impl FormatMarker for RangeTo<usize> {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, RangeTo<usize>, T> {
+impl<T> IsAFormatMarker<IsStdKind, RangeTo<usize>, T> {
     #[inline(always)]
     pub const fn coerce(self, range: &RangeTo<usize>) -> PWrapper<RangeTo<usize>> {
         PWrapper(RangeTo { end: range.end })
@@ -92,7 +92,7 @@ impl FormatMarker for RangeToInclusive<usize> {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, RangeToInclusive<usize>, T> {
+impl<T> IsAFormatMarker<IsStdKind, RangeToInclusive<usize>, T> {
     #[inline(always)]
     pub const fn coerce(
         self,
@@ -120,7 +120,7 @@ impl FormatMarker for RangeInclusive<usize> {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, RangeInclusive<usize>, T> {
+impl<T> IsAFormatMarker<IsStdKind, RangeInclusive<usize>, T> {
     #[inline(always)]
     pub const fn coerce(self, range: &RangeInclusive<usize>) -> PWrapper<RangeInclusive<usize>> {
         PWrapper(RangeInclusive::new(*range.start(), *range.end()))
@@ -146,7 +146,7 @@ impl FormatMarker for RangeFull {
     type This = Self;
 }
 
-impl<T> TypeKindMarker<IsStdKind, RangeFull, T> {
+impl<T> IsAFormatMarker<IsStdKind, RangeFull, T> {
     #[inline(always)]
     pub const fn coerce(self, _: &RangeFull) -> PWrapper<RangeFull> {
         PWrapper(..)

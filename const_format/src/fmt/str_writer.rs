@@ -30,6 +30,12 @@ impl<A: ?Sized> StrWriter<A> {
     pub const fn buffer(&self) -> &A {
         &self.buffer
     }
+
+    // For borrowing this mutably in macros, without getting nested mutable references.
+    #[inline(always)]
+    pub const fn borrow_mutably(&mut self) -> &mut Self {
+        self
+    }
 }
 
 impl StrWriter {
@@ -43,9 +49,7 @@ impl StrWriter {
     pub const fn clear(&mut self) {
         self.len = 0;
     }
-}
 
-impl StrWriter {
     #[inline(always)]
     pub const fn capacity(&self) -> usize {
         self.buffer.len()
@@ -63,15 +67,6 @@ impl StrWriter {
         &self.buffer[..self.len]
     }
 
-    // For borrowing this mutably in macros, without getting nested mutable references.
-    #[inline(always)]
-    pub const fn borrow_mutably(&mut self) -> StrWriterMut<'_> {
-        StrWriterMut {
-            len: &mut self.len,
-            buffer: &mut self.buffer,
-        }
-    }
-
     #[inline(always)]
     pub const fn as_mut(&mut self) -> StrWriterMut<'_> {
         StrWriterMut {
@@ -82,7 +77,7 @@ impl StrWriter {
 
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::new(
+        Formatter::from_sw_mut(
             flags,
             StrWriterMut {
                 len: &mut self.len,

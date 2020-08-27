@@ -148,7 +148,7 @@ fn coerce_and_fmt(cratep: &TokenStream2, field: &Field<'_>) -> TokenStream2 {
     let fspan = var.span();
 
     quote_spanned!(fspan=>
-        let mut marker = #cratep::pmr::TypeKindMarker::NEW;
+        let mut marker = #cratep::pmr::IsAFormatMarker::NEW;
         if false {
             marker = marker.infer_type(#var);
         }
@@ -262,9 +262,9 @@ fn call_debug_fmt(
 ) -> TokenStream2 {
     quote_spanned!(span=>{
         // Importing it like this because the error span is wrong otherwise
-        use #cratep::pmr::TypeKindMarker as __TypeKindMarker;
+        use #cratep::pmr::IsAFormatMarker as __IsAFormatMarker;
 
-        let mut marker = __TypeKindMarker::NEW;
+        let mut marker = __IsAFormatMarker::NEW;
         if false {
             marker = marker.infer_type(#field);
         }

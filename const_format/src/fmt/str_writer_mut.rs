@@ -30,14 +30,29 @@ impl<'w> StrWriterMut<'w> {
         }
     }
 
+    /// Construct a `StrWriterMut` from length and byte slice mutable references.
     ///
     /// # Safety
     ///
-    /// The bytes up to `len` in `buffer` must be valid utf8.
-    pub const unsafe fn from_custom(len: &'w mut usize, buffer: &'w mut [u8]) -> Self {
-        *len = min_usize(*len, buffer.len());
+    /// The bytes up to (and excluding) `length` in `buffer` must be valid utf8.
+    pub const unsafe fn from_custom(length: &'w mut usize, buffer: &'w mut [u8]) -> Self {
+        *length = min_usize(*length, buffer.len());
 
-        Self { len, buffer }
+        Self {
+            len: length,
+            buffer,
+        }
+    }
+
+    /// Construct a `StrWriterMut` from length and byte slice mutable references.
+    ///
+    pub const fn from_custom_cleared(length: &'w mut usize, buffer: &'w mut [u8]) -> Self {
+        *length = 0;
+
+        Self {
+            len: length,
+            buffer,
+        }
     }
 }
 
@@ -71,7 +86,7 @@ impl StrWriterMut<'_> {
 
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::new(flags, self.reborrow())
+        Formatter::from_sw_mut(flags, self.reborrow())
     }
 
     // For borrowing this mutably in macros, without getting nested mutable references.

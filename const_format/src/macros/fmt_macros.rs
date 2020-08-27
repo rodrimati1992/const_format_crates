@@ -142,15 +142,19 @@ macro_rules! concatcp {
 /// - Use constants from scope as arguments: `formatcp!("{FOO}")`,
 /// equivalent to the [`format_args_implicits` RFC]
 ///
-/// - Use Debug-like formatting: `formatcp!("{:?}", "hello" )`
+/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" ):
+/// Similar to how Debug formatting in the standard library works,
+/// except that it does not escape unicode characters.`
 ///
-/// - Use Hexsadecimal formatting:
-/// `formatcp!("{:x}", "hello" )` or `formatcp!("{:x?}", "hello" )`.
+/// - Use Hexsadecimal formatting (eg: `formatcp!("{:x}", "hello" )`):
+/// Formats numbers as capitalized hexadecimal,
+/// The alternate version (written as `"{:#x}"`), prefixes the number with `0x`
 ///
-/// - Use Binary formatting:
-/// `formatcp!("{:b}", "hello" )` or `formatcp!("{:b?}", "hello" )`.
+/// - Use Binary formatting (eg: `formatcp!("{:b}", "hello" )`).
+/// The alternate version (written as `"{:#b}"`), prefixes the number with `0b`
 ///
 /// - Use Display formatting: `formatcp!("{}", "hello" )`
+///
 ///
 /// # Limitations
 ///

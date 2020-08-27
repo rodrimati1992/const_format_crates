@@ -189,7 +189,7 @@
 //!
 //! [`ConstDebug`]: ./derive.ConstDebug.html
 //!
-//! [`FormatMarker`]: ./format_marker/trait.FormatMarker.html
+//! [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 //!
 //!
 #![no_std]
@@ -209,7 +209,7 @@ mod pargument;
 mod utils;
 
 #[cfg(feature = "fmt")]
-pub mod format_marker;
+pub mod marker_traits;
 
 #[cfg(test)]
 mod misc_tests;
@@ -252,7 +252,9 @@ pub mod pmr {
     #[cfg(feature = "fmt")]
     pub use crate::{
         fmt::{ComputeStrLength, Error, Formatter, StrWriter, StrWriterMut},
-        format_marker::{FormatMarker, IsNotStdKind, IsStdKind, TypeKindMarker},
+        marker_traits::{
+            FormatMarker, IsAFormatMarker, IsAWriteMarker, IsNotStdKind, IsStdKind, WriteMarker,
+        },
     };
 
     pub use crate::{

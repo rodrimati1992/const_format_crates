@@ -1,5 +1,5 @@
 use crate::{
-    fmt::{str_writer_mut::saturate_range, Error, FormattingFlags, StrWriterMut},
+    fmt::{str_writer_mut::saturate_range, Error, FormattingFlags, StrWriter, StrWriterMut},
     wrapper_types::{AsciiStr, PWrapper},
 };
 
@@ -51,27 +51,52 @@ pub struct Formatter<'w> {
 }
 
 impl<'w> Formatter<'w> {
+    /// Constructs a `Formatter`.
     #[inline]
-    pub const fn new(flags: FormattingFlags, writer: StrWriterMut<'w>) -> Self {
+    pub const fn from_sw(flags: FormattingFlags, writer: &'w mut StrWriter) -> Self {
+        Self {
+            flags,
+            writer: WriterBackend::Str(writer.as_mut()),
+        }
+    }
+
+    /// Constructs a `Formatter`.
+    #[inline]
+    pub const fn from_sw_mut(flags: FormattingFlags, writer: StrWriterMut<'w>) -> Self {
         Self {
             flags,
             writer: WriterBackend::Str(writer),
         }
     }
 
+    /// Construct a `Formatter` from a byte slice.
     ///
     /// # Safety
     ///
-    /// The bytes up to `len` in `buffer` must be valid utf8.
+    /// The bytes up to (and excluding) `length` in `buffer` must be valid utf8.
     #[inline]
     pub const unsafe fn from_custom(
         flags: FormattingFlags,
-        len: &'w mut usize,
+        length: &'w mut usize,
         buffer: &'w mut [u8],
     ) -> Self {
         Self {
             flags,
-            writer: WriterBackend::Str(StrWriterMut::from_custom(len, buffer)),
+            writer: WriterBackend::Str(StrWriterMut::from_custom(length, buffer)),
+        }
+    }
+
+    /// Construct a `Formatter`from a byte slice.
+    ///
+    #[inline]
+    pub const fn from_custom_cleared(
+        flags: FormattingFlags,
+        length: &'w mut usize,
+        buffer: &'w mut [u8],
+    ) -> Self {
+        Self {
+            flags,
+            writer: WriterBackend::Str(StrWriterMut::from_custom_cleared(length, buffer)),
         }
     }
 

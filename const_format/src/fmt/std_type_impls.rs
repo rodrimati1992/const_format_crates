@@ -1,6 +1,6 @@
 use crate::{
     fmt::{Error, Formatter},
-    format_marker::IsStdKind,
+    marker_traits::IsStdKind,
     wrapper_types::PWrapper,
 };
 

@@ -26,6 +26,20 @@ macro_rules! try_ {
     };
 }
 
+/// Equivalent to `Result::unwrap`, for use with [`const_format::Error`] errors.
+///
+/// [`const_format::Error`]: ./fmt/enum.Error.html
+#[cfg(feature = "fmt")]
+#[macro_export]
+macro_rules! unwrap {
+    ($e:expr $(,)*) => {
+        match $e {
+            $crate::pmr::Ok(x) => x,
+            $crate::pmr::Err(error) => $crate::Error::unwrap(error),
+        }
+    };
+}
+
 /// Equivalent to `Result::unwrap_or_else` but allows returning from the enclosing function.
 #[cfg(feature = "fmt")]
 #[macro_export]
@@ -56,7 +70,7 @@ macro_rules! coerce_to_fmt {
     ($reference:expr) => {{
         match $reference {
             ref reference => {
-                let mut marker = $crate::pmr::TypeKindMarker::NEW;
+                let mut marker = $crate::pmr::IsAFormatMarker::NEW;
                 if false {
                     marker = marker.infer_type(reference);
                 }
@@ -79,7 +93,7 @@ macro_rules! std_kind_impl {
             type This = Self;
         }
 
-        impl<$($impl)* __T> $crate::pmr::TypeKindMarker<$crate::pmr::IsStdKind, $self, __T>
+        impl<$($impl)* __T> $crate::pmr::IsAFormatMarker<$crate::pmr::IsStdKind, $self, __T>
         where
             $($($where_)*)?
         {

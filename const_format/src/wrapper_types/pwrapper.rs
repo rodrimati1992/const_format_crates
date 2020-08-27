@@ -360,7 +360,7 @@ impl PWrapper<&str> {
 
 #[cfg(feature = "fmt")]
 const _: () = {
-    use crate::format_marker::{FormatMarker, IsNotStdKind};
+    use crate::marker_traits::{FormatMarker, IsNotStdKind};
 
     impl<P> FormatMarker for PWrapper<P> {
         type Kind = IsNotStdKind;

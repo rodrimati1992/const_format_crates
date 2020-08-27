@@ -140,7 +140,7 @@ macro_rules! __impl_fmt_inner {
         }
 
         $(#[$impl_attr])*
-        impl<$($impl_)* __T> $crate::pmr::TypeKindMarker<IsStdKind, $type, __T>
+        impl<$($impl_)* __T> $crate::pmr::IsAFormatMarker<IsStdKind, $type, __T>
         where
             $($where)*
         {
