@@ -137,7 +137,7 @@ fn pwrapper_methods() {
     check_number_of_digits_!(i128);
 }
 
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 #[test]
 fn wrapped_formatting() {
     use crate::fmt::{Error, StrWriter};

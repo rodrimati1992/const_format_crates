@@ -12,7 +12,13 @@
 ///
 /// let fooo = ascii_str!("hello");
 ///
-/// assert_eq!(fooo.as_str(), "hello")
+/// assert_eq!(fooo.as_str(), "hello");
+///
+/// // You can pass constants as arguments!
+/// const BAR_S: &str = "world";
+/// let bar = ascii_str!(BAR_S);
+///
+/// assert_eq!(bar.as_str(), "world");
 ///
 /// ```
 ///
@@ -22,12 +28,12 @@
 /// let fooo = ascii_str!("Γειά σου Κόσμε!");
 ///
 /// ```
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! ascii_str {
     ($str:expr) => {{
-        const __CF_ASCII_STR_CONSTANT: $crate::wrapper_types::AsciiStr = {
-            match $crate::wrapper_types::AsciiStr::new($str.as_bytes()) {
+        const __CF_ASCII_STR_CONSTANT: $crate::AsciiStr = {
+            match $crate::AsciiStr::new($str.as_bytes()) {
                 Ok(x) => x,
                 $crate::pmr::Err(e) => [][e.invalid_from],
             }

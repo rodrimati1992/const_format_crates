@@ -39,7 +39,7 @@ fn debug_formatting() {
 
                 assert_eq!(formatcp!("{:?}", $expr), string.as_str());
 
-                #[cfg(feature = "with_fmt")]
+                #[cfg(feature = "fmt")]
                 assert_eq!(formatc!("{:?}", $expr), string.as_str());
             )*
         )
@@ -78,7 +78,7 @@ fn debug_formatting() {
         .copied(),
     );
 
-    #[cfg(feature = "with_fmt")]
+    #[cfg(feature = "fmt")]
     escapedes.extend(
         [
             formatc!("{:?}", ALL_ASCII),
@@ -102,7 +102,7 @@ macro_rules! binary_hex_test_case {
     ($ty:ident, $buffer:ident) => {{
         binary_hex_test_case! {@inner formatcp, $ty, $buffer};
 
-        #[cfg(feature = "with_fmt")]
+        #[cfg(feature = "fmt")]
         binary_hex_test_case! {@inner formatc, $ty, $buffer};
     }};
     (@inner $themacro:ident, $ty:ident, $buffer:ident) => {{

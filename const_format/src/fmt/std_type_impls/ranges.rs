@@ -1,6 +1,6 @@
 use crate::{
     fmt::{Error, Formatter},
-    marker_traits::type_kind::{GetTypeKind, IsStdKind, TypeKindMarker},
+    format_marker::{FormatMarker, IsStdKind, TypeKindMarker},
     wrapper_types::PWrapper,
 };
 
@@ -8,7 +8,7 @@ use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInc
 
 ////////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for Range<usize> {
+impl FormatMarker for Range<usize> {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -37,7 +37,7 @@ impl PWrapper<Range<usize>> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for RangeFrom<usize> {
+impl FormatMarker for RangeFrom<usize> {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -62,7 +62,7 @@ impl PWrapper<RangeFrom<usize>> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for RangeTo<usize> {
+impl FormatMarker for RangeTo<usize> {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -87,7 +87,7 @@ impl PWrapper<RangeTo<usize>> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for RangeToInclusive<usize> {
+impl FormatMarker for RangeToInclusive<usize> {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -115,7 +115,7 @@ impl PWrapper<RangeToInclusive<usize>> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for RangeInclusive<usize> {
+impl FormatMarker for RangeInclusive<usize> {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -141,7 +141,7 @@ impl PWrapper<RangeInclusive<usize>> {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-impl GetTypeKind for RangeFull {
+impl FormatMarker for RangeFull {
     type Kind = IsStdKind;
     type This = Self;
 }

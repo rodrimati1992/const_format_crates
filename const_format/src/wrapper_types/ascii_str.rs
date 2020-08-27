@@ -1,6 +1,6 @@
 // use crate::fmt::Error;
 
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 use crate::fmt::{Error, Formatter};
 
 use core::fmt::{self, Display};
@@ -73,7 +73,7 @@ impl Display for NotAsciiError {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 impl_fmt! {
     impl AsciiStr<'_>;
 
@@ -92,7 +92,7 @@ impl_fmt! {
 mod tests {
     use super::*;
 
-    #[cfg(feature = "with_fmt")]
+    #[cfg(feature = "fmt")]
     use crate::fmt::ComputeStrLength;
 
     use arrayvec::ArrayString;
@@ -135,7 +135,7 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "with_fmt")]
+    #[cfg(feature = "fmt")]
     #[test]
     fn formatting() {
         use crate::fmt::{FormattingFlags, FormattingMode, StrWriter};

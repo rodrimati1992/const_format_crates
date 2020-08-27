@@ -67,7 +67,6 @@ pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
         .into()
 }
 
-#[doc(hidden)]
 #[proc_macro_derive(ConstDebug, attributes(cdeb))]
 pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
     syn::parse(input)

@@ -251,7 +251,7 @@ macro_rules! formatcp {
 }
 
 #[macro_export]
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 macro_rules! formatc {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
         $crate::formatc!(
@@ -270,7 +270,7 @@ macro_rules! formatc {
 }
 
 #[macro_export]
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 macro_rules! writec {
     ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
         $crate::writec!(

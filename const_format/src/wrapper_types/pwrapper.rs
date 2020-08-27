@@ -358,11 +358,11 @@ impl PWrapper<&str> {
     }
 }
 
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 const _: () = {
-    use crate::marker_traits::type_kind::{GetTypeKind, IsNotStdKind};
+    use crate::format_marker::{FormatMarker, IsNotStdKind};
 
-    impl<P> GetTypeKind for PWrapper<P> {
+    impl<P> FormatMarker for PWrapper<P> {
         type Kind = IsNotStdKind;
         type This = Self;
     }

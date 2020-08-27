@@ -1,5 +1,5 @@
 //! Formatting items that are always enabled,
-//! the `fmt` module requires the "with_fmt" feature.
+//! the `fmt` module requires the "fmt" feature.
 
 ///
 #[derive(Debug, Copy, Clone, PartialEq)]

@@ -1,5 +1,5 @@
 mod error;
-pub mod formatter;
+mod formatter;
 mod std_type_impls;
 mod str_writer;
 

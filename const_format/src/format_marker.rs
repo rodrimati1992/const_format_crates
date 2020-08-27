@@ -1,5 +1,4 @@
-//! Hacks used by macros to call the `const_*_fmt`  and `const_*_len` methods without
-//! requiring any extra effort from users.
+//! Marker trait for types that implement the const formatting methods.
 //!
 //!
 
@@ -9,9 +8,11 @@ use core::marker::PhantomData;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Hack used to automcatically wrap standard library types inside [`PWrapper`],
-/// while leaving user defined unwrapped.
-pub trait GetTypeKind {
+/// Marker trait for types that implement the const formatting methods.
+///
+///
+///
+pub trait FormatMarker {
     type Kind;
     type This: ?Sized;
 
@@ -25,7 +26,7 @@ pub struct IsNotStdKind;
 macro_rules! std_kind_impls {
     ($($ty:ty),* $(,)* ) => (
         $(
-            impl GetTypeKind for $ty {
+            impl FormatMarker for $ty {
                 type Kind = IsStdKind;
                 type This = Self;
             }
@@ -43,7 +44,7 @@ macro_rules! std_kind_impls {
 macro_rules! array_impls {
     ($($len:literal),* $(,)* ) => (
         $(
-            impl<T> GetTypeKind for [T; $len] {
+            impl<T> FormatMarker for [T; $len] {
                 type Kind = IsArrayKind<T>;
                 type This = Self;
             }
@@ -61,7 +62,7 @@ std_kind_impls! {
     bool,
 }
 
-impl GetTypeKind for str {
+impl FormatMarker for str {
     type Kind = IsStdKind;
     type This = Self;
 }
@@ -80,22 +81,22 @@ array_impls! {
     48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
 }
 
-impl<T> GetTypeKind for [T] {
+impl<T> FormatMarker for [T] {
     type Kind = IsArrayKind<T>;
     type This = [T];
 }
 
-impl<T> GetTypeKind for &T
+impl<T> FormatMarker for &T
 where
-    T: ?Sized + GetTypeKind,
+    T: ?Sized + FormatMarker,
 {
     type Kind = T::Kind;
     type This = T::This;
 }
 
-impl<T> GetTypeKind for &mut T
+impl<T> FormatMarker for &mut T
 where
-    T: ?Sized + GetTypeKind,
+    T: ?Sized + FormatMarker,
 {
     type Kind = T::Kind;
     type This = T::This;
@@ -123,7 +124,7 @@ impl<K, T: ?Sized, R: ?Sized> Clone for TypeKindMarker<K, T, R> {
 
 impl<R> TypeKindMarker<R::Kind, R::This, R>
 where
-    R: ?Sized + GetTypeKind,
+    R: ?Sized + FormatMarker,
 {
     pub const NEW: Self = Self(PhantomData);
 }

@@ -1,5 +1,5 @@
 #[macro_use]
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 mod call_debug_fmt;
 
 #[macro_use]
@@ -12,10 +12,11 @@ mod helper_macros;
 mod fmt_macros;
 
 #[macro_use]
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 mod impl_fmt;
 
 /// For returning early on an error, otherwise evaluating to `()`.
+#[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! try_ {
     ($e:expr) => {
@@ -26,6 +27,7 @@ macro_rules! try_ {
 }
 
 /// Equivalent to `Result::unwrap_or_else` but allows returning from the enclosing function.
+#[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! unwrap_or_else {
     ($e:expr, |$error:ident| $orelse:expr ) => {
@@ -48,7 +50,7 @@ macro_rules! unwrap_or_else {
 /// For std types, it just returns back the same reference.
 ///
 /// [`PWrapper`]: ./
-#[cfg(feature = "with_fmt")]
+#[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! coerce_to_fmt {
     ($reference:expr) => {{
@@ -69,7 +71,7 @@ macro_rules! std_kind_impl {
         impl[$($impl:tt)*] $self:ty
         $(where[ $($where_:tt)* ])?
     )=>{
-        impl<$($impl)*> $crate::pmr::GetTypeKind for $self
+        impl<$($impl)*> $crate::pmr::FormatMarker for $self
         where
             $($($where_)*)?
         {

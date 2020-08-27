@@ -131,7 +131,7 @@ macro_rules! __impl_fmt_inner {
         )
     )=>{
         $(#[$impl_attr])*
-        impl<$($impl_)*> $crate::pmr::GetTypeKind for $type
+        impl<$($impl_)*> $crate::pmr::FormatMarker for $type
         where
             $($where)*
         {
@@ -159,7 +159,7 @@ macro_rules! __impl_fmt_inner {
         )
     )=>{
         $(#[$impl_attr])*
-        impl<$($impl_)*> $crate::pmr::GetTypeKind for $type
+        impl<$($impl_)*> $crate::pmr::FormatMarker for $type
         where
             $($where)*
         {
