@@ -145,5 +145,3 @@ pub mod pmr {
         wrapper_types::PWrapper,
     };
 }
-
-// const _: &str = formatc!("{:?}", Foo{ x: &[Bar], y: None });
