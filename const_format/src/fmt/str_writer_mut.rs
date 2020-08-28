@@ -72,16 +72,31 @@ impl StrWriterMut<'_> {
         self.buffer.len()
     }
 
-    #[inline(always)]
-    pub fn as_str(&self) -> &str {
-        // All the methods that modify the buffer must ensure utf8 validity,
-        // only methods from this module need to ensure this.
-        unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
-    }
+    conditionally_const! {
+        feature = "const_as_str";
+        /// Gets the written part of this StrWriterMut as a `&str`
+        ///
+        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// which requires nightly Rust versions after 2020-08-15.
+        ///
+        #[inline(always)]
+        pub fn as_str(&self) -> &str {
+            // All the methods that modify the buffer must ensure utf8 validity,
+            // only methods from this module need to ensure this.
+            unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
+        }
 
-    #[inline(always)]
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.buffer[..*self.len]
+        /// Gets the written part of this StrWriterMut as a `&[u8]`
+        ///
+        /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
+        ///
+        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// which requires nightly Rust versions after 2020-08-15.
+        ///
+        #[inline(always)]
+        pub fn as_bytes(&self) -> &[u8] {
+            crate::utils::slice_up_to_len(self.buffer, *self.len)
+        }
     }
 
     #[inline(always)]
@@ -316,22 +331,6 @@ macro_rules! write_integer_fn {
         }
     });
     (@write_sign unsigned, $self_len:ident, $self_buffer:ident, $n:ident) => ({});
-}
-
-write_integer_fn! {
-    (write_u8_display, write_u8_debug, unsigned, u8, u8)
-    (write_u16_display, write_u16_debug, unsigned, u16, u16)
-    (write_u32_display, write_u32_debug, unsigned, u32, u32)
-    (write_u64_display, write_u64_debug, unsigned, u64, u64)
-    (write_u128_display, write_u128_debug, unsigned, u128, u128)
-    (write_usize_display, write_usize_debug, unsigned, usize, usize)
-
-    (write_i8_display, write_i8_debug, signed, i8, u8)
-    (write_i16_display, write_i16_debug, signed, i16, u16)
-    (write_i32_display, write_i32_debug, signed, i32, u32)
-    (write_i64_display, write_i64_debug, signed, i64, u64)
-    (write_i128_display, write_i128_debug, signed, i128, u128)
-    (write_isize_display, write_isize_debug, signed, isize, usize)
 }
 
 /// Checks that a range is valid for indexing a string,
@@ -577,4 +576,20 @@ impl StrWriterMut<'_> {
 
         Ok(())
     }
+}
+
+write_integer_fn! {
+    (write_u8_display, write_u8_debug, unsigned, u8, u8)
+    (write_u16_display, write_u16_debug, unsigned, u16, u16)
+    (write_u32_display, write_u32_debug, unsigned, u32, u32)
+    (write_u64_display, write_u64_debug, unsigned, u64, u64)
+    (write_u128_display, write_u128_debug, unsigned, u128, u128)
+    (write_usize_display, write_usize_debug, unsigned, usize, usize)
+
+    (write_i8_display, write_i8_debug, signed, i8, u8)
+    (write_i16_display, write_i16_debug, signed, i16, u16)
+    (write_i32_display, write_i32_debug, signed, i32, u32)
+    (write_i64_display, write_i64_debug, signed, i64, u64)
+    (write_i128_display, write_i128_debug, signed, i128, u128)
+    (write_isize_display, write_isize_debug, signed, isize, usize)
 }

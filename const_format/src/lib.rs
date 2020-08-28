@@ -194,6 +194,14 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
+#![cfg_attr(
+    feature = "const_as_str",
+    feature(
+        const_slice_from_raw_parts,
+        const_str_from_utf8_unchecked,
+        const_fn_union
+    )
+)]
 
 extern crate self as const_format;
 
@@ -228,7 +236,7 @@ mod wrapper_types;
 
 #[cfg(feature = "fmt")]
 #[doc(no_inline)]
-pub use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+pub use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter, StrWriterMut};
 
 #[cfg(feature = "fmt")]
 pub use crate::wrapper_types::{AsciiStr, PWrapper, Sliced};
@@ -243,6 +251,7 @@ pub mod pmr {
     pub use core::{
         cmp::Reverse,
         convert::identity,
+        mem::transmute,
         num::Wrapping,
         ops::Range,
         option::Option::{None, Some},
@@ -263,7 +272,6 @@ pub mod pmr {
             StartAndArray, FOR_ESCAPING,
         },
         pargument::{PArgument, PConvWrapper, PVariant},
-        utils::Transmute,
         wrapper_types::PWrapper,
     };
 }

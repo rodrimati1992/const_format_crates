@@ -113,11 +113,11 @@ macro_rules! concatcp {
             const CONCAT_STR: &str = unsafe{
                 // This transmute truncates the length of the array to the amound of written bytes.
                 let slice =
-                    $crate::pmr::Transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>{
-                        from: &CONCAT_ARR.array,
-                    }.to;
+                    $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(
+                        &CONCAT_ARR.array,
+                    );
 
-                $crate::pmr::Transmute::<&[u8], &str>{from: slice}.to
+                $crate::pmr::transmute::<&[u8], &str>(slice)
             };
             CONCAT_STR
         }

@@ -132,14 +132,14 @@ pub(crate) fn formatc_macro_impl(
         const STR_NHPMWYD3NJA: &str = unsafe{
             // This transmute truncates the length of the array to the amound of written bytes.
             let slice =
-                #cratep::pmr::Transmute::<
+                #cratep::pmr::transmute::<
                     &[u8; LEN_NHPMWYD3NJA],
-                    &[u8; STR_WRITER_NHPMWYD3NJA.writer.len()]
-                >{
-                    from: STR_WRITER_NHPMWYD3NJA.writer.buffer(),
-                }.to;
+                    &[u8; STR_WRITER_NHPMWYD3NJA.writer.len()],
+                >(
+                    STR_WRITER_NHPMWYD3NJA.writer.buffer(),
+                );
 
-            #cratep::pmr::Transmute::<&[u8], &str>{from: slice}.to
+            #cratep::pmr::transmute::<&[u8], &str>(slice)
         };
 
         STR_NHPMWYD3NJA
