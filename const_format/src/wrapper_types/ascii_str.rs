@@ -78,11 +78,11 @@ impl_fmt! {
     impl AsciiStr<'_>;
 
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_ascii(*self)
+        f.write_ascii(*self)
     }
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_ascii_debug(*self)
+        f.write_ascii_debug(*self)
     }
 }
 
@@ -138,7 +138,7 @@ mod tests {
     #[cfg(feature = "fmt")]
     #[test]
     fn formatting() {
-        use crate::fmt::{FormattingFlags, FormattingMode, StrWriter};
+        use crate::fmt::{FormattingFlags, NumberFormatting, StrWriter};
 
         const fn inner_debug(
             ascii: AsciiStr<'_>,
@@ -190,9 +190,9 @@ mod tests {
 
         let foo = AsciiStr::new("\0\x10hello\tworld\n".as_bytes()).unwrap();
 
-        for mode in FormattingMode::ALL.iter().copied() {
+        for mode in NumberFormatting::ALL.iter().copied() {
             for is_alt in [false, true].iter().copied() {
-                let flag = FormattingFlags::NEW.set_mode(mode).set_alternate(is_alt);
+                let flag = FormattingFlags::NEW.set_num_fmt(mode).set_alternate(is_alt);
                 test_case(
                     foo,
                     writer,

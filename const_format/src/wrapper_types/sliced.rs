@@ -18,12 +18,12 @@ impl_fmt! {
 
     #[inline]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_str_debug(self.0, &self.range())
+        f.write_str_range_debug(self.0, self.range())
     }
 
     #[inline]
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_str(self.0, &self.range())
+        f.write_str_range(self.0, self.range())
     }
 }
 
@@ -37,19 +37,19 @@ impl_fmt! {
 
     #[inline]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_ascii_debug(self.0, &self.range())
+        f.write_ascii_range_debug(self.0, self.range())
     }
 
     #[inline]
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_ascii(self.0, &self.range())
+        f.write_ascii_range(self.0, self.range())
     }
 }
 
 impl<T> Sliced<T, Range<usize>> {
     #[inline(always)]
-    const fn range(&self) -> &Range<usize> {
-        &self.1
+    const fn range(&self) -> Range<usize> {
+        self.1.start..self.1.end
     }
 }
 
@@ -111,7 +111,7 @@ mod tests {
                 let string = Sliced($str_val, $range);
 
                 try_!(string.const_display_fmt(fmt));
-                try_!(fmt.write_whole_str(";"));
+                try_!(fmt.write_str(";"));
                 try_!(string.const_debug_fmt(fmt));
 
                 Ok(())

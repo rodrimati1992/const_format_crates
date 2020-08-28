@@ -50,7 +50,7 @@ macro_rules! call_debug_fmt {
                     $crate::__call_debug_fmt_dispatch!(x, f.field());
                     f.finish()
                 }
-                $crate::pmr::None => formatter.write_whole_str("None"),
+                $crate::pmr::None => formatter.write_str("None"),
             }),
         }
     }};

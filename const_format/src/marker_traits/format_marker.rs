@@ -108,7 +108,7 @@ where
 /// while leaving user defined unwrapped.
 pub struct IsAFormatMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
-        K,
+        PhantomData<fn() -> PhantomData<K>>,
         PhantomData<fn() -> PhantomData<T>>,
         PhantomData<fn() -> PhantomData<R>>,
     )>,

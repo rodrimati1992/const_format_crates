@@ -61,13 +61,13 @@ fn test_display() {
         test_case(
             &this,
             writer,
-            flag.set_hexadecimal_mode(),
+            flag.set_hexadecimal(),
             "3  --\n5\n--  false  F",
         );
         test_case(
             &this,
             writer,
-            flag.set_binary_mode(),
+            flag.set_binary(),
             "3  --\n5\n--  false  1111",
         );
 
@@ -76,13 +76,13 @@ fn test_display() {
         test_case(
             &this,
             writer,
-            altflag.set_hexadecimal_mode(),
+            altflag.set_hexadecimal(),
             "3  --\n5\n--  false  0xF",
         );
         test_case(
             &this,
             writer,
-            altflag.set_binary_mode(),
+            altflag.set_binary(),
             "3  --\n5\n--  false  0b1111",
         );
     }
@@ -99,13 +99,13 @@ fn test_display() {
         test_case(
             &this,
             writer,
-            flag.set_hexadecimal_mode(),
+            flag.set_hexadecimal(),
             "3  --\n5\n--  true  FE",
         );
         test_case(
             &this,
             writer,
-            flag.set_binary_mode(),
+            flag.set_binary(),
             "3  --\n5\n--  true  11111110",
         );
 
@@ -114,13 +114,13 @@ fn test_display() {
         test_case(
             &this,
             writer,
-            altflag.set_hexadecimal_mode(),
+            altflag.set_hexadecimal(),
             "3  --\n5\n--  true  0xFE",
         );
         test_case(
             &this,
             writer,
-            altflag.set_binary_mode(),
+            altflag.set_binary(),
             "3  --\n5\n--  true  0b11111110",
         );
     }

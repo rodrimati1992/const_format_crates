@@ -22,7 +22,7 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 proc-macro = true
 
 [features]
-default = ["derive"]
+default = []
 derive = ["syn/derive", "syn/printing"]
 debug = ["syn/extra-traits"]
 

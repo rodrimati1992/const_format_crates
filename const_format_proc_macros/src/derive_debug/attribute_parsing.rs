@@ -53,7 +53,7 @@ pub(crate) struct FieldConfig<'a> {
 
 pub(crate) enum HowToFmt<'a> {
     /// coerce_to_fmt!(&field).const_debug_fmt(f)`
-    Regular,
+    Decimal,
     /// Doesn't print the field.
     Ignore,
     /// A slice or an array
@@ -243,7 +243,7 @@ fn parse_the_is_a_attribute<'a>(
                 let newtype = type_detection::parse_type_as_ident(f.ty)?;
                 Ok(HowToFmt::Newtype(newtype))
             } else if path.is_ident("non_std") || path.is_ident("not_std") {
-                Ok(HowToFmt::Regular)
+                Ok(HowToFmt::Decimal)
             } else {
                 Err(make_err(&path))
             }

@@ -1,5 +1,5 @@
 use crate::{
-    formatting::{hex_as_ascii, ForEscaping, FormattingFlags, FormattingMode, FOR_ESCAPING},
+    formatting::{hex_as_ascii, ForEscaping, FormattingFlags, NumberFormatting, FOR_ESCAPING},
     utils::min_usize,
     wrapper_types::{AsciiStr, PWrapper},
 };
@@ -189,8 +189,7 @@ macro_rules! write_integer_fn {
             #[doc = $ty_name]
             /// with Debug formatting.
             pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-                let flags = f.flags();
-                f.$debug_fn(self.0, flags)
+                f.$debug_fn(self.0)
             }
         }
     };
@@ -307,9 +306,9 @@ macro_rules! write_integer_fn {
             }
 
             match flags.mode() {
-                FormattingMode::Regular=>self.$display_fn(n),
-                FormattingMode::Hexadecimal=>hex(self, n, flags),
-                FormattingMode::Binary=>binary(self, n, flags),
+                NumberFormatting::Decimal=>self.$display_fn(n),
+                NumberFormatting::Hexadecimal=>hex(self, n, flags),
+                NumberFormatting::Binary=>binary(self, n, flags),
             }
         }
     };
@@ -368,9 +367,9 @@ impl StrWriterMut<'_> {
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`,
     /// this only returns an error on an in-bounds index that is not on a character boundary.
-    pub const fn write_str(&mut self, s: &str, range: &Range<usize>) -> Result<(), Error> {
+    pub const fn write_str_range(&mut self, s: &str, range: Range<usize>) -> Result<(), Error> {
         let bytes = s.as_bytes();
-        let Range { start, end } = saturate_range(bytes, range);
+        let Range { start, end } = saturate_range(bytes, &range);
 
         if !is_valid_str_range(bytes, start..end) {
             return Err(Error::NotOnCharBoundary);
@@ -380,7 +379,7 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `s` with Display formatting.
-    pub const fn write_whole_str(&mut self, s: &str) -> Result<(), Error> {
+    pub const fn write_str(&mut self, s: &str) -> Result<(), Error> {
         let bytes = s.as_bytes();
 
         self.write_str_inner(bytes, 0, s.len())
@@ -389,19 +388,19 @@ impl StrWriterMut<'_> {
     /// Writes a subslice of `ascii` with Display formatting.
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`.
-    pub const fn write_ascii(
+    pub const fn write_ascii_range(
         &mut self,
         ascii: AsciiStr<'_>,
-        range: &Range<usize>,
+        range: Range<usize>,
     ) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
-        let Range { start, end } = saturate_range(bytes, range);
+        let Range { start, end } = saturate_range(bytes, &range);
 
         self.write_str_inner(bytes, start, end)
     }
 
     /// Writes `ascii` with Display formatting.
-    pub const fn write_whole_ascii(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
+    pub const fn write_ascii(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
 
         self.write_str_inner(bytes, 0, bytes.len())
@@ -469,9 +468,13 @@ impl StrWriterMut<'_> {
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`,
     /// this only returns an error on an in-bounds index that is not on a character boundary.
-    pub const fn write_str_debug(&mut self, s: &str, range: &Range<usize>) -> Result<(), Error> {
+    pub const fn write_str_range_debug(
+        &mut self,
+        s: &str,
+        range: Range<usize>,
+    ) -> Result<(), Error> {
         let bytes = s.as_bytes();
-        let Range { start, end } = saturate_range(bytes, range);
+        let Range { start, end } = saturate_range(bytes, &range);
 
         if !is_valid_str_range(bytes, start..end) {
             return Err(Error::NotOnCharBoundary);
@@ -481,7 +484,7 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `s` with Debug-like formatting.
-    pub const fn write_whole_str_debug(&mut self, str: &str) -> Result<(), Error> {
+    pub const fn write_str_debug(&mut self, str: &str) -> Result<(), Error> {
         let bytes = str.as_bytes();
         self.write_str_debug_inner(bytes, 0, str.len())
     }
@@ -489,19 +492,19 @@ impl StrWriterMut<'_> {
     /// Writes a subslice of `ascii` with Debug-like formatting.
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`.
-    pub const fn write_ascii_debug(
+    pub const fn write_ascii_range_debug(
         &mut self,
         ascii: AsciiStr<'_>,
-        range: &Range<usize>,
+        range: Range<usize>,
     ) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
-        let Range { start, end } = saturate_range(bytes, range);
+        let Range { start, end } = saturate_range(bytes, &range);
 
         self.write_str_debug_inner(bytes, start, end)
     }
 
     /// Writes `ascii` with Debug-like formatting.
-    pub const fn write_whole_ascii_debug(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
+    pub const fn write_ascii_debug(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
         self.write_str_debug_inner(bytes, 0, bytes.len())
     }

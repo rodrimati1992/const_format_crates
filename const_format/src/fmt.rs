@@ -89,9 +89,10 @@
 //!
 //! This example demonstrates how you can derive [`ConstDebug`], and use it with the `fmt` API.
 //!
-//! Ìt requires the "derive" feature to be enabled
+//! Ìt uses the "derive" feature
 //!
-//! ```rust
+#![cfg_attr(feature = "derive", doc = "```rust")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
@@ -239,7 +240,7 @@ mod std_type_impls;
 mod str_writer;
 mod str_writer_mut;
 
-pub use crate::formatting::{FormattingFlags, FormattingMode};
+pub use crate::formatting::{FormattingFlags, NumberFormatting};
 
 pub use self::{
     error::Error,

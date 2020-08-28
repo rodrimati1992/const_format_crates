@@ -39,6 +39,6 @@ impl_fmt! {
     impl[] UnitStruct;
 
     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_str("UnitStruct")
+        f.write_str("UnitStruct")
     }
 }

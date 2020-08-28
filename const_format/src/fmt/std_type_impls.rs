@@ -11,19 +11,19 @@ mod ranges;
 impl PWrapper<&str> {
     /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_str(self.0)
+        f.write_str(self.0)
     }
 
     /// Writes a `&str` with Debug formatting.
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_str_debug(self.0)
+        f.write_str_debug(self.0)
     }
 }
 
 impl PWrapper<bool> {
     /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_str(if self.0 { "true" } else { "false" })
+        f.write_str(if self.0 { "true" } else { "false" })
     }
 
     /// Writes a `&str` with Debug formatting.
@@ -107,7 +107,7 @@ impl_fmt! {
                 try_!(PWrapper(x).const_debug_fmt(f.field()));
                 f.finish()
             },
-            None => f.write_whole_str("None"),
+            None => f.write_str("None"),
         }
     }
 }
@@ -142,7 +142,7 @@ impl<T> PWrapper<*mut T> {
     /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_whole_str(Self::PTR)
+        f.write_str(Self::PTR)
     }
 }
 
@@ -201,12 +201,12 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match self.0 {
-            AtomicOrdering::Relaxed => f.write_whole_str("Relaxed"),
-            AtomicOrdering::Release => f.write_whole_str("Release"),
-            AtomicOrdering::Acquire => f.write_whole_str("Acquire"),
-            AtomicOrdering::AcqRel => f.write_whole_str("AcqRel"),
-            AtomicOrdering::SeqCst => f.write_whole_str("SeqCst"),
-            _ => f.write_whole_str("<core::atomic::Ordering>"),
+            AtomicOrdering::Relaxed => f.write_str("Relaxed"),
+            AtomicOrdering::Release => f.write_str("Release"),
+            AtomicOrdering::Acquire => f.write_str("Acquire"),
+            AtomicOrdering::AcqRel => f.write_str("AcqRel"),
+            AtomicOrdering::SeqCst => f.write_str("SeqCst"),
+            _ => f.write_str("<core::atomic::Ordering>"),
         }
     }
 }
@@ -218,9 +218,9 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match self.0 {
-            Ordering::Less => f.write_whole_str("Less"),
-            Ordering::Equal => f.write_whole_str("Equal"),
-            Ordering::Greater => f.write_whole_str("Greater"),
+            Ordering::Less => f.write_str("Less"),
+            Ordering::Equal => f.write_str("Equal"),
+            Ordering::Greater => f.write_str("Greater"),
         }
     }
 }

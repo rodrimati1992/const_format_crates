@@ -118,7 +118,7 @@
 //!
 //! All of the macros from `const_format` have these limitations:
 //!
-//! - The macros that expand to `&'static str`s can only constants of concrete types,
+//! - The macros that expand to `&'static str`s can only use constants of concrete types,
 //! so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
 //!
 //! - Integer arguments must have a type inferrable from context,
@@ -268,7 +268,7 @@ pub mod pmr {
 
     pub use crate::{
         formatting::{
-            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, FormattingMode, LenAndArray,
+            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, LenAndArray, NumberFormatting,
             StartAndArray, FOR_ESCAPING,
         },
         pargument::{PArgument, PConvWrapper, PVariant},

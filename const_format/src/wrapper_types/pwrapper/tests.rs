@@ -1,5 +1,5 @@
 use crate::{
-    formatting::{FormattingFlags, FormattingMode as FM},
+    formatting::{FormattingFlags, NumberFormatting as NF},
     pargument::PConvWrapper,
     wrapper_types::PWrapper,
 };
@@ -46,12 +46,12 @@ macro_rules! check_number_of_digits_ {
                     "const_debug_len "
                 );
                 assert_eq!(
-                    wrapper.compute_debug_len(DEF_FLAGS.set_mode(FM::Hexadecimal)),
+                    wrapper.compute_debug_len(DEF_FLAGS.set_num_fmt(NF::Hexadecimal)),
                     hex_digits.len(),
                     "const_debug_len hexadecimal"
                 );
                 assert_eq!(
-                    wrapper.compute_debug_len(DEF_FLAGS.set_mode(FM::Binary)),
+                    wrapper.compute_debug_len(DEF_FLAGS.set_num_fmt(NF::Binary)),
                     binary_digits.len(),
                     "const_debug_len binary"
                 );

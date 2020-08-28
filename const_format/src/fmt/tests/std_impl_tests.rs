@@ -14,9 +14,7 @@ use core::{
 
 const FLAGS: &[FormattingFlags] = &[
     FormattingFlags::NEW,
-    FormattingFlags::NEW
-        .set_alternate(true)
-        .set_hexadecimal_mode(),
+    FormattingFlags::NEW.set_alternate(true).set_hexadecimal(),
 ];
 
 macro_rules! test_fmt {

@@ -26,15 +26,15 @@ macro_rules! __write_pvariant {
                 &debug_display
             }
             $crate::pmr::Formatting::Debug => match $parg.fmt_flags.mode() {
-                $crate::pmr::FormattingMode::Regular => {
+                $crate::pmr::NumberFormatting::Decimal => {
                     debug_display = wrapper.to_start_array_debug();
                     &debug_display
                 }
-                $crate::pmr::FormattingMode::Binary => {
+                $crate::pmr::NumberFormatting::Binary => {
                     bin = wrapper.to_start_array_binary($parg.fmt_flags);
                     &bin
                 }
-                $crate::pmr::FormattingMode::Hexadecimal => {
+                $crate::pmr::NumberFormatting::Hexadecimal => {
                     hex = wrapper.to_start_array_hexadecimal($parg.fmt_flags);
                     &hex
                 }

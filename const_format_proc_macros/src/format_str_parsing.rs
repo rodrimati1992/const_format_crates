@@ -1,4 +1,4 @@
-use crate::formatting::{FormattingFlags, FormattingMode, IsAlternate};
+use crate::formatting::{FormattingFlags, IsAlternate, NumberFormatting};
 
 use syn::Ident;
 
@@ -197,13 +197,13 @@ fn parse_formatting(input: &str, starts_at: usize) -> Result<FormattingFlags, Pa
         bytes = before;
     }
 
-    let mut mode = FormattingMode::Regular;
+    let mut mode = NumberFormatting::Decimal;
     let mut is_alternate = IsAlternate::No;
 
     for byte in bytes {
         match byte {
-            b'b' if mode.is_regular() => mode = FormattingMode::Binary,
-            b'x' if mode.is_regular() => mode = FormattingMode::Hexadecimal,
+            b'b' if mode.is_regular() => mode = NumberFormatting::Binary,
+            b'x' if mode.is_regular() => mode = NumberFormatting::Hexadecimal,
             b'#' => is_alternate = IsAlternate::Yes,
             _ => return Err(make_error()),
         }

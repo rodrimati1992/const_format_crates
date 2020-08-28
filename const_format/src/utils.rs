@@ -1,3 +1,5 @@
+use core::ops::Range;
+
 #[cfg(feature = "const_as_str")]
 pub union Dereference<'a, T: ?Sized> {
     pub ptr: *const T,

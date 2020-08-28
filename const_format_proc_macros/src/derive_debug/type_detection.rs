@@ -10,7 +10,7 @@ pub(super) fn detect_type_formatting(ty: &Type) -> HowToFmt {
     match ty {
         Type::Array { .. } | Type::Slice { .. } => HowToFmt::Slice,
         Type::Path(ty) if ty.qself.is_none() && is_path_an_option(&ty.path) => HowToFmt::Option_,
-        _ => HowToFmt::Regular,
+        _ => HowToFmt::Decimal,
     }
 }
 

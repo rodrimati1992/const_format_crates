@@ -70,9 +70,9 @@ macro_rules! coerce_to_fmt {
     ($reference:expr) => {{
         match $reference {
             ref reference => {
-                let mut marker = $crate::pmr::IsAFormatMarker::NEW;
+                let marker = $crate::pmr::IsAFormatMarker::NEW;
                 if false {
-                    marker = marker.infer_type(reference);
+                    marker.infer_type(reference);
                 }
                 marker.coerce(marker.unreference(reference))
             }

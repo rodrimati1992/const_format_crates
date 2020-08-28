@@ -89,7 +89,7 @@ impl ExpandInto {
     pub(crate) fn fmt_call(&self, cratep: &TokenStream2, formatter: &Ident) -> TokenStream2 {
         let flags = self.formatting_flags().tokens(cratep);
         match self {
-            ExpandInto::Str(str) => quote!( #formatter.write_whole_str(#str) ),
+            ExpandInto::Str(str) => quote!( #formatter.write_str(#str) ),
             ExpandInto::Formatted(fmted) => {
                 let fmt_method = fmted.format.fmt_method_name();
                 let local_variable = &fmted.local_variable;

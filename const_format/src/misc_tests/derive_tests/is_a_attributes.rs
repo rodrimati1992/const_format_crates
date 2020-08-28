@@ -19,7 +19,7 @@ impl_fmt! {
 }
 
 const fn fmt_bar_in_hex(this: &Bar, f: &mut Formatter<'_>) -> Result<(), Error> {
-    let flags = f.flags().set_hexadecimal_mode();
+    let flags = f.flags().set_hexadecimal();
     this.const_debug_fmt(&mut f.make_formatter(flags))
 }
 
@@ -56,7 +56,7 @@ mod type_named_option {
         impl[T] Option<T>;
 
         const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-            f.write_whole_str("NotAStdOption")
+            f.write_str("NotAStdOption")
         }
     }
 

@@ -14,6 +14,7 @@ pub(crate) fn dummy_ident() -> syn::Ident {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+#[cfg(feature = "derive")]
 pub fn spanned_err(tokens: &dyn ToTokens, display: &dyn Display) -> syn::Error {
     syn::Error::new_spanned(tokens, display)
 }

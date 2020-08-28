@@ -1,5 +1,5 @@
 use crate::{
-    formatting::{FormattingFlags, FormattingMode, StartAndArray, FOR_ESCAPING},
+    formatting::{FormattingFlags, NumberFormatting, StartAndArray, FOR_ESCAPING},
     pargument::Integer,
 };
 
@@ -8,6 +8,64 @@ use core::ops::Range;
 #[cfg(test)]
 mod tests;
 
+/// Wrapper for many std types,
+/// which implements the `const_debug_fmt` and/or `const_display_fmt` methods for them.
+///
+/// The macros from this crate automatically wraps std types in this type,
+/// so you only need to use it if you're manually calling the `const_*_fmt` methods.
+///
+/// ### Excluded std types
+///
+/// Note that this type does not implement the formatting methods for all std types,
+/// it can't implement them for std types which wrap non-std types,
+/// and for Options/arrays/slices it only does it with
+/// integer, and `&str` type parameters.
+///
+/// You can use the [`call_debug_fmt`] macro to format arrays/slices/Options of
+/// any type that can be const debug formatted.
+///
+/// # Example
+///
+/// This example demonstrates how you can implement debug formatting for a type
+/// using PWrapper to write std types.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter, PWrapper};
+/// use const_format::{impl_fmt, formatc, try_};
+///
+/// use core::num::NonZeroU32;
+///
+/// pub struct Divide(pub u32, pub u32);
+///
+/// impl_fmt!{
+///     impl Divide;
+///     
+///     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         let Self(left, right) = *self;
+///         let divided = self.0 / self.1;
+///
+///         let mut f = f.debug_struct("Divide");
+///         try_!(PWrapper(self.0).const_debug_fmt(f.field("numerator")));
+///         try_!(PWrapper(self.1).const_debug_fmt(f.field("denominator")));
+///         try_!(PWrapper(divided).const_debug_fmt(f.field("divided")));
+///         f.finish()
+///     }
+/// }
+///
+/// const TEXT: &str = formatc!("{:?}", Divide(34, 11));
+/// const T_HEX: &str = formatc!("{:x?}", Divide(34, 11));
+/// const T_BIN: &str = formatc!("{:b?}", Divide(34, 11));
+///
+/// assert_eq!(TEXT, "Divide { numerator: 34, denominator: 11, divided: 3 }");
+/// assert_eq!(T_HEX, "Divide { numerator: 22, denominator: B, divided: 3 }");
+/// assert_eq!(T_BIN, "Divide { numerator: 100010, denominator: 1011, divided: 11 }");
+/// ```
+///
+/// [`call_debug_fmt`]: ./macro.call_debug_fmt.html
+/// [`writec`]: ./macro.writec.html
+///
 #[derive(Copy, Clone)]
 pub struct PWrapper<T>(pub T);
 
@@ -71,11 +129,11 @@ macro_rules! impl_number_of_digits {
             #[doc(hidden)]
             pub const fn compute_debug_len(self, fmt: FormattingFlags)-> usize {
                 match fmt.mode() {
-                    FormattingMode::Regular=>
+                    NumberFormatting::Decimal=>
                         self.compute_display_len(fmt),
-                    FormattingMode::Hexadecimal=>
+                    NumberFormatting::Hexadecimal=>
                         compute_hex_count!($bits, self.0, fmt.is_alternate()),
-                    FormattingMode::Binary=>
+                    NumberFormatting::Binary=>
                         compute_binary_count!($bits, self.0, fmt.is_alternate()),
                 }
             }

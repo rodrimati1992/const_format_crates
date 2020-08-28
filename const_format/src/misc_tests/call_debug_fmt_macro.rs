@@ -6,25 +6,25 @@ use core::{cmp::Reverse, num::Wrapping};
 fn all_macro_branches() {
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
         call_debug_fmt!(slice, [Some(10u8), None], f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(Option, Some(&(0..10)), f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(newtype Wrapping, Wrapping("hello"), f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(newtype Reverse, Reverse(&Some(10u8)), f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(newtype Hello, Hello(false), f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(std, 1000u16, f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         call_debug_fmt!(other, TupleStruct(256), f);
-        try_!(f.write_whole_str("\n"));
+        try_!(f.write_str("\n"));
 
         Ok(())
     }

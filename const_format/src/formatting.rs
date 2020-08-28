@@ -16,34 +16,78 @@ impl Formatting {
     }
 }
 
-/// The formatting mode:
+/// How integers are formatted in debug formatters.
 ///
-/// For Display formatting it can only be the `Regular` variant.
+/// Hexadecimal or binary formatting in the formatting string from this crate imply
+/// debug formatting.
 ///
-/// For Debug-like formatting it can be any of these.
 ///
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum FormattingMode {
-    Regular,
+pub enum NumberFormatting {
+    /// Formats integers as decimal
+    Decimal,
+    /// Formats integers as hexadecimal
     Hexadecimal,
+    /// Formats integers as binary
     Binary,
 }
 
-impl FormattingMode {
+impl NumberFormatting {
     #[cfg(test)]
     pub(crate) const ALL: &'static [Self; 3] = &[
-        FormattingMode::Regular,
-        FormattingMode::Hexadecimal,
-        FormattingMode::Binary,
+        NumberFormatting::Decimal,
+        NumberFormatting::Hexadecimal,
+        NumberFormatting::Binary,
     ];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// This type bundles configuration for how to format data into strings, including.
+///
+/// # Formatting mode
+///
+/// How integers are formatted in debug formatters,
+/// each one corresponding to a [`NumberFormatting`] variant:
+///
+/// - `NumberFormatting::Decimal` (eg: `formatc!("{:?}", FOO)`):
+/// formats integers as decimal.
+///
+/// - `NumberFormatting::Hexadecimal`  (eg: `formatc!("{:x}", FOO)`):
+/// formats integers as hexadecimal.
+///
+/// - `NumberFormatting::Binary` (eg: `formatc!("{:b}", FOO)`):
+/// formats integers as binary.
+///
+/// Hexadecimal or binary formatting in the formatting string from this crate imply
+/// debug formatting,
+/// and can be used to for example print an array of binary integers.
+///
+/// # Alternate flag
+///
+/// A flag that types can use to be formatted differently when it's enabled.
+///
+/// The default behavior when it is enabled is this:
+///
+/// - The Debug formater (eg: `formatc!("{:#?}", FOO)`):
+/// pretty print structs and enums.
+///
+/// - The hexadecimal formater (eg: `formatc!("{:#x}", FOO)`):
+/// prefixes numbers with `0x`.
+///
+/// - The binary formater (eg: `formatc!("{:#b}", FOO)`):
+/// prefixes numbers with `0b`.`
+///
+/// # Margin
+///
+/// The amount of leading space when writing structs and enums into a [`Formatter`].
+///
+/// [`Formatter`]: ./struct.Formatter.html
+///
 #[must_use]
 #[derive(Debug, Copy, Clone)]
 pub struct FormattingFlags {
-    mode: FormattingMode,
+    mode: NumberFormatting,
     is_alternate: bool,
     margin: u16,
 }
@@ -52,77 +96,84 @@ const INITIAL_MARGIN: u16 = 0;
 
 #[doc(hidden)]
 impl FormattingFlags {
-    pub const __REG: Self = Self::NEW.set_alternate(false).unset_mode();
-    pub const __HEX: Self = Self::NEW.set_alternate(false).set_hexadecimal_mode();
-    pub const __BIN: Self = Self::NEW.set_alternate(false).set_binary_mode();
+    pub const __REG: Self = Self::NEW.set_alternate(false).set_decimal();
+    pub const __HEX: Self = Self::NEW.set_alternate(false).set_hexadecimal();
+    pub const __BIN: Self = Self::NEW.set_alternate(false).set_binary();
 
-    pub const __A_REG: Self = Self::NEW.set_alternate(true).unset_mode();
-    pub const __A_HEX: Self = Self::NEW.set_alternate(true).set_hexadecimal_mode();
-    pub const __A_BIN: Self = Self::NEW.set_alternate(true).set_binary_mode();
+    pub const __A_REG: Self = Self::NEW.set_alternate(true).set_decimal();
+    pub const __A_HEX: Self = Self::NEW.set_alternate(true).set_hexadecimal();
+    pub const __A_BIN: Self = Self::NEW.set_alternate(true).set_binary();
 }
 impl FormattingFlags {
     #[doc(hidden)]
     pub const DEFAULT: Self = Self {
-        mode: FormattingMode::Regular,
+        mode: NumberFormatting::Decimal,
         is_alternate: false,
         margin: INITIAL_MARGIN,
     };
 
     /// Constructs a `FormattingFlags`
     pub const NEW: Self = Self {
-        mode: FormattingMode::Regular,
+        mode: NumberFormatting::Decimal,
         is_alternate: false,
         margin: INITIAL_MARGIN,
     };
 
-    /// Sets the formatting mode,
+    /// Sets the integer formatting mode,
     ///
     /// This usually doesn't affect the outputted text in display formatting.
     #[inline]
-    pub const fn set_mode(mut self, mode: FormattingMode) -> Self {
+    pub const fn set_num_fmt(mut self, mode: NumberFormatting) -> Self {
         self.mode = mode;
         self
     }
 
-    /// Sets the formatting mode to `FormattingMode::Regular`.
+    /// Sets the formatting mode to `NumberFormatting::Decimal`.
     ///
-    /// This  means that integers are printed as decimal.
+    /// This means that integers are written as decimal.
     #[inline]
-    pub const fn unset_mode(mut self) -> Self {
-        self.mode = FormattingMode::Regular;
+    pub const fn set_decimal(mut self) -> Self {
+        self.mode = NumberFormatting::Decimal;
         self
     }
 
-    /// Sets the formatting mode to `FormattingMode::Hexadecimal`.
+    /// Sets the formatting mode to `NumberFormatting::Hexadecimal`.
     ///
-    /// This  means that integers are printed as hexadecimal.
+    /// This means that integers are written as hexadecimal.
     #[inline]
-    pub const fn set_hexadecimal_mode(mut self) -> Self {
-        self.mode = FormattingMode::Hexadecimal;
+    pub const fn set_hexadecimal(mut self) -> Self {
+        self.mode = NumberFormatting::Hexadecimal;
         self
     }
 
-    /// Sets the formatting mode to `FormattingMode::Binary`.
+    /// Sets the formatting mode to `NumberFormatting::Binary`.
     ///
-    /// This  means that integers are printed as binary.
+    /// This means that integers are written as binary.
     #[inline]
-    pub const fn set_binary_mode(mut self) -> Self {
-        self.mode = FormattingMode::Binary;
+    pub const fn set_binary(mut self) -> Self {
+        self.mode = NumberFormatting::Binary;
         self
     }
 
+    /// Sets whether the formatting flag is enabled.
     #[inline]
     pub const fn set_alternate(mut self, is_alternate: bool) -> Self {
         self.is_alternate = is_alternate;
         self
     }
 
+    /// Increments the margin.
+    ///
+    /// The margin is used for pretty printing data structures.
     #[inline]
     pub const fn increment_margin(mut self) -> Self {
         self.margin += 4;
         self
     }
 
+    /// Decrements the margin.
+    ///
+    /// The margin is used for pretty printing data structures.
     #[inline]
     pub const fn decrement_margin(mut self) -> Self {
         self.margin -= 4;
@@ -134,16 +185,21 @@ impl FormattingFlags {
         self
     }
 
+    /// Gets the current `NumberFormatting`.
     #[inline]
-    pub const fn mode(self) -> FormattingMode {
+    pub const fn mode(self) -> NumberFormatting {
         self.mode
     }
 
+    /// Gets whether the alternate flag is enabled
     #[inline]
     pub const fn is_alternate(self) -> bool {
         self.is_alternate
     }
 
+    /// Gets the current margin.
+    ///
+    /// The margin is used for pretty printing data structures.
     #[inline]
     pub const fn margin(self) -> usize {
         self.margin as usize

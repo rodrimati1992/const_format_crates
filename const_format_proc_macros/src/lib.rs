@@ -8,6 +8,7 @@ mod macros;
 #[cfg(feature = "derive")]
 mod datastructure;
 
+#[cfg(feature = "derive")]
 mod derive_debug;
 
 mod format_args;
@@ -67,6 +68,7 @@ pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
         .into()
 }
 
+#[cfg(feature = "derive")]
 #[proc_macro_derive(ConstDebug, attributes(cdeb))]
 pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
     syn::parse(input)

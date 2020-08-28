@@ -96,7 +96,7 @@ pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2,
                 );
 
                 field_ts.append_all(match &how_to_fmt {
-                    HowToFmt::Regular => coerce_and_fmt(&cratep, f),
+                    HowToFmt::Decimal => coerce_and_fmt(&cratep, f),
                     HowToFmt::Ignore => unreachable!(),
                     HowToFmt::Slice => fmt_slice(&cratep, f),
                     HowToFmt::Option_ => fmt_option(&cratep, f),
@@ -200,7 +200,7 @@ fn fmt_option(cratep: &TokenStream2, field: &Field<'_>) -> TokenStream2 {
                 #call
                 f.finish()
             }
-            #cratep::pmr::None => field_formatter.write_whole_str("None"),
+            #cratep::pmr::None => field_formatter.write_str("None"),
         });
     )
 }

@@ -97,7 +97,7 @@ fn check_debug_formatting() {
     test_case(
         &bar,
         writer,
-        flags.set_alternate(false).set_hexadecimal_mode(),
+        flags.set_alternate(false).set_hexadecimal(),
         "\
             Bar { \
                 x: 15, y: \"foo\\tbar\", z: [22, 37, 59, 90, E9], \
@@ -109,7 +109,7 @@ fn check_debug_formatting() {
     test_case(
         &bar,
         writer,
-        flags.set_alternate(false).set_binary_mode(),
+        flags.set_alternate(false).set_binary(),
         "\
             Bar { \
                 x: 10101, y: \"foo\\tbar\", z: [100010, 110111, 1011001, 10010000, 11101001], \
@@ -190,13 +190,13 @@ Bar {
     test_case(
         &bar,
         writer,
-        flags.set_alternate(true).set_hexadecimal_mode(),
+        flags.set_alternate(true).set_hexadecimal(),
         ALTERNATE_HEX,
     );
     test_case(
         &bar,
         writer,
-        flags.set_alternate(true).set_binary_mode(),
+        flags.set_alternate(true).set_binary(),
         ALTERNATE_BINARY,
     );
 }
@@ -257,13 +257,13 @@ fn check_set_formatting() {
     test_case(
         &set,
         writer,
-        flags.set_hexadecimal_mode(),
+        flags.set_hexadecimal(),
         "{Foo { x: 64, y: \"hello\\nworld\", z: [] }}",
     );
     test_case(
         &set,
         writer,
-        flags.set_binary_mode(),
+        flags.set_binary(),
         "{Foo { x: 1100100, y: \"hello\\nworld\", z: [] }}",
     );
 
@@ -301,13 +301,13 @@ fn check_set_formatting() {
     test_case(
         &set,
         writer,
-        flags.set_alternate(true).set_hexadecimal_mode(),
+        flags.set_alternate(true).set_hexadecimal(),
         ALTERNATE_HEX,
     );
     test_case(
         &set,
         writer,
-        flags.set_alternate(true).set_binary_mode(),
+        flags.set_alternate(true).set_binary(),
         ALTERNATE_BINARY,
     );
 }

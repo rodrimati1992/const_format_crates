@@ -6,29 +6,29 @@ use syn::Ident;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub(crate) enum Formatting {
-    Debug(FormattingMode),
+    Debug(NumberFormatting),
     Display,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub(crate) enum FormattingMode {
-    Regular,
+pub(crate) enum NumberFormatting {
+    Decimal,
     Hexadecimal,
     Binary,
 }
 
-impl FormattingMode {
+impl NumberFormatting {
     pub(crate) fn is_regular(self) -> bool {
-        matches!(self, FormattingMode::Regular)
+        matches!(self, NumberFormatting::Decimal)
     }
 }
 
-impl ToTokens for FormattingMode {
+impl ToTokens for NumberFormatting {
     fn to_tokens(&self, ts: &mut TokenStream2) {
         ts.append_all(match self {
-            Self::Regular => return,
-            Self::Hexadecimal => quote!(.set_hexadecimal_mode()),
-            Self::Binary => quote!(.set_binary_mode()),
+            Self::Decimal => return,
+            Self::Hexadecimal => quote!(.set_hexadecimal()),
+            Self::Binary => quote!(.set_binary()),
         });
     }
 }
@@ -59,7 +59,7 @@ impl FormattingFlags {
     }
 
     #[inline]
-    pub(crate) const fn debug(mode: FormattingMode, is_alternate: IsAlternate) -> Self {
+    pub(crate) const fn debug(mode: NumberFormatting, is_alternate: IsAlternate) -> Self {
         Self {
             formatting: Formatting::Debug(mode),
             is_alternate,
@@ -100,18 +100,18 @@ impl FormattingFlags {
     }
 
     pub(crate) fn tokens(self, crate_path: &TokenStream2) -> TokenStream2 {
-        use self::{FormattingMode as FM, IsAlternate as IA};
+        use self::{IsAlternate as IA, NumberFormatting as FM};
 
         let formatting = match self.formatting {
-            Formatting::Display => FormattingMode::Regular,
+            Formatting::Display => NumberFormatting::Decimal,
             Formatting::Debug(mode) => mode,
         };
 
         match (self.is_alternate, formatting) {
-            (IA::No, FM::Regular) => quote!(#crate_path::fmt::FormattingFlags::__REG),
+            (IA::No, FM::Decimal) => quote!(#crate_path::fmt::FormattingFlags::__REG),
             (IA::No, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__HEX),
             (IA::No, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__BIN),
-            (IA::Yes, FM::Regular) => quote!(#crate_path::fmt::FormattingFlags::__A_REG),
+            (IA::Yes, FM::Decimal) => quote!(#crate_path::fmt::FormattingFlags::__A_REG),
             (IA::Yes, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__A_HEX),
             (IA::Yes, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__A_BIN),
         }

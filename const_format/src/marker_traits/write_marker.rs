@@ -84,7 +84,7 @@ where
 ///
 pub struct IsAWriteMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
-        K,
+        PhantomData<fn() -> PhantomData<K>>,
         PhantomData<fn() -> PhantomData<T>>,
         PhantomData<fn() -> PhantomData<R>>,
     )>,

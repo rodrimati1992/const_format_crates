@@ -174,9 +174,7 @@ BracedStruct {
     test_case(
         &foo,
         writer,
-        FormattingFlags::NEW
-            .set_alternate(true)
-            .set_hexadecimal_mode(),
+        FormattingFlags::NEW.set_alternate(true).set_hexadecimal(),
         ALT_HEX,
     );
 }
