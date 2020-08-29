@@ -118,14 +118,12 @@
 //! nightly feature, and only supports passing a `&'static str` argument,
 //! so this only works in the initialization block of `const` items.
 //!
-//! This example requires Rust nightly, and the "const_as_str" feature.
-//!
-#![cfg_attr(feature = "const_as_str", doc = "```compile_fail")]
-#![cfg_attr(not(feature = "const_as_str"), doc = "```ignore")]
+#![cfg_attr(feature = "fmt", doc = "```compile_fail")]
+#![cfg_attr(not(feature = "fmt"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //! #![feature(const_panic)]
 //!
-//! use const_format::{StrWriter, writec};
+//! use const_format::{StrWriter, strwriter_as_str, writec};
 //! use const_format::utils::str_eq;
 //!
 //! struct PizzaError;
@@ -163,8 +161,8 @@
 //!
 //! const _: () = {
 //!     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
-//!         let static_: &'static StrWriter = &{buffer};
-//!         let message = static_.as_str();
+//!         let promoted: &'static StrWriter = &{buffer};
+//!         let message = strwriter_as_str!(promoted);
 //!         panic!(message);
 //!     }
 //! };
@@ -179,8 +177,8 @@
 //!    |
 //! 43 | / const _: () = {
 //! 44 | |     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
-//! 45 | |         let static_: &'static StrWriter = &{buffer};
-//! 46 | |         let message = static_.as_str();
+//! 45 | |         let promoted: &'static StrWriter = &{buffer};
+//! 46 | |         let message = strwriter_as_str!(promoted);
 //! 47 | |         panic!(message);
 //!    | |         ^^^^^^^^^^^^^^^^ the evaluated program panicked at '
 //! ----------------------------------------------------------------
@@ -281,7 +279,7 @@
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 #![cfg_attr(
-    feature = "const_as_str",
+    feature = "constant_time_as_str",
     feature(
         const_slice_from_raw_parts,
         const_str_from_utf8_unchecked,

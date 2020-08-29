@@ -22,11 +22,11 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
 # Remember to disable these feature before releasing this crate!!
-default = ["derive", "const_as_str"]
+default = ["derive", "constant_time_as_str"]
 fmt = []
 derive = ["fmt", "const_format_proc_macros/derive"]
 debug = ["const_format_proc_macros/debug"]
-const_as_str = ["fmt"]
+constant_time_as_str = ["fmt"]
 
 # "private" features
 only_new_tests = []

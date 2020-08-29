@@ -80,15 +80,18 @@ macro_rules! coerce_to_fmt {
     }};
 }
 
-/// Converts a `&'static StrWriter` `const`ant to a `&'static str`,
+/// Converts a `&'static StrWriter` to a `&'static str`, in a `const`/`static` initializer,
 ///
 /// This is usable in `const` or `static` initializers,
 /// but not inside of const fn.
 ///
-/// This is unnecessary if you enable the "const_as_str" feature,
-/// then you can call [`StrWriter::as_str`] to get a `&str` at compile-time.
+/// # Runtime
 ///
-/// [`StrWriter::as_str`]: ./fmt/struct.StrWriter.html#method.as_str
+/// If the "constant_time_as_str" feature is disabled,
+/// thich takes time proportional to `$expr.capacity() - $expr.len()`.
+///
+/// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
+/// but uses a few additional nightly features.
 ///
 /// # Example
 ///
@@ -108,38 +111,20 @@ macro_rules! coerce_to_fmt {
 ///     writer
 /// }
 ///
-/// const WRITER: &StrWriter = &formatted();
-/// const STR: &str = strwriter_as_str!(WRITER);
-///
-/// # const WRITER_ARR: &StrWriter<[u8; CAP]> = &formatted();
-/// # const STR_ARR: &str = strwriter_as_str!(WRITER_ARR);
+/// const STR: &str = strwriter_as_str!(&formatted());
 ///
 /// fn main() {
 ///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
-/// #    assert_eq!(STR_ARR, "[3, 5, 8, D, 15, 22]");
 /// }
 /// ```
 ///
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! strwriter_as_str {
-    ($path:path) => {
+    ($expr:expr) => {
         unsafe {
-            let writer: &'static $crate::StrWriter = $path;
-
-            let array = $crate::pmr::transmute::<
-                *const u8,
-                &[u8; {
-                     let writer: &'static $crate::StrWriter = $path;
-
-                     ["Writer's length is larger than capacity!?!?"]
-                         [(writer.len() > writer.capacity()) as usize];
-
-                     writer.len()
-                 }],
-            >(writer.buffer().as_ptr());
-
-            $crate::pmr::transmute::<&'static [u8], &'static str>(array)
+            let writer: &'static $crate::StrWriter = $expr;
+            $crate::pmr::transmute::<&'static [u8], &'static str>(writer.as_bytes_alt())
         }
     };
 }

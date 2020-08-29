@@ -72,11 +72,16 @@ impl<'w> StrWriterMut<'w> {
         self.buffer.len()
     }
 
+    #[inline(always)]
+    pub const fn as_bytes_alt(&self) -> &[u8] {
+        crate::utils::slice_up_to_len_alt(self.buffer, *self.len)
+    }
+
     conditionally_const! {
-        feature = "const_as_str";
+        feature = "constant_time_as_str";
         /// Gets the written part of this StrWriterMut as a `&str`
         ///
-        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
         /// which requires nightly Rust versions after 2020-08-15.
         ///
         #[inline(always)]
@@ -90,7 +95,7 @@ impl<'w> StrWriterMut<'w> {
         ///
         /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
         ///
-        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
         /// which requires nightly Rust versions after 2020-08-15.
         ///
         #[inline(always)]

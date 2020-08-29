@@ -46,64 +46,15 @@ use super::{Error, Formatter, FormattingFlags, StrWriterMut};
 ///
 /// # Examples
 ///
-/// ### At Runtime
+/// ### Formatting into associated constant
 ///
-/// This example shows how you can construct the str at compile-time,
-/// and do the conversion from `&'static StrWriter` to `&'static str` at runtime.
-///
-/// ```rust
-/// #![feature(const_mut_refs)]
-///
-/// use const_format::{StrWriter, writec, unwrap};
-///
-/// trait Str {
-///     const V: &'static str;
-/// }
-///
-/// struct Hello;
-///
-/// impl Str for Hello {
-///     const V: &'static str = "hello";
-/// }
-///
-/// struct World;
-///
-/// impl Str for World {
-///     const V: &'static str = "world";
-/// }
-///
-/// struct Add<L, R>(L, R);
-///
-/// const fn compute_str(l: &str, r: &str) -> StrWriter<[u8; 128]> {
-///     let mut writer = StrWriter::new([0; 128]);
-///     unwrap!(writec!(writer, "{}{}", l, r));
-///     writer
-/// }
-///
-/// impl<L: Str, R: Str> Add<L, R> {
-///     const STR: &'static StrWriter = &compute_str(L::V, R::V);
-/// }
-///
-/// assert_eq!(Add::<Hello, Hello>::STR.as_str(), "hellohello");
-/// assert_eq!(Add::<Hello, World>::STR.as_str(), "helloworld");
-/// assert_eq!(Add::<World, Hello>::STR.as_str(), "worldhello");
-/// assert_eq!(Add::<World, World>::STR.as_str(), "worldworld");
-///
-/// ```
-///
-/// ### At compile time
-///
-/// This example shows how you can construct the string at compile-time,
-/// *and* also do the conversion from `&'static StrWriter` to `&'static str`
-/// at compile-time.
-///
-/// This requires the "const_as_str" feature,which uses additional nightly Rust features.
+/// This example shows how you can construct a formatted `&'static str` from associated constants.
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]
 /// #![feature(const_panic)]
 ///
-/// use const_format::{StrWriter, writec, unwrap};
+/// use const_format::{StrWriter, strwriter_as_str, writec, unwrap};
 ///
 /// trait Num {
 ///     const V: u32;
@@ -130,12 +81,7 @@ use super::{Error, Formatter, FormattingFlags, StrWriterMut};
 /// }
 ///
 /// impl<L: Num, R: Num> Mul<L, R> {
-///     const STR: &'static str = {
-///         // We have to coerce `&StrWriter<[u8; 128]>` to `&StrWriter` to call the
-///         // `as_str` method.
-///         let w: &StrWriter = &compute_str(L::V, R::V);
-///         w.as_str()
-///     };
+///     const STR: &'static str = strwriter_as_str!(&compute_str(L::V, R::V));
 /// }
 ///
 /// assert_eq!(Mul::<Two,Three>::STR, "2 * 3 == 6");
@@ -210,13 +156,55 @@ impl StrWriter {
         self.buffer.len()
     }
 
+    /// Gets the written part of this `StrWriter` as a `&[u8]`
+    ///
+    /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
+    ///
+    /// ### Constness
+    ///
+    /// This can be always be called in const contexts,
+    ///
+    /// If the "constant_time_as_str" feature is disabled,
+    /// thich takes time proportional to `self.capacity() - self.len()`.
+    ///
+    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
+    /// but uses a few additional nightly features.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// const fn slice() -> StrWriter<[u8; 64]> {
+    ///     let mut buffer = StrWriter::new([0; 64]);
+    ///     let mut writer = StrWriterMut::new(&mut buffer);
+    ///     writer.write_str("Hello, World!");
+    ///     buffer
+    /// }
+    ///
+    /// const SLICE: &[u8] = {
+    ///     let promoted: &'static StrWriter = &slice();
+    ///     promoted.as_bytes_alt()
+    /// };
+    ///
+    ///
+    /// assert_eq!(SLICE, "Hello, World!".as_bytes());
+    ///
+    /// ```
+    #[inline(always)]
+    pub const fn as_bytes_alt(&self) -> &[u8] {
+        crate::utils::slice_up_to_len_alt(&self.buffer, self.len)
+    }
+
     conditionally_const! {
-        feature = "const_as_str";
+        feature = "constant_time_as_str";
         /// Gets the written part of this `StrWriter` as a `&str`
         ///
         /// ### Constness
         ///
-        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
         /// which requires nightly Rust versions after 2020-08-15.
         ///
         /// ### Alternative
@@ -243,7 +231,7 @@ impl StrWriter {
         ///
         /// ### Constness
         ///
-        /// This can be called in const contexts by enabling the "const_as_str" feature,
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
         /// which requires nightly Rust versions after 2020-08-15.
         ///
         /// # Example
