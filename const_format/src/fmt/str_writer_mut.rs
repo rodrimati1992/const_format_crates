@@ -56,7 +56,7 @@ impl<'w> StrWriterMut<'w> {
     }
 }
 
-impl StrWriterMut<'_> {
+impl<'w> StrWriterMut<'w> {
     #[inline(always)]
     pub const fn len(&self) -> usize {
         *self.len
@@ -106,11 +106,8 @@ impl StrWriterMut<'_> {
 
     // For borrowing this mutably in macros, without getting nested mutable references.
     #[inline(always)]
-    pub const fn borrow_mutably(&mut self) -> StrWriterMut<'_> {
-        StrWriterMut {
-            len: self.len,
-            buffer: self.buffer,
-        }
+    pub const fn borrow_mutably(&mut self) -> &mut StrWriterMut<'w> {
+        self
     }
 
     // For borrowing this mutably in macros, without getting nested mutable references.

@@ -169,6 +169,7 @@ pub(crate) fn writec_macro_impl(
         .map(|ei| ei.fmt_call(&cratep, &strwriter));
 
     Ok(quote! {
+        #[allow(non_snake_case)]
         match ((#writer_expr).borrow_mutably(), #(&(#expr),)*) {
             (#strwriter, #(#locals,)*) => {
                 let mut marker = #cratep::pmr::IsAWriteMarker::NEW;

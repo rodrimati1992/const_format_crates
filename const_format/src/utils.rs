@@ -1,3 +1,26 @@
+/// Whether two `&str` are equal.
+pub const fn str_eq(left: &str, right: &str) -> bool {
+    u8_slice_eq(left.as_bytes(), right.as_bytes())
+}
+
+/// Whether two `&[u8]` are equal.
+pub const fn u8_slice_eq(left: &[u8], right: &[u8]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+
+    let mut i = 0;
+    while i != left.len() {
+        if left[i] != right[i] {
+            return false;
+        }
+        i += 1;
+    }
+
+    true
+}
+
+#[doc(hidden)]
 #[cfg(feature = "const_as_str")]
 pub union Dereference<'a, T: ?Sized> {
     pub ptr: *const T,
@@ -33,6 +56,34 @@ pub(crate) const fn min_usize(l: usize, r: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn slice_eq_test() {
+        assert!(u8_slice_eq(&[], &[]));
+        assert!(!u8_slice_eq(&[], &[0]));
+        assert!(!u8_slice_eq(&[0], &[]));
+        assert!(u8_slice_eq(&[0], &[0]));
+        assert!(!u8_slice_eq(&[0], &[1]));
+        assert!(!u8_slice_eq(&[1], &[0]));
+        assert!(!u8_slice_eq(&[0], &[0, 1]));
+        assert!(!u8_slice_eq(&[0, 1], &[0]));
+        assert!(u8_slice_eq(&[0, 1], &[0, 1]));
+        assert!(!u8_slice_eq(&[0, 1], &[0, 2]));
+    }
+
+    #[test]
+    fn str_eq_test() {
+        assert!(str_eq("", ""));
+        assert!(!str_eq("", "0"));
+        assert!(!str_eq("0", ""));
+        assert!(str_eq("0", "0"));
+        assert!(!str_eq("0", "1"));
+        assert!(!str_eq("1", "0"));
+        assert!(!str_eq("0", "0, 1"));
+        assert!(!str_eq("0, 1", "0"));
+        assert!(str_eq("0, 1", "0, 1"));
+        assert!(!str_eq("0, 1", "0, 2"));
+    }
 
     #[test]
     #[should_panic]

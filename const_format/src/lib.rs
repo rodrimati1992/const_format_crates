@@ -109,8 +109,94 @@
 //!
 //! ```
 //!
+//! ### Formatted const panics
 //!
+//! This example demonstrates how you can use the StrWriter to format
+//! a compile-time panic message.
 //!
+//! As of writing these docs (2020-08-29), panicking at compile-time requires a
+//! nightly feature, and only supports passing a `&'static str` argument,
+//! so this only works in the initialization block of `const` items.
+//!
+//! This example requires Rust nightly, and the "const_as_str" feature.
+//!
+#![cfg_attr(feature = "const_as_str", doc = "```compile_fail")]
+#![cfg_attr(not(feature = "const_as_str"), doc = "```ignore")]
+//! #![feature(const_mut_refs)]
+//! #![feature(const_panic)]
+//!
+//! use const_format::{StrWriter, writec};
+//! use const_format::utils::str_eq;
+//!
+//! struct PizzaError;
+//!
+//! const fn write_message(
+//!     buffer: &mut StrWriter,
+//!     bought_by: &str,
+//!     topping: &str,
+//! ) -> Result<(), PizzaError> {
+//!     buffer.clear();
+//!     let mut writer = buffer.as_mut();
+//!     if str_eq(topping, "pineapple") {
+//!         let _ = writec!(
+//!             writer,
+//!             "\n{SEP}\n\nYou can't put pineapple on pizza, {}.\n\n{SEP}\n",
+//!             bought_by,
+//!             SEP = "----------------------------------------------------------------"
+//!         );
+//!         return Err(PizzaError);
+//!     }
+//!     Ok(())
+//! }
+//!
+//! const CAP: usize = 256;
+//! // Defined a `const fn` as a workaround for mutable references not
+//! // being allowed in `const`ants.
+//! const fn message_and_result(
+//!     bought_by: &str,
+//!     topping: &str,
+//! ) -> (StrWriter<[u8; CAP]>, Result<(), PizzaError>) {
+//!     let mut buffer = StrWriter::new([0; CAP]);
+//!     let res = write_message(&mut buffer, bought_by, topping);
+//!     (buffer, res)
+//! }
+//!
+//! const _: () = {
+//!     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
+//!         let static_: &'static StrWriter = &{buffer};
+//!         let message = static_.as_str();
+//!         panic!(message);
+//!     }
+//! };
+//!
+//! ```
+//!
+//! This is what it prints in rust nightly :
+//!
+//! ```text
+//! error: any use of this value will cause an error
+//!   --> src/lib.rs:166:9
+//!    |
+//! 43 | / const _: () = {
+//! 44 | |     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
+//! 45 | |         let static_: &'static StrWriter = &{buffer};
+//! 46 | |         let message = static_.as_str();
+//! 47 | |         panic!(message);
+//!    | |         ^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+//! ----------------------------------------------------------------
+//!
+//! You can't put pineapple on pizza, Steve.
+//!
+//! ----------------------------------------------------------------
+//! ', src/lib.rs:47:9
+//! 48 | |     }
+//! 49 | | };
+//!    | |__-
+//!    |
+//!    = note: `#[deny(const_err)]` on by default
+//!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+//!
+//! ```
 //!
 //! <div id="macro-limitations"></div>
 //!
@@ -214,7 +300,7 @@ mod formatting;
 
 mod pargument;
 
-mod utils;
+pub mod utils;
 
 #[cfg(feature = "fmt")]
 pub mod marker_traits;
