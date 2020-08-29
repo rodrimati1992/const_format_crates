@@ -128,7 +128,7 @@ macro_rules! impl_number_of_digits {
             #[allow(unused_mut,unused_variables)]
             #[doc(hidden)]
             pub const fn compute_debug_len(self, fmt: FormattingFlags)-> usize {
-                match fmt.mode() {
+                match fmt.num_fmt() {
                     NumberFormatting::Decimal=>
                         self.compute_display_len(fmt),
                     NumberFormatting::Hexadecimal=>

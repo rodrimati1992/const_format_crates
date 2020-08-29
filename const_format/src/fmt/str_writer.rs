@@ -204,11 +204,11 @@ impl StrWriter {
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
         Formatter::from_sw_mut(
-            flags,
             StrWriterMut {
                 len: &mut self.len,
                 buffer: &mut self.buffer,
             },
+            flags,
         )
     }
 }

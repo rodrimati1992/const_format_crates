@@ -1,7 +1,3 @@
-//! Formatting items that are always enabled,
-//! the `fmt` module requires the "fmt" feature.
-
-///
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Formatting {
     Debug,
@@ -16,7 +12,7 @@ impl Formatting {
     }
 }
 
-/// How integers are formatted in debug formatters.
+/// How numbers are formatted in debug formatters.
 ///
 /// Hexadecimal or binary formatting in the formatting string from this crate imply
 /// debug formatting.
@@ -24,11 +20,11 @@ impl Formatting {
 ///
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum NumberFormatting {
-    /// Formats integers as decimal
+    /// Formats numbers as decimal
     Decimal,
-    /// Formats integers as hexadecimal
+    /// Formats numbers as hexadecimal
     Hexadecimal,
-    /// Formats integers as binary
+    /// Formats numbers as binary
     Binary,
 }
 
@@ -45,27 +41,30 @@ impl NumberFormatting {
 
 /// This type bundles configuration for how to format data into strings, including.
 ///
-/// # Formatting mode
+/// # Number formatting
 ///
-/// How integers are formatted in debug formatters,
-/// each one corresponding to a [`NumberFormatting`] variant:
+/// How numbers are formatted in debug formatters,
+/// It can be accessed with the `num_fmt` method, and set with the `set_num_fmt` method.
+///
+/// Each type of number formatting corresponds to a [`NumberFormatting`] variant:
 ///
 /// - `NumberFormatting::Decimal` (eg: `formatc!("{:?}", FOO)`):
-/// formats integers as decimal.
+/// formats numbers as decimal.
 ///
 /// - `NumberFormatting::Hexadecimal`  (eg: `formatc!("{:x}", FOO)`):
-/// formats integers as hexadecimal.
+/// formats numbers as hexadecimal.
 ///
 /// - `NumberFormatting::Binary` (eg: `formatc!("{:b}", FOO)`):
-/// formats integers as binary.
+/// formats numbers as binary.
 ///
 /// Hexadecimal or binary formatting in the formatting string from this crate imply
 /// debug formatting,
-/// and can be used to for example print an array of binary integers.
+/// and can be used to for example print an array of binary numbers.
 ///
 /// # Alternate flag
 ///
-/// A flag that types can use to be formatted differently when it's enabled.
+/// A flag that types can use to be formatted differently when it's enabled,
+/// checked with the `.is_alternate()` method.
 ///
 /// The default behavior when it is enabled is this:
 ///
@@ -87,7 +86,7 @@ impl NumberFormatting {
 #[must_use]
 #[derive(Debug, Copy, Clone)]
 pub struct FormattingFlags {
-    mode: NumberFormatting,
+    num_fmt: NumberFormatting,
     is_alternate: bool,
     margin: u16,
 }
@@ -107,51 +106,71 @@ impl FormattingFlags {
 impl FormattingFlags {
     #[doc(hidden)]
     pub const DEFAULT: Self = Self {
-        mode: NumberFormatting::Decimal,
+        num_fmt: NumberFormatting::Decimal,
         is_alternate: false,
         margin: INITIAL_MARGIN,
     };
 
-    /// Constructs a `FormattingFlags`
+    /// Constructs a `FormattingFlags` with these values:
+    ///
+    /// - number formatting: NumberFormatting::Decimal
+    ///
+    /// - is alternate: false
+    ///
+    /// - margin: 0
+    ///
     pub const NEW: Self = Self {
-        mode: NumberFormatting::Decimal,
+        num_fmt: NumberFormatting::Decimal,
         is_alternate: false,
         margin: INITIAL_MARGIN,
     };
 
-    /// Sets the integer formatting mode,
+    /// Constructs a `FormattingFlags` with these values:
+    ///
+    /// - number formatting: NumberFormatting::Decimal
+    ///
+    /// - is alternate: false
+    ///
+    /// - margin: 0
+    ///
+    #[inline]
+    pub const fn new() -> Self {
+        Self::NEW
+    }
+
+    /// Sets the integer formatting num_fmt,
     ///
     /// This usually doesn't affect the outputted text in display formatting.
     #[inline]
-    pub const fn set_num_fmt(mut self, mode: NumberFormatting) -> Self {
-        self.mode = mode;
+    pub const fn set_num_fmt(mut self, num_fmt: NumberFormatting) -> Self {
+        self.num_fmt = num_fmt;
         self
     }
 
-    /// Sets the formatting mode to `NumberFormatting::Decimal`.
+    /// Sets the formatting num_fmt to `NumberFormatting::Decimal`.
     ///
-    /// This means that integers are written as decimal.
+    /// This means that numbers are written as decimal.
     #[inline]
     pub const fn set_decimal(mut self) -> Self {
-        self.mode = NumberFormatting::Decimal;
+        self.num_fmt = NumberFormatting::Decimal;
         self
     }
 
-    /// Sets the formatting mode to `NumberFormatting::Hexadecimal`.
+    /// Sets the formatting num_fmt to `NumberFormatting::Hexadecimal`.
     ///
-    /// This means that integers are written as hexadecimal.
+    /// This means that numbers are written as hexadecimal.
     #[inline]
     pub const fn set_hexadecimal(mut self) -> Self {
-        self.mode = NumberFormatting::Hexadecimal;
+        self.num_fmt = NumberFormatting::Hexadecimal;
         self
     }
 
-    /// Sets the formatting mode to `NumberFormatting::Binary`.
+    /// Sets the formatting num_fmt to `NumberFormatting::Binary`.
     ///
-    /// This means that integers are written as binary.
+    /// This means that numbers are written as binary.
     #[inline]
     pub const fn set_binary(mut self) -> Self {
-        self.mode = NumberFormatting::Binary;
+        self.num_fmt = NumberFormatting::Binary;
         self
     }
 
@@ -187,8 +206,8 @@ impl FormattingFlags {
 
     /// Gets the current `NumberFormatting`.
     #[inline]
-    pub const fn mode(self) -> NumberFormatting {
-        self.mode
+    pub const fn num_fmt(self) -> NumberFormatting {
+        self.num_fmt
     }
 
     /// Gets whether the alternate flag is enabled

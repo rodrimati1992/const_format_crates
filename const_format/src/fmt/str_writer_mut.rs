@@ -101,7 +101,7 @@ impl StrWriterMut<'_> {
 
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::from_sw_mut(flags, self.reborrow())
+        Formatter::from_sw_mut(self.reborrow(), flags)
     }
 
     // For borrowing this mutably in macros, without getting nested mutable references.
@@ -305,7 +305,7 @@ macro_rules! write_integer_fn {
                 Ok(())
             }
 
-            match flags.mode() {
+            match flags.num_fmt() {
                 NumberFormatting::Decimal=>self.$display_fn(n),
                 NumberFormatting::Hexadecimal=>hex(self, n, flags),
                 NumberFormatting::Binary=>binary(self, n, flags),

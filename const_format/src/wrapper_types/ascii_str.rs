@@ -190,9 +190,11 @@ mod tests {
 
         let foo = AsciiStr::new("\0\x10hello\tworld\n".as_bytes()).unwrap();
 
-        for mode in NumberFormatting::ALL.iter().copied() {
+        for num_fmt in NumberFormatting::ALL.iter().copied() {
             for is_alt in [false, true].iter().copied() {
-                let flag = FormattingFlags::NEW.set_num_fmt(mode).set_alternate(is_alt);
+                let flag = FormattingFlags::NEW
+                    .set_num_fmt(num_fmt)
+                    .set_alternate(is_alt);
                 test_case(
                     foo,
                     writer,

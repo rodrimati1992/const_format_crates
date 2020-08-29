@@ -35,11 +35,11 @@
 //! The formatting macros all share the formatting syntax,
 //! modeled after the syntax of the formatting macros of the standard library.
 //!
-//! ### Argumments
+//! ### Arguments
 //!
 //! Arguments in the format string can be named and positional in these ways:
 //!
-//! - Implcitly positional(eg: `formatc!("{}", 20u8)`):<br>
+//! - Implicitly positional(eg: `formatc!("{}", 20u8)`):<br>
 //! Starts at the 0th positional argument and increments with every use.
 //!
 //! - Explicit positional(eg: `formatc!("{0}", 10u8)`).
@@ -47,7 +47,7 @@
 //! - Named, passed to the macro as named arguments (eg: `formatc!("{foo}", foo = 10u8)`).
 //!
 //! - Named, from constant (eg: `formatc!("{FOO}")`):
-//! Uses the `FOO` constant from the enclosing scope scope.
+//! Uses the `FOO` constant from the enclosing scope.
 //!
 //! ### Formatters
 //!
@@ -177,7 +177,7 @@
 //!
 //!         // This macro allows debug formatting of some generic types which
 //!         // wrap non-std types, including:
-//!         // - arrays - slices - Option - newtype wrappers
+//!         // - arrays   - slices    - Option    - newtype wrappers
 //!         call_debug_fmt!(array, self.d, f.field("d"));
 //!
 //!         f.finish()
@@ -197,7 +197,7 @@
 //!             c: 13,
 //!             d: [Ordering::Less, Ordering::Equal, Ordering::Greater],
 //!             ignored: (),
-//!         }.const_debug_fmt(&mut Formatter::from_sw(flags, &mut writer))
+//!         }.const_debug_fmt(&mut Formatter::from_sw(&mut writer, flags))
 //!     );
 //!
 //!     writer
@@ -226,8 +226,8 @@
 //!
 //! [`std::fmt`]: https://doc.rust-lang.org/std/fmt/
 //!
-//! [`FormatMarker`]: ../marker_traits/trait.FormatMarker.trait
-//! [`ConstDebug`]: ../derive.ConstDebug.trait
+//! [`FormatMarker`]: ../marker_traits/trait.FormatMarker.html
+//! [`ConstDebug`]: ../derive.ConstDebug.html
 //!
 //!
 //!

@@ -59,9 +59,9 @@ impl FormattingFlags {
     }
 
     #[inline]
-    pub(crate) const fn debug(mode: NumberFormatting, is_alternate: IsAlternate) -> Self {
+    pub(crate) const fn debug(num_fmt: NumberFormatting, is_alternate: IsAlternate) -> Self {
         Self {
-            formatting: Formatting::Debug(mode),
+            formatting: Formatting::Debug(num_fmt),
             is_alternate,
         }
     }
@@ -104,7 +104,7 @@ impl FormattingFlags {
 
         let formatting = match self.formatting {
             Formatting::Display => NumberFormatting::Decimal,
-            Formatting::Debug(mode) => mode,
+            Formatting::Debug(num_fmt) => num_fmt,
         };
 
         match (self.is_alternate, formatting) {

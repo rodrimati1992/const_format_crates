@@ -197,18 +197,18 @@ fn parse_formatting(input: &str, starts_at: usize) -> Result<FormattingFlags, Pa
         bytes = before;
     }
 
-    let mut mode = NumberFormatting::Decimal;
+    let mut num_fmt = NumberFormatting::Decimal;
     let mut is_alternate = IsAlternate::No;
 
     for byte in bytes {
         match byte {
-            b'b' if mode.is_regular() => mode = NumberFormatting::Binary,
-            b'x' if mode.is_regular() => mode = NumberFormatting::Hexadecimal,
+            b'b' if num_fmt.is_regular() => num_fmt = NumberFormatting::Binary,
+            b'x' if num_fmt.is_regular() => num_fmt = NumberFormatting::Hexadecimal,
             b'#' => is_alternate = IsAlternate::Yes,
             _ => return Err(make_error()),
         }
     }
-    Ok(FormattingFlags::debug(mode, is_alternate))
+    Ok(FormattingFlags::debug(num_fmt, is_alternate))
 }
 
 // Parses an identifier in a formatting argument.

@@ -33,8 +33,8 @@ use core::ops::Range;
 /// }
 /// const LEN: usize = len();
 ///
-/// // The `&mut StrWriter` type here wraps a `[u8]` slice,
-/// // coercing the assigned value from a `&mut StrWriter<[u8; LEN]>`.
+/// // The type annotation coerces a `&mut StrWriter<[u8; LEN]>`
+/// // to a `&mut StrWriter<[u8]>` (the type parameter defaults to `[u8]`)
 /// let writer: &mut StrWriter = &mut StrWriter::new([0; LEN]);
 ///
 /// write_sum(writer.make_formatter(FormattingFlags::NEW)).unwrap();
@@ -77,7 +77,7 @@ impl ComputeStrLength {
         self.len
     }
 
-    // For borrowing this mutably in macros, without getting nested mutable references.
+    /// For borrowing this mutably in macros,just takes and returns a `&mut Self`.
     #[inline(always)]
     pub const fn borrow_mutably(&mut self) -> &mut Self {
         self
@@ -93,12 +93,12 @@ enum WriterBackend<'w> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// A type through which you can write formatted text.
+/// A handle for writing formatted output.
 ///
 /// # FormattingFlags
 ///
 /// Types can change how they're formatted based on the value of the
-/// [`FormattingFlags`]`returned by `.flags()`,
+/// [`FormattingFlags`] returned by `.flags()`,
 /// for more details on that you can read the documentation for [`FormattingFlags`].
 ///
 /// # Examples
@@ -106,7 +106,10 @@ enum WriterBackend<'w> {
 /// ### Debug and Display formatting
 ///
 /// This example demonstrates how you can do display and/or debug-like formatting
-/// with a Formatter:
+/// with a Formatter.
+///
+/// If you want to write a braced struct/variant you can use [`DebugStruct`],
+/// or [`DebugTuple`] for tuple structs/variants.
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]
@@ -139,7 +142,7 @@ enum WriterBackend<'w> {
 ///
 ///
 ///
-/// // We have to coerce `&mut StrWriter<[u8; 128]>` to `&mut StrWriter` to call the
+/// // We have to coerce `&mut StrWriter<[u8; 256]>` to `&mut StrWriter` to call the
 /// // `make_formatter` method.
 /// let writer: &mut StrWriter = &mut StrWriter::new([0; 256]);
 ///
@@ -161,6 +164,7 @@ enum WriterBackend<'w> {
 ///
 /// ```
 ///
+/// <span id = "write_array_example"></span>
 /// ### Writing to an array
 ///
 /// This example demonstrates how you can use a Formatter to write to a byte slice.
@@ -193,7 +197,9 @@ enum WriterBackend<'w> {
 /// ```
 ///
 ///
-/// [`from_custom`]: #method.from_constructor
+/// [`DebugStruct`]: ./struct.DebugStruct.html
+/// [`DebugTuple`]: ./struct.DebugTuple.html
+/// [`from_custom`]: #method.from_custom
 /// [`NumberFormatting`]: ./enum.NumberFormatting.html
 /// [`FormattingFlags`]: ./struct.FormattingFlags.html
 ///
@@ -204,8 +210,32 @@ pub struct Formatter<'w> {
 
 impl<'w> Formatter<'w> {
     /// Constructs a `Formatter`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Error, Formatter, FormattingFlags, StrWriter};
+    /// use const_format::try_;
+    ///
+    /// const fn inner(mut f: Formatter<'_>) -> Result<(), Error> {
+    ///     try_!(f.write_str_range("ABCDEF", 2..4));
+    ///     try_!(f.write_str(" N"));
+    ///     try_!(f.write_ascii_repeated(b'o', 10));
+    ///     Ok(())
+    /// }
+    ///
+    /// // We have to coerce `&mut StrWriter<[u8; 128]>` to `&mut StrWriter` to call the
+    /// // `as_str` method.
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+    /// inner(Formatter::from_sw(writer, FormattingFlags::NEW)).unwrap();
+    ///
+    /// assert_eq!(writer.as_str(), "CD Noooooooooo");
+    ///
+    /// ```
     #[inline]
-    pub const fn from_sw(flags: FormattingFlags, writer: &'w mut StrWriter) -> Self {
+    pub const fn from_sw(writer: &'w mut StrWriter, flags: FormattingFlags) -> Self {
         Self {
             flags,
             writer: WriterBackend::Str(writer.as_mut()),
@@ -213,8 +243,35 @@ impl<'w> Formatter<'w> {
     }
 
     /// Constructs a `Formatter`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Error, Formatter, FormattingFlags, StrWriterMut};
+    /// use const_format::try_;
+    ///
+    /// const fn inner(mut f: Formatter<'_>) -> Result<(), Error> {
+    ///     try_!(f.write_str_range("DVDVDVD", 2..5));
+    ///     try_!(f.write_str(" N"));
+    ///     try_!(f.write_ascii_repeated(b'o', 10));
+    ///     Ok(())
+    /// }
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 128];
+    ///
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut len, &mut buffer);
+    ///
+    /// // We need to call `.reborrow()`, because otherwise the `StrWriterMut` is moved.
+    /// inner(Formatter::from_sw_mut(writer.reborrow(), FormattingFlags::NEW)).unwrap();
+    ///
+    /// assert_eq!(writer.as_str(), "DVD Noooooooooo");
+    ///
+    /// ```
     #[inline]
-    pub const fn from_sw_mut(flags: FormattingFlags, writer: StrWriterMut<'w>) -> Self {
+    pub const fn from_sw_mut(writer: StrWriterMut<'w>, flags: FormattingFlags) -> Self {
         Self {
             flags,
             writer: WriterBackend::Str(writer),
@@ -230,7 +287,7 @@ impl<'w> Formatter<'w> {
     /// # Example
     ///
     /// This example demonstrates how you can use a Formatter to write to a byte slice
-    /// that had some text already written to it already.
+    /// that had some text written to it already.
     ///
     /// ```rust
     /// #![feature(const_mut_refs)]
@@ -279,6 +336,12 @@ impl<'w> Formatter<'w> {
     }
 
     /// Construct a `Formatter`from a byte slice.
+    ///
+    /// # Example
+    ///
+    /// For an example of using this method you can look at
+    /// [the type level docs](#write_array_example)
+    ///
     #[inline]
     pub const fn from_custom_cleared(
         flags: FormattingFlags,
@@ -310,7 +373,7 @@ impl<'w> Formatter<'w> {
 }
 
 impl<'w> Formatter<'w> {
-    // For borrowing this mutably in macros, without getting nested mutable references.
+    /// For borrowing this mutably in macros,just takes and returns a `&mut Self`.
     #[inline(always)]
     pub const fn borrow_mutably(&mut self) -> &mut Self {
         self
@@ -325,7 +388,7 @@ impl<'w> Formatter<'w> {
     ///
     /// # Example
     ///
-    /// This example demonstrates how you can change the flags when printing a field..
+    /// This example demonstrates how you can change the flags when writing a field.
     ///
     /// ```rust
     /// #![feature(const_mut_refs)]
@@ -385,6 +448,15 @@ impl<'w> Formatter<'w> {
         }
     }
 
+    /// For debug writing a braced struct, or braced variant,
+    /// taking its name as a parameter
+    ///
+    /// # Examples
+    ///
+    /// For examples of using this method, you can look at the docs for [`DebugStruct`]
+    ///
+    /// [`DebugStruct`]: ./struct.DebugStruct.html
+    ///
     #[inline]
     pub const fn debug_struct(&mut self, name: &str) -> DebugStruct<'_, 'w> {
         let err = self.write_str(name);
@@ -395,6 +467,14 @@ impl<'w> Formatter<'w> {
         }
     }
 
+    /// For debug writing a tuple struct, or tuple variant,taking its name as a parameter
+    ///
+    /// # Examples
+    ///
+    /// For examples of using this method, you can look at the docs for [`DebugTuple`]
+    ///
+    /// [`DebugTuple`]: ./struct.DebugTuple.html
+    ///
     #[inline]
     pub const fn debug_tuple(&mut self, name: &str) -> DebugTuple<'_, 'w> {
         let err = self.write_str(name);
@@ -405,6 +485,14 @@ impl<'w> Formatter<'w> {
         }
     }
 
+    /// For debug writing a list/array.
+    ///
+    /// # Examples
+    ///
+    /// For examples of using this method, you can look at the docs for [`DebugList`]
+    ///
+    /// [`DebugList`]: ./struct.DebugList.html
+    ///
     #[inline]
     pub const fn debug_list(&mut self) -> DebugList<'_, 'w> {
         DebugList {
@@ -414,6 +502,14 @@ impl<'w> Formatter<'w> {
         }
     }
 
+    /// For debug writing a set.
+    ///
+    /// # Examples
+    ///
+    /// For examples of using this method, you can look at the docs for [`DebugSet`]
+    ///
+    /// [`DebugSet`]: ./struct.DebugSet.html
+    ///
     #[inline]
     pub const fn debug_set(&mut self) -> DebugSet<'_, 'w> {
         DebugSet {
@@ -525,6 +621,74 @@ macro_rules! finish_method_impl {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// A helper struct for debug formatting a braced struct, or braced variant.
+///
+/// # Example
+///
+/// This example demonstrates how you can debug format a struct,
+/// and a braced variants.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter};
+/// use const_format::{call_debug_fmt, coerce_to_fmt, formatc, impl_fmt, try_};
+///
+/// fn main() {
+///     const STRUC: &str = formatc!("{:?}", Foo { a: 5, b: [8, 13, 21], c: "34" });
+///     const ENUM_: &str = formatc!("{:?}", Bar::Baz { d: false, e: None });
+///     
+///     assert_eq!(STRUC, "Foo { a: 5, b: [8, 13, 21], c: \"34\" }");
+///     assert_eq!(ENUM_, "Baz { d: false, e: None }");
+/// }
+///
+/// struct Foo{
+///     a: u32,
+///     b: [u32; 3],
+///     c: &'static str,
+/// }
+///
+/// enum Bar {
+///     Baz{
+///         d: bool,
+///         e: Option<bool>,
+///     }
+/// }
+///
+/// impl_fmt!{
+///     impl Foo;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         let mut f = f.debug_struct("Foo");
+///         try_!(coerce_to_fmt!(&self.a).const_debug_fmt(f.field("a")));
+///         try_!(coerce_to_fmt!(&self.b).const_debug_fmt(f.field("b")));
+///         try_!(coerce_to_fmt!(&self.c).const_debug_fmt(f.field("c")));
+///         f.finish()
+///     }
+/// }
+///
+/// impl_fmt!{
+///     impl Bar;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         match self {
+///             Bar::Baz{d, e} => {
+///                 let mut f = f.debug_struct("Baz");
+///                 
+///                 // This macro allows debug formatting some generic types that
+///                 // don't have a const_debug_fmt fn, like Options which wrap non-std types.
+///                 call_debug_fmt!(std, d, f.field("d"));
+///                 call_debug_fmt!(Option, e, f.field("e"));
+///                 
+///                 f.finish()
+///             }
+///         }
+///     }
+/// }
+///
+///
+///
+/// ```
 pub struct DebugStruct<'f, 'w> {
     fmt: &'f mut Formatter<'w>,
     wrote_field: bool,
@@ -532,6 +696,7 @@ pub struct DebugStruct<'f, 'w> {
 }
 
 impl<'f, 'w> DebugStruct<'f, 'w> {
+    /// Adds a field to the formatted output.
     pub const fn field(&mut self, name: &str) -> &mut Formatter<'w> {
         field_method_impl!(
             self, " { ", " {\n";
@@ -545,6 +710,8 @@ impl<'f, 'w> DebugStruct<'f, 'w> {
         )
     }
 
+    /// Finishes writing the struct/variant,
+    /// and if anything went wrong in the `field` method,returns an error.
     pub const fn finish(self) -> Result<(), Error> {
         finish_method_impl!(self, "}", " }")
     }
@@ -552,6 +719,67 @@ impl<'f, 'w> DebugStruct<'f, 'w> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// For debug formatting a tuple struct, or tuple variant.
+///
+/// # Example
+///
+/// This example demonstrates how you can debug format a tuple struct,
+/// and an enum of tuple variants.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter};
+/// use const_format::{call_debug_fmt, coerce_to_fmt, formatc, impl_fmt, try_};
+///
+/// fn main() {
+///     const STRUC: &str = formatc!("{:?}", Foo(5, [8, 13, 21], "34"));
+///     const ENUM_: &str = formatc!("{:?}", Bar::Baz(false, None));
+///     
+///     assert_eq!(STRUC, "Foo(5, [8, 13, 21], \"34\")");
+///     assert_eq!(ENUM_, "Baz(false, None)");
+/// }
+///
+/// struct Foo(u32, [u32; 3], &'static str);
+///
+/// enum Bar {
+///     Baz(bool, Option<bool>),
+/// }
+///
+/// impl_fmt!{
+///     impl Foo;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         let mut f = f.debug_tuple("Foo");
+///         try_!(coerce_to_fmt!(&self.0).const_debug_fmt(f.field()));
+///         try_!(coerce_to_fmt!(&self.1).const_debug_fmt(f.field()));
+///         try_!(coerce_to_fmt!(&self.2).const_debug_fmt(f.field()));
+///         f.finish()
+///     }
+/// }
+///
+/// impl_fmt!{
+///     impl Bar;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         match self {
+///             Bar::Baz(f0, f1) => {
+///                 let mut f = f.debug_tuple("Baz");
+///                 
+///                 // This macro allows debug formatting some generic types that
+///                 // don't have a const_debug_fmt fn, like Options which wrap non-std types.
+///                 call_debug_fmt!(std, f0, f.field());
+///                 call_debug_fmt!(Option, f1, f.field());
+///                 
+///                 f.finish()
+///             }
+///         }
+///     }
+/// }
+///
+///
+///
+/// ```
 pub struct DebugTuple<'f, 'w> {
     fmt: &'f mut Formatter<'w>,
     wrote_field: bool,
@@ -559,10 +787,13 @@ pub struct DebugTuple<'f, 'w> {
 }
 
 impl<'f, 'w> DebugTuple<'f, 'w> {
+    /// Adds a field to the formatted output.
     pub const fn field(&mut self) -> &mut Formatter<'w> {
         field_method_impl!(self, "(", "(\n"; len(|fmt_len|) fmt(|writer|) )
     }
 
+    /// Finishes writing the tuple struct/variant,
+    /// and if anything went wrong in the `field` method,returns an error.
     pub const fn finish(self) -> Result<(), Error> {
         finish_method_impl!(self, ")", ")")
     }
@@ -614,6 +845,44 @@ macro_rules! finish_listset_method_impl {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// For debug formatting a list/array.
+///
+/// # Example
+///
+/// This example demonstrates how you can debug format a custom type as a list.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter};
+/// use const_format::{formatc, impl_fmt, try_};
+///
+/// use std::ops::Range;
+///
+/// fn main() {
+///     const LIST: &str = formatc!("{:?}", RangeList(0..5));
+///     
+///     assert_eq!(LIST, "[0, 1, 2, 3, 4]");
+/// }
+///
+/// struct RangeList(Range<usize>);
+///
+/// impl_fmt!{
+///     impl RangeList;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         let mut f = f.debug_list();
+///         let mut i = self.0.start;
+///         while i < self.0.end {
+///             try_!(f.entry().write_usize_display(i));
+///             i+=1;
+///         }
+///         f.finish()
+///     }
+/// }
+///
+/// ```
+///
 pub struct DebugList<'f, 'w> {
     fmt: &'f mut Formatter<'w>,
     wrote_field: bool,
@@ -621,10 +890,13 @@ pub struct DebugList<'f, 'w> {
 }
 
 impl<'f, 'w> DebugList<'f, 'w> {
+    /// Adds a list entry to the formatted output
     pub const fn entry(&mut self) -> &mut Formatter<'w> {
         field_method_impl!(self, "[", "[\n"; len(|fmt_len|) fmt(|writer|) )
     }
 
+    /// Finishes writing the list,
+    /// and if anything went wrong in the `entry` method,returns an error.
     pub const fn finish(self) -> Result<(), Error> {
         finish_listset_method_impl!(self, "]", "[]")
     }
@@ -632,6 +904,44 @@ impl<'f, 'w> DebugList<'f, 'w> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// For debug formatting a set.
+///
+/// # Example
+///
+/// This example demonstrates how you can debug format a custom type as a set.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter};
+/// use const_format::{formatc, impl_fmt, try_};
+///
+/// use std::ops::Range;
+///
+/// fn main() {
+///     const SET: &str = formatc!("{:?}", StrSet(&["foo", "bar", "baz"]));
+///     
+///     assert_eq!(SET, r#"{"foo", "bar", "baz"}"#);
+/// }
+///
+/// struct StrSet(&'static [&'static str]);
+///
+/// impl_fmt!{
+///     impl StrSet;
+///     
+///     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         let mut f = f.debug_set();
+///         let mut i = 0;
+///         while i < self.0.len() {
+///             try_!(f.entry().write_str_debug(self.0[i]));
+///             i+=1;
+///         }
+///         f.finish()
+///     }
+/// }
+///
+/// ```
+///
 pub struct DebugSet<'f, 'w> {
     fmt: &'f mut Formatter<'w>,
     wrote_field: bool,
@@ -639,10 +949,13 @@ pub struct DebugSet<'f, 'w> {
 }
 
 impl<'f, 'w> DebugSet<'f, 'w> {
+    /// Adds a set entry to the formatted output
     pub const fn entry(&mut self) -> &mut Formatter<'w> {
         field_method_impl!(self, "{", "{\n"; len(|fmt_len|) fmt(|writer|) )
     }
 
+    /// Finishes writing the set,
+    /// and if anything went wrong in the `entry` method,returns an error.
     pub const fn finish(self) -> Result<(), Error> {
         finish_listset_method_impl!(self, "}", "{}")
     }
@@ -652,65 +965,285 @@ impl<'f, 'w> DebugSet<'f, 'w> {
 
 macro_rules! delegate_write_methods {
     (
+        shared_attrs $shared_attrs:tt
         $(
             $(#[$attrs:meta])*
             fn $method:ident($($arg:ident: $arg_ty:ty ),* $(,)* )
             length = $len:expr;
         )*
     ) => (
-        $(
-            impl Formatter<'_>{
-                $(#[$attrs:meta])*
-                #[inline(always)]
-                pub const fn $method(&mut self, $($arg: $arg_ty ),*  ) -> Result<(), Error> {
-                    match &mut self.writer {
-                        WriterBackend::Length(fmt_len)=>{
-                            fmt_len.add_len($len);
-                            Ok(())
-                        }
-                        WriterBackend::Str(writer)=>{
-                            writer.$method($($arg,)*)
-                        }
-                    }
+        impl Formatter<'_>{
+            $(
+                delegate_write_methods!{
+                    @inner
+                    shared_attrs $shared_attrs
+                    $(#[$attrs])*
+                    fn $method($($arg: $arg_ty ),* )
+                    length = $len;
+                }
+            )*
+        }
+    );
+    (
+        @inner
+        shared_attrs (
+            $( #[$shared_attrs:meta] )*
+        )
+        $(#[$attrs:meta])*
+        fn $method:ident($($arg:ident: $arg_ty:ty ),* $(,)* )
+        length = $len:expr;
+    ) => (
+        $( #[$shared_attrs] )*
+        $(#[$attrs])*
+        pub const fn $method(&mut self, $($arg: $arg_ty ),*  ) -> Result<(), Error> {
+            match &mut self.writer {
+                WriterBackend::Length(fmt_len)=>{
+                    fmt_len.add_len($len);
+                    Ok(())
+                }
+                WriterBackend::Str(writer)=>{
+                    writer.$method($($arg,)*)
                 }
             }
-
-        )*
+        }
     )
 }
 
 delegate_write_methods! {
+    shared_attrs()
 
-    fn write_str_range(s: &str, range: Range<usize>)
-    length = calculate_display_len(s.as_bytes(), &range);
+    /// Writes `&s[range]` into this Formatter.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str_range("FOO BAR BAZ", 4..7);
+    ///
+    /// assert_eq!(writer.as_str(), "BAR");
+    ///
+    /// ```
+    ///
+    fn write_str_range(string: &str, range: Range<usize>)
+    length = calculate_display_len(string.as_bytes(), &range);
 
-    fn write_str(s: &str)
-    length = s.len();
+    /// Writes `string` into this Formatter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str("FOO BAR BAZ");
+    ///
+    /// assert_eq!(writer.as_str(), "FOO BAR BAZ");
+    ///
+    /// ```
+    ///
+    fn write_str(string: &str)
+    length = string.len();
 
+    /// Writes `&ascii[range]` into this formatter.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_ascii_range(ascii_str!("FOO BAR BAZ"), 4..7);
+    ///
+    /// assert_eq!(writer.as_str(), "BAR");
+    ///
+    /// ```
+    ///
     fn write_ascii_range(ascii: AsciiStr<'_>, range: Range<usize>)
     length = calculate_display_len(ascii.as_bytes(), &range);
 
-    fn write_ascii( ascii: AsciiStr<'_>)
+    /// Writes `ascii` into this formatter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_ascii(ascii_str!("FOO BAR BAZ"));
+    ///
+    /// assert_eq!(writer.as_str(), "FOO BAR BAZ");
+    ///
+    /// ```
+    ///
+    fn write_ascii(ascii: AsciiStr<'_>)
     length = ascii.len();
 
+    /// Writes the ascii `character` into this formatter `repeated` times.
+    ///
+    /// If `character` is greater than 127,
+    /// this writes `character - 128` as an ascii character.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_ascii_repeated(b'A', 10);
+    ///
+    /// assert_eq!(writer.as_str(), "AAAAAAAAAA");
+    ///
+    /// ```
+    ///
     fn write_ascii_repeated(character: u8,repeated: usize)
     length = repeated;
 
-    fn write_str_range_debug(s: &str, range: Range<usize>)
-    length = calculate_display_len_debug_range(s.as_bytes(), &range);
+    /// Writes `string` into this formatter, with debug formatting.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str_range_debug("FOO\nBAR\tBAZ", 3..8);
+    ///
+    /// assert_eq!(writer.as_str(), r#""\nBAR\t""#);
+    ///
+    /// ```
+    ///
+    fn write_str_range_debug(string: &str, range: Range<usize>)
+    length = calculate_display_len_debug_range(string.as_bytes(), &range);
 
-    fn write_str_debug(str: &str)
-    length = PWrapper(str.as_bytes()).compute_utf8_debug_len();
+    /// Writes `string` into this formatter, with debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str_debug("FOO\nBAR\tBAZ");
+    ///
+    /// assert_eq!(writer.as_str(), r#""FOO\nBAR\tBAZ""#);
+    ///
+    /// ```
+    ///
+    fn write_str_debug(string: &str)
+    length = PWrapper(string.as_bytes()).compute_utf8_debug_len();
 
+    /// Writes `&ascii[range]` into this formatter, with debug formatting.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_ascii_range_debug(ascii_str!("FOO\nBAR\tBAZ"), 3..8);
+    ///
+    /// assert_eq!(writer.as_str(), r#""\nBAR\t""#);
+    ///
+    /// ```
+    ///
     fn write_ascii_range_debug(ascii: AsciiStr<'_>,range: Range<usize>)
     length = calculate_display_len_debug_range(ascii.as_bytes(), &range);
 
+    /// Writes `ascii` into this formatter, with debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_ascii_debug(ascii_str!("FOO\nBAR\tBAZ"));
+    ///
+    /// assert_eq!(writer.as_str(), r#""FOO\nBAR\tBAZ""#);
+    ///
+    /// ```
+    ///
     fn write_ascii_debug(ascii: AsciiStr<'_>)
     length = PWrapper(ascii.as_bytes()).compute_utf8_debug_len();
 
 
+    /// Write `n` with display formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_u8_display(137);
+    ///
+    /// assert_eq!(writer.as_str(), "137");
+    ///
+    /// ```
+    ///
     fn write_u8_display(n: u8)
     length = PWrapper(n).compute_display_len(FormattingFlags::NEW);
+}
+
+delegate_write_methods! {
+    shared_attrs(
+        /// Writes `n` with display formatting
+        ///
+        /// For an example,
+        /// you can look at the one for the [`write_u8_display`] method.
+        ///
+        /// [`write_u8_display`]: #method.write_u8_display
+    )
 
     fn write_u16_display(n: u16)
     length = PWrapper(n).compute_display_len(FormattingFlags::NEW);
@@ -748,38 +1281,98 @@ delegate_write_methods! {
 
 macro_rules! delegate_integer_debug_methods {
     (
+        shared_attrs $shared_attrs:tt
         $(
             $(#[$attrs:meta])*
             fn $method:ident($($arg:ident: $arg_ty:ty ),* $(,)* )
             length = |$flags:ident| $len:expr;
         )*
     ) => (
-        $(
-            impl Formatter<'_>{
-                $(#[$attrs:meta])*
-                #[inline(always)]
-                pub const fn $method(&mut self, $($arg: $arg_ty ),*  ) -> Result<(), Error> {
-                    let $flags = self.flags;
+        impl Formatter<'_>{
+            $(
+                delegate_integer_debug_methods!{
+                    @inner
+                    shared_attrs $shared_attrs
+                    $(#[$attrs])*
+                    fn $method($($arg: $arg_ty ),*)
+                    length = |$flags| $len;
+                }
+            )*
+        }
+    );
+    (
+        @inner
+        shared_attrs (
+            $( #[$shared_attrs:meta] )*
+        )
+        $(#[$attrs:meta])*
+        fn $method:ident($($arg:ident: $arg_ty:ty ),* $(,)* )
+        length = |$flags:ident| $len:expr;
+    ) => (
+        $( #[$shared_attrs] )*
+        $(#[$attrs])*
+        pub const fn $method(&mut self, $($arg: $arg_ty ),*  ) -> Result<(), Error> {
+            let $flags = self.flags;
 
-                    match &mut self.writer {
-                        WriterBackend::Length(fmt_len)=>{
-                            fmt_len.add_len($len);
-                            Ok(())
-                        }
-                        WriterBackend::Str(writer)=>{
-                            writer.$method($($arg,)* $flags)
-                        }
-                    }
+            match &mut self.writer {
+                WriterBackend::Length(fmt_len)=>{
+                    fmt_len.add_len($len);
+                    Ok(())
+                }
+                WriterBackend::Str(writer)=>{
+                    writer.$method($($arg,)* $flags)
                 }
             }
-
-        )*
+        }
     )
 }
 
 delegate_integer_debug_methods! {
+    shared_attrs()
+
+    /// Writes `n` with debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// fn debug_fmt(writer: &mut StrWriter, flag: FormattingFlags) -> &str {
+    ///     writer.clear();
+    ///     let mut fmt = Formatter::from_sw(writer, flag);
+    ///     let _ = fmt.write_u8_debug(63);
+    ///     writer.as_str()
+    /// }
+    ///
+    /// let reg_flag = FormattingFlags::NEW.set_alternate(false);
+    /// let alt_flag = FormattingFlags::NEW.set_alternate(true);
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    ///
+    /// assert_eq!(debug_fmt(writer, reg_flag),                   "63"     );
+    /// assert_eq!(debug_fmt(writer, reg_flag.set_hexadecimal()), "3F"     );
+    /// assert_eq!(debug_fmt(writer, reg_flag.set_binary()),      "111111" );
+    /// assert_eq!(debug_fmt(writer, alt_flag),                   "63"     );
+    /// assert_eq!(debug_fmt(writer, alt_flag.set_hexadecimal()), "0x3F"   );
+    /// assert_eq!(debug_fmt(writer, alt_flag.set_binary()),      "0b111111");
+    ///
+    /// ```
+    ///
     fn write_u8_debug(n: u8)
     length = |flags| PWrapper(n).compute_debug_len(flags);
+}
+
+delegate_integer_debug_methods! {
+    shared_attrs(
+        /// Writes `n` with debug formatting.
+        ///
+        /// For an example,
+        /// you can look at the one for the [`write_u8_debug`] method.
+        ///
+        /// [`write_u8_debug`]: #method.write_u8_debug
+    )
 
     fn write_u16_debug(n: u16)
     length = |flags| PWrapper(n).compute_debug_len(flags);

@@ -25,7 +25,7 @@ macro_rules! __write_pvariant {
                 debug_display = wrapper.to_start_array_display();
                 &debug_display
             }
-            $crate::pmr::Formatting::Debug => match $parg.fmt_flags.mode() {
+            $crate::pmr::Formatting::Debug => match $parg.fmt_flags.num_fmt() {
                 $crate::pmr::NumberFormatting::Decimal => {
                     debug_display = wrapper.to_start_array_debug();
                     &debug_display
