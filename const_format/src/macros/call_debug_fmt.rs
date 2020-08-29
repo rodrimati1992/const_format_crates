@@ -25,7 +25,7 @@
 ///
 #[macro_export]
 macro_rules! call_debug_fmt {
-    (array, $expr:expr, $formatter:expr) => {{
+    (array, $expr:expr, $formatter:expr $(,)* ) => {{
         match (&$expr, $formatter.borrow_mutably()) {
             (expr, formatter) => {
                 let mut n = 0;
@@ -39,7 +39,7 @@ macro_rules! call_debug_fmt {
             }
         }
     }};
-    (slice, $expr:expr, $formatter:expr) => {
+    (slice, $expr:expr, $formatter:expr $(,)*) => {
         $crate::call_debug_fmt!(array, $expr, $formatter)
     };
     (Option, $expr:expr, $formatter:expr $(,)*) => {{
