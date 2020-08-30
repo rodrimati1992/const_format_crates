@@ -1,14 +1,18 @@
-//! Wrappers for standard library types.
+//! Some wrapper types.
 
 #[cfg(feature = "fmt")]
-mod ascii_str;
+pub(crate) mod ascii_str;
 
-mod pwrapper;
-
-#[cfg(feature = "fmt")]
-mod sliced;
+pub(crate) mod pwrapper;
 
 #[cfg(feature = "fmt")]
-pub use self::{ascii_str::AsciiStr, sliced::Sliced};
+pub(crate) mod sliced;
 
-pub use self::pwrapper::PWrapper;
+#[cfg(feature = "fmt")]
+pub use self::ascii_str::NotAsciiError;
+
+#[doc(no_inline)]
+pub use crate::{AsciiStr, Sliced};
+
+#[doc(no_inline)]
+pub use crate::PWrapper;

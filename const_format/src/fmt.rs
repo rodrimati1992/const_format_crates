@@ -1,4 +1,5 @@
-//! [`std::fmt`]-like api that can be used at compile-time.
+//! [`std::fmt`](https://doc.rust-lang.org/std/fmt/)-like
+//! api that can be used at compile-time.
 //!
 //! This module requires the "fmt" feature to be enabled, and the nightly compiler,
 //! because at the time of writing these docs (2020-08-XX) mutable references in const fn
@@ -223,8 +224,6 @@
 //!
 //!
 //! ```
-//!
-//! [`std::fmt`]: https://doc.rust-lang.org/std/fmt/
 //!
 //! [`FormatMarker`]: ../marker_traits/trait.FormatMarker.html
 //! [`ConstDebug`]: ../derive.ConstDebug.html

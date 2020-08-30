@@ -320,14 +320,19 @@ pub mod fmt;
 #[doc(hidden)]
 pub mod msg;
 
-mod wrapper_types;
+pub mod wrapper_types;
 
 #[cfg(feature = "fmt")]
 #[doc(no_inline)]
 pub use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter, StrWriterMut};
 
 #[cfg(feature = "fmt")]
-pub use crate::wrapper_types::{AsciiStr, PWrapper, Sliced};
+pub use crate::wrapper_types::ascii_str::AsciiStr;
+
+#[cfg(feature = "fmt")]
+pub use crate::wrapper_types::sliced::Sliced;
+
+pub use crate::wrapper_types::pwrapper::PWrapper;
 
 #[doc(hidden)]
 pub mod pmr {

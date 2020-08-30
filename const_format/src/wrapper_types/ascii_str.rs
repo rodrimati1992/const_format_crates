@@ -8,13 +8,53 @@ use core::fmt::{self, Display};
 ////////////////////////////////////////////////////////////////////////////////
 
 /// An ascii string slice.
-#[derive(Debug, Copy, Clone)]
+///
+/// You can also construct an `AsciiStr` at compile-time with the [`ascii_str`] macro,
+/// erroring at compile if the constant isn't ascii.
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::wrapper_types::{AsciiStr, NotAsciiError};
+/// use const_format::ascii_str;
+///
+/// const HELLO: AsciiStr = unwrap_ascii(AsciiStr::new(b"hello"));
+/// const EURO: AsciiStr = unwrap_ascii(AsciiStr::new("foo €".as_bytes()));
+///
+/// assert_eq!(HELLO.as_str(), "hello");
+/// assert_eq!(EURO.as_str(), "<error>");
+/// assert_eq!(AsciiStr::new("foo €".as_bytes()), Err(NotAsciiError{invalid_from: 4}));
+///
+/// const fn unwrap_ascii(res: Result<AsciiStr<'_>, NotAsciiError>) -> AsciiStr<'_> {
+///     match res {
+///         Ok(x) => x,
+///         Err(_) => ascii_str!("<error>"),
+///     }
+/// }
+///
+/// ```
+///
+/// [`ascii_str`]: ./macro.ascii_str.html
+///
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct AsciiStr<'a>(&'a [u8]);
 
 impl<'a> AsciiStr<'a> {
     /// Constructs this  AsciiStr from a possibly non-ascii str slice.
     ///
     /// Returns a `NonAsciiError` error on the first non-ascii byte.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::wrapper_types::{AsciiStr, NotAsciiError};
+    ///
+    /// let ok = AsciiStr::from_str("foo bar").unwrap();
+    ///
+    /// assert_eq!(ok.as_str(), "foo bar");
+    /// assert_eq!(AsciiStr::from_str("foo bar ½"), Err(NotAsciiError{invalid_from: 8}));
+    ///
+    /// ```
     #[inline(always)]
     pub const fn from_str(s: &'a str) -> Result<Self, NotAsciiError> {
         Self::new(s.as_bytes())
@@ -23,6 +63,18 @@ impl<'a> AsciiStr<'a> {
     /// Constructs this  AsciiStr from a possibly non-ascii byte slice.
     ///
     /// Returns a `NonAsciiError` error on the first non-ascii byte.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::wrapper_types::{AsciiStr, NotAsciiError};
+    ///
+    /// let ok = AsciiStr::new(b"foo bar").unwrap();
+    ///
+    /// assert_eq!(ok.as_str(), "foo bar");
+    /// assert_eq!(AsciiStr::new(b"foo bar \x80"), Err(NotAsciiError{invalid_from: 8}));
+    ///
+    /// ```
     pub const fn new(s: &'a [u8]) -> Result<Self, NotAsciiError> {
         __for_range! {i in 0..s.len()=>
             if s[i] > 127 {
@@ -32,18 +84,74 @@ impl<'a> AsciiStr<'a> {
         Ok(AsciiStr(s))
     }
 
+    /// Constructs an empty `AsciiStr`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::AsciiStr;
+    ///
+    /// assert_eq!(AsciiStr::empty().as_str(), "");
+    /// ```
+    pub const fn empty() -> Self {
+        Self(&[])
+    }
+
+    /// Queries the length of the `AsciiStr`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{AsciiStr, ascii_str};
+    ///
+    /// assert_eq!(AsciiStr::empty().len(), 0);
+    /// assert_eq!(ascii_str!("hello").len(), 5);
+    /// ```
     #[inline(always)]
     pub const fn len(self) -> usize {
         self.0.len()
     }
 
+    /// Queries whether this `AsciiStr` is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{AsciiStr, ascii_str};
+    ///
+    /// assert_eq!(AsciiStr::empty().is_empty(), true);
+    /// assert_eq!(ascii_str!("hello").is_empty(), false);
+    /// ```
+    #[inline(always)]
+    pub const fn is_empty(self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Accessor for the wrapped ascii string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{AsciiStr, ascii_str};
+    ///
+    /// assert_eq!(AsciiStr::empty().as_bytes(), b"");
+    /// assert_eq!(ascii_str!("hello").as_bytes(), b"hello");
+    /// ```
     #[inline(always)]
     pub const fn as_bytes(self) -> &'a [u8] {
         self.0
     }
 
     /// Accessor for the wrapped ascii string.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{AsciiStr, ascii_str};
+    ///
+    /// assert_eq!(AsciiStr::empty().as_str(), "");
+    /// assert_eq!(ascii_str!("hello").as_str(), "hello");
+    /// ```
     #[inline]
     pub fn as_str(self) -> &'a str {
         unsafe { core::str::from_utf8_unchecked(self.0) }
@@ -52,7 +160,10 @@ impl<'a> AsciiStr<'a> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug, Copy, Clone)]
+/// Error from [`AsciiStr`] constructor, caused by a byte not being valid ascii.
+///
+/// [`AsciiStr`]: ../struct.AsciiStr.html
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct NotAsciiError {
     /// The first non-ascii byte in the byte slice.
     pub invalid_from: usize,
