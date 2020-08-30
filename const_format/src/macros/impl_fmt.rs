@@ -1,4 +1,114 @@
-/// For implementing DebugLike without using a derive macro.
+/// For implementing debug or display formatting "manually".
+///
+/// # Impls
+///
+/// This macro implements [`FormatMarker`] for all the `impl`d types,
+/// and outputs the methods/associated constants in each of the listed impls.
+///
+/// # Example
+///
+/// ### Generic type
+///
+/// This demonstrates how you can implement debug formatting for a generic struct.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter, PWrapper, StrWriter};
+/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+///
+/// use std::marker::PhantomData;
+///
+/// pub struct Tupled<T>(u32, T);
+///
+/// impl_fmt!{
+///     // The trailing comma is required
+///     impl[T,] Tupled<PhantomData<T>>
+///     where[ T: 'static ];
+///
+///     impl[] Tupled<bool>;
+///     impl Tupled<Option<bool>>;
+///     
+///     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
+///         let mut fmt = fmt.debug_tuple("Tupled");
+///
+///         // PWrapper implements const_debug_fmt methods for many std types.
+///         try_!(PWrapper(self.0).const_debug_fmt(fmt.field()));
+///         try_!(PWrapper(self.1).const_debug_fmt(fmt.field()));
+///
+///         fmt.finish()
+///     }
+/// }
+///
+/// const S_PHANTOM: &str = formatc!("{:?}", Tupled(3, PhantomData::<u32>));
+/// const S_BOOL: &str = formatc!("{:?}", Tupled(5, false));
+/// const S_OPTION: &str = formatc!("{:?}", Tupled(8, Some(true)));
+///
+/// assert_eq!(S_PHANTOM, "Tupled(3, PhantomData)");
+/// assert_eq!(S_BOOL, "Tupled(5, false)");
+/// assert_eq!(S_OPTION, "Tupled(8, Some(true))");
+///
+///
+/// ```
+///
+/// ### Enum
+///
+/// This demonstrates how you can implement debug formatting for an enum.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter, PWrapper, StrWriter};
+/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+///
+/// use std::cmp::Ordering;
+///
+/// pub enum Enum {
+///     Braced{ord: Ordering},
+///     Tupled(u32, u32),
+///     Unit,
+/// }
+///
+/// impl_fmt!{
+///     impl Enum;
+///     
+///     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
+///         match self {
+///             Self::Braced{ord} => {
+///                 let mut fmt = fmt.debug_struct("Braced");
+///
+///                 // PWrapper implements const_debug_fmt methods for many std types.
+///                 try_!(PWrapper(*ord).const_debug_fmt(fmt.field("ord")));
+///
+///                 fmt.finish()
+///             }
+///             Self::Tupled(f0,f1) => {
+///                 let mut fmt = fmt.debug_tuple("Tupled");
+///
+///                 try_!(PWrapper(*f0).const_debug_fmt(fmt.field()));
+///                 try_!(PWrapper(*f1).const_debug_fmt(fmt.field()));
+///
+///                 fmt.finish()
+///             }
+///             Self::Unit => {
+///                 fmt.debug_tuple("Unit").finish()
+///             }
+///         }
+///     }
+/// }
+///
+/// const S_BRACED: &str = formatc!("{:?}", Enum::Braced{ord: Ordering::Greater});
+/// const S_TUPLED: &str = formatc!("{:?}", Enum::Tupled(5, 8));
+/// const S_UNIT: &str = formatc!("{:?}", Enum::Unit);
+///
+/// assert_eq!(S_BRACED, "Braced { ord: Greater }");
+/// assert_eq!(S_TUPLED, "Tupled(5, 8)");
+/// assert_eq!(S_UNIT, "Unit");
+///
+/// ```
+///
+/// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
+///
 #[macro_export]
 macro_rules! impl_fmt {
     (

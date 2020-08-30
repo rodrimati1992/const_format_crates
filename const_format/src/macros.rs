@@ -28,26 +28,85 @@ macro_rules! try_ {
 
 /// Equivalent to `Result::unwrap`, for use with [`const_format::Error`] errors.
 ///
+/// You can use this when you know for certain that no error will happen.
+///
 /// [`const_format::Error`]: ./fmt/enum.Error.html
+///
+/// # Example
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{StrWriter, strwriter_as_str, unwrap, writec};
+///
+/// const CAP: usize = 11;
+/// // Defined this function as a workaround for mutable references not
+/// // being allowed in `const`ants.
+/// const fn foo() -> StrWriter<[u8; CAP]> {
+///     let mut writer = StrWriter::new([0; CAP]);
+///     unwrap!(writec!(writer, "foo bar baz"));
+///     writer
+/// }
+///
+/// const TEXT: &str = strwriter_as_str!(&foo());
+/// assert_eq!(TEXT, "foo bar baz")
+///
+/// ```
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! unwrap {
     ($e:expr $(,)*) => {
         match $e {
             $crate::pmr::Ok(x) => x,
-            $crate::pmr::Err(error) => $crate::Error::unwrap(error),
+            $crate::pmr::Err(error) => $crate::Error::unwrap(&error),
         }
     };
 }
 
 /// Equivalent to `Result::unwrap_or_else` but allows returning from the enclosing function.
+///
+/// # Examples
+///
+/// ### Early return
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::unwrap_or_else;
+///
+/// const fn unwrap_square(number: Result<u32, u32>) -> u64 {
+///     let n = unwrap_or_else!(number, |n| return n as u64 ) as u64;
+///     n * n
+/// }
+///
+/// assert_eq!(unwrap_square(Ok(10)), 100);
+/// assert_eq!(unwrap_square(Ok(30)), 900);
+/// assert_eq!(unwrap_square(Err(100)), 100);
+///
+/// ```
+///
+/// ### As unwrap_or
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{AsciiStr, strwriter_as_str, unwrap_or_else};
+///
+/// const FOO: AsciiStr = unwrap_or_else!(AsciiStr::new(b"AB\x80"), |_| AsciiStr::empty() );
+///
+/// const BAR: AsciiStr = unwrap_or_else!(AsciiStr::new(b"bar"), |_| loop{} );
+///
+/// assert_eq!(FOO.as_str(), "");
+/// assert_eq!(BAR.as_str(), "bar");
+///
+/// ```
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! unwrap_or_else {
-    ($e:expr, |$error:ident| $orelse:expr ) => {
+    ($e:expr, |$($error:ident)? $(_)*| $orelse:expr ) => {
         match $e {
             $crate::pmr::Ok(x) => x,
-            $crate::pmr::Err($error) => $orelse,
+            $crate::pmr::Err($($error,)?..) => $orelse,
         }
     };
 }
@@ -62,6 +121,54 @@ macro_rules! unwrap_or_else {
 /// `const_*_fmt` methods.
 ///
 /// For std types, it just returns back the same reference.
+///
+/// # Example
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{
+///     for_examples::Unit,
+///     Formatter, FormattingFlags, PWrapper, StrWriter,
+///     coerce_to_fmt, strwriter_as_str,
+/// };
+///
+/// const CAP: usize = 128;
+/// const fn make_strwriter() -> StrWriter<[u8; CAP]> {
+///     let mut writer = StrWriter::new([0; CAP]);
+///     let mut fmt = Formatter::from_sw(&mut writer, FormattingFlags::NEW);
+///
+///     // This is equivalent to the `PWrapper::slice(&[0u8, 1])` below
+///     let _ = coerce_to_fmt!([0u8, 1]).const_debug_fmt(&mut fmt);
+///     let _ = fmt.write_str(",");
+///
+///     let _ = PWrapper::slice(&[0u8, 1]).const_debug_fmt(&mut fmt);
+///     let _ = fmt.write_str(",");
+///
+///
+///     // This is equivalent to the `PWrapper(100u32)` line
+///     let _ = coerce_to_fmt!(100u32).const_debug_fmt(&mut fmt);
+///     let _ = fmt.write_str(",");
+///
+///     let _ = PWrapper(100u32).const_debug_fmt(&mut fmt);
+///     let _ = fmt.write_str(",");
+///
+///
+///     // This is equivalent to the `Unit.const_debug_fmt(&mut fmt)` line
+///     let _ = coerce_to_fmt!(Unit).const_debug_fmt(&mut fmt);
+///
+///
+///     let _ = fmt.write_str(",");
+///     let _ = Unit.const_debug_fmt(&mut fmt);
+///
+///     writer
+/// }
+///
+/// const TEXT: &str = strwriter_as_str!(&make_strwriter());
+///
+/// assert_eq!(TEXT, "[0, 1],[0, 1],100,100,Unit,Unit");
+///
+/// ```
 ///
 /// [`PWrapper`]: ./
 #[cfg(feature = "fmt")]

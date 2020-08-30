@@ -37,7 +37,7 @@ macro_rules! index_vars{
 
 impl Error {
     #[track_caller]
-    pub const fn unwrap<T>(self) -> T {
+    pub const fn unwrap<T>(&self) -> T {
         index_vars! {
             self,i;
             NotEnoughSpace,

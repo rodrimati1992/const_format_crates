@@ -22,7 +22,63 @@
 ///
 /// *"any debug type" meaning types that have a `const_debug_fmt` method
 ///
+/// # Example
 ///
+/// Printing all of the kinds of types this supports.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{
+///     for_examples::{Point3, Unit},
+///     Error, Formatter, FormattingFlags, StrWriter,
+///     call_debug_fmt, strwriter_as_str, try_, unwrap,
+/// };
+///
+/// use std::num::Wrapping;
+///
+/// const CAP: usize = 512;
+///
+/// // `call_debug_fmt` implicitly returns on error,
+/// // so the function has to return a `Result<_, const_format::Error>`
+/// const fn make() -> Result<StrWriter<[u8; CAP]>, Error> {
+///     let mut writer = StrWriter::new([0; CAP]);
+///     let mut fmt = Formatter::from_sw(&mut writer, FormattingFlags::NEW);
+///     let mut fmt = fmt.debug_struct("Foo");
+///
+///     let point = Point3{ x: 5, y: 8, z: 13 };
+///
+///     call_debug_fmt!(array, [Unit, Unit], fmt.field("array") );
+///     call_debug_fmt!(slice, [0u8, 1], fmt.field("slice") );
+///     call_debug_fmt!(Option, Some(point), fmt.field("option") );
+///     call_debug_fmt!(newtype NumWrapping, Wrapping(255u16), fmt.field("newtype") );
+///     call_debug_fmt!(std, false, fmt.field("std_") );
+///     call_debug_fmt!(other, point, fmt.field("other") );
+///
+///     try_!(fmt.finish());
+///     Ok(writer)
+/// }
+///
+/// const TEXT: &str = {
+///     let promoted = &make();
+///     strwriter_as_str!(unwrap!(promoted))
+/// };
+///
+/// const EXPECTED: &str = "\
+///     Foo { \
+///         array: [Unit, Unit], \
+///         slice: [0, 1], \
+///         option: Some(Point3 { x: 5, y: 8, z: 13 }), \
+///         newtype: NumWrapping(255), \
+///         std_: false, \
+///         other: Point3 { x: 5, y: 8, z: 13 } \
+///     }\
+/// ";
+///
+/// assert_eq!(TEXT, EXPECTED);
+///
+///
+/// ```
 #[macro_export]
 macro_rules! call_debug_fmt {
     (array, $expr:expr, $formatter:expr $(,)* ) => {{

@@ -301,6 +301,9 @@ mod pargument;
 pub mod utils;
 
 #[cfg(feature = "fmt")]
+pub mod for_examples;
+
+#[cfg(feature = "fmt")]
 pub mod marker_traits;
 
 #[cfg(test)]
