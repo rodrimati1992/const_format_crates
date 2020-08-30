@@ -58,13 +58,6 @@ pub struct NotAsciiError {
     pub invalid_from: usize,
 }
 
-// TODO
-// impl NotAsciiError {
-//     pub fn to_fmt_error() -> Error {
-//         Error::NotAscii
-//     }
-// }
-
 impl Display for NotAsciiError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         fmt.write_str("error: the input bytes were not valid ascii")

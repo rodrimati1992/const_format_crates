@@ -101,6 +101,15 @@ enum WriterBackend<'w> {
 /// [`FormattingFlags`] returned by `.flags()`,
 /// for more details on that you can read the documentation for [`FormattingFlags`].
 ///
+/// # Errors
+///
+/// The `write_*` methods can only return an `Error::NotEnoughSpace`,
+/// when they do, the formatter was not written to, so you can try again with a shorter input.
+///
+/// In the case of the `debug_*` methods / the `Debug*` structs,
+/// they can return a `Error::NotEnoughSpace` when their `finish` method is called,
+/// not as soon as it happens.
+///
 /// # Examples
 ///
 /// ### Debug and Display formatting

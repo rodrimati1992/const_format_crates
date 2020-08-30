@@ -310,6 +310,10 @@ mod misc_tests;
 mod test_utils;
 
 #[cfg(feature = "fmt")]
+#[cfg(feature = "testing")]
+pub mod doctests;
+
+#[cfg(feature = "fmt")]
 pub mod fmt;
 
 #[cfg(feature = "fmt")]
@@ -359,3 +363,6 @@ pub mod pmr {
         wrapper_types::PWrapper,
     };
 }
+
+#[cfg(all(test, not(feature = "testing")))]
+compile_error! { "tests must be run with the \"testing\" feature" }

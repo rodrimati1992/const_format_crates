@@ -295,15 +295,11 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn slice_out_of_bounds() {
-        slice_up_to_len(&[3, 5], 3);
-    }
-
-    #[test]
     fn slice_in_bounds() {
         assert_eq!(slice_up_to_len(&[3, 5], 0), []);
         assert_eq!(slice_up_to_len(&[3, 5], 1), [3]);
         assert_eq!(slice_up_to_len(&[3, 5], 2), [3, 5]);
+        assert_eq!(slice_up_to_len(&[3, 5], 3), [3, 5]);
+        assert_eq!(slice_up_to_len(&[3, 5], 4), [3, 5]);
     }
 }

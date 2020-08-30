@@ -27,6 +27,7 @@ fmt = []
 derive = ["fmt", "const_format_proc_macros/derive"]
 debug = ["const_format_proc_macros/debug"]
 constant_time_as_str = ["fmt"]
+testing = []
 
 # "private" features
 only_new_tests = []

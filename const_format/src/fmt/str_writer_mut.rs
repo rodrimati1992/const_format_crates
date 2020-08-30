@@ -29,6 +29,11 @@ use core::ops::Range;
 /// the difference is that this doesn't store `FormattingFlags`,
 /// so you must pass them to the `write_*_debug` methods.
 ///
+/// # Errors
+///
+/// Every single `writer_*` method returns an `Error::NotEnoughSpace` if
+/// there is not enough space to write the argument, leaving the string itself unmodified.
+///
 /// # Example
 ///
 /// This example demonstrates how you can write a formatted string to a `&mut [u8]`,

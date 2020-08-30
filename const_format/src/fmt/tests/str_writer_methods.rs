@@ -42,12 +42,26 @@ macro_rules! write_integer_tests {
                     writer.$debug_fn(number, flags.set_hexadecimal()).unwrap();
                     writer.write_str("__").unwrap();
 
-                    // TODO:
-                    // Add PWrapper::const_display_fmt and const_debug_fmt
-                    // calls whenever there's a Formatter type, and those methods are defined.
-                    //
 
-                    write!(string,"{0}_{0:?}_{0:b}_{0:X}__",
+                    let fmt = &mut writer.make_formatter(flags);
+                    PWrapper(number).const_display_fmt(fmt).unwrap();
+                    writer.write_str("_").unwrap();
+
+                    let fmt = &mut writer.make_formatter(flags.set_decimal());
+                    PWrapper(number).const_debug_fmt(fmt).unwrap();
+                    writer.write_str("_").unwrap();
+
+                    let fmt = &mut writer.make_formatter(flags.set_binary());
+                    PWrapper(number).const_debug_fmt(fmt).unwrap();
+                    writer.write_str("_").unwrap();
+
+                    let fmt = &mut writer.make_formatter(flags.set_hexadecimal());
+                    PWrapper(number).const_debug_fmt(fmt).unwrap();
+
+
+                    write!(
+                        string,
+                        "{0}_{0:?}_{0:b}_{0:X}__{0}_{0:?}_{0:b}_{0:X}",
                         number
                     ).unwrap();
 
