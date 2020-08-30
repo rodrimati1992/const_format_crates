@@ -80,10 +80,10 @@ macro_rules! coerce_to_fmt {
     }};
 }
 
-/// Converts a `&'static StrWriter` to a `&'static str`, in a `const`/`static` initializer,
+/// Converts a `&'static StrWriter` to a `&'static str`, in a `const`/`static` initializer.
 ///
 /// This is usable in `const` or `static` initializers,
-/// but not inside of const fn.
+/// but not inside of `const fn`s.
 ///
 /// # Runtime
 ///

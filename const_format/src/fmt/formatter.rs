@@ -180,7 +180,7 @@ enum WriterBackend<'w> {
 ///
 /// const fn write_int(int: u32, buffer: &mut [u8]) -> Result<usize, Error> {
 ///     let mut len = 0;
-///     let mut f = Formatter::from_custom_cleared(FormattingFlags::NEW, &mut len, buffer);
+///     let mut f = Formatter::from_custom_cleared(FormattingFlags::NEW, buffer, &mut len);
 ///     try_!(writec!(f, "{0},{0:x},{0:b}", int));
 ///     Ok(len)
 /// }
@@ -262,7 +262,7 @@ impl<'w> Formatter<'w> {
     /// let mut len = 0;
     /// let mut buffer = [0; 128];
     ///
-    /// let mut writer = StrWriterMut::from_custom_cleared(&mut len, &mut buffer);
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
     ///
     /// // We need to call `.reborrow()`, because otherwise the `StrWriterMut` is moved.
     /// inner(Formatter::from_sw_mut(writer.reborrow(), FormattingFlags::NEW)).unwrap();
@@ -305,7 +305,7 @@ impl<'w> Formatter<'w> {
     ///     start: usize,
     /// ) -> Result<usize, Error> {
     ///     let mut len = start;
-    ///     let mut f = Formatter::from_custom(FormattingFlags::NEW, &mut len, buffer);
+    ///     let mut f = Formatter::from_custom(FormattingFlags::NEW, buffer, &mut len);
     ///     try_!(writec!(f, "{0},{0:x},{0:b}", int));
     ///     Ok(len)
     /// }
@@ -326,12 +326,12 @@ impl<'w> Formatter<'w> {
     #[inline]
     pub const unsafe fn from_custom(
         flags: FormattingFlags,
-        length: &'w mut usize,
         buffer: &'w mut [u8],
+        length: &'w mut usize,
     ) -> Self {
         Self {
             flags,
-            writer: WriterBackend::Str(StrWriterMut::from_custom(length, buffer)),
+            writer: WriterBackend::Str(StrWriterMut::from_custom(buffer, length)),
         }
     }
 
@@ -345,12 +345,12 @@ impl<'w> Formatter<'w> {
     #[inline]
     pub const fn from_custom_cleared(
         flags: FormattingFlags,
-        length: &'w mut usize,
         buffer: &'w mut [u8],
+        length: &'w mut usize,
     ) -> Self {
         Self {
             flags,
-            writer: WriterBackend::Str(StrWriterMut::from_custom_cleared(length, buffer)),
+            writer: WriterBackend::Str(StrWriterMut::from_custom_cleared(buffer, length)),
         }
     }
 
@@ -1019,7 +1019,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///
@@ -1040,7 +1039,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///
@@ -1063,7 +1061,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
     ///
@@ -1084,7 +1081,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
     ///
@@ -1108,7 +1104,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///
@@ -1131,7 +1126,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///
@@ -1152,7 +1146,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///
@@ -1175,7 +1168,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
     ///
@@ -1196,7 +1188,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
     ///
@@ -1218,7 +1209,6 @@ delegate_write_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter, ascii_str};
     ///
@@ -1335,7 +1325,6 @@ delegate_integer_debug_methods! {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, FormattingFlags, StrWriter};
     ///

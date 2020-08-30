@@ -108,27 +108,109 @@ impl<A> StrWriter<A> {
 }
 
 impl<A: ?Sized> StrWriter<A> {
-    /// How long the string in this is.
-    #[inline(always)]
-    pub const fn len(&self) -> usize {
-        self.len
-    }
-
     /// Accesses the underlying buffer immutably.
     #[inline(always)]
     pub const fn buffer(&self) -> &A {
         &self.buffer
     }
 
-    // For borrowing this mutably in macros, without getting nested mutable references.
+    /// How long the string this wrote is.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// assert_eq!(buffer.len(), 0);
+    ///
+    /// buffer.as_mut().write_str("foo")?;
+    /// assert_eq!(buffer.len(), 3);
+    ///
+    /// buffer.as_mut().write_str("bar")?;
+    /// assert_eq!(buffer.len(), 6);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline(always)]
-    pub const fn borrow_mutably(&mut self) -> &mut Self {
-        self
+    pub const fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Checks whether the string this wrote is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// assert!( buffer.is_empty() );
+    ///
+    /// buffer.as_mut().write_str("foo")?;
+    /// assert!( !buffer.is_empty() );
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        self.len == 0
     }
 }
 
 /// <span id="certain-methods"></span>
 impl StrWriter {
+    /// Gets how the maximum length for a string written into this.
+    ///
+    /// Trying to write more that the capacity causes is an error,
+    /// returning back an `Err(Error::NotEnoughSpace)`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter};
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// assert_eq!(buffer.capacity(), 64);
+    ///
+    /// buffer.as_mut().write_ascii_repeated(b'A', 64)?;
+    /// assert_eq!(buffer.capacity(), 64);
+    ///
+    /// assert_eq!(buffer.as_mut().write_str("-").unwrap_err(), Error::NotEnoughSpace);
+    /// assert_eq!(buffer.capacity(), 64);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline(always)]
+    pub const fn capacity(&self) -> usize {
+        self.buffer.len()
+    }
+
+    /// Checks how many more bytes can be written.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter};
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// assert_eq!(buffer.remaining_capacity(), 64);
+    ///
+    /// buffer.as_mut().write_str("foo")?;
+    /// assert_eq!(buffer.remaining_capacity(), 61);
+    ///
+    /// buffer.as_mut().write_ascii_repeated(b'a', 61)?;
+    /// assert_eq!(buffer.remaining_capacity(), 0);
+    ///
+    /// assert_eq!(buffer.as_mut().write_str(" ").unwrap_err(), Error::NotEnoughSpace);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline]
+    pub const fn remaining_capacity(&self) -> usize {
+        self.buffer.len() - self.len
+    }
+
     /// Truncates this `StrWriter` to `length`.
     ///
     /// If `length` is greater than the current length, this does nothing.
@@ -136,33 +218,63 @@ impl StrWriter {
     /// # Errors
     ///
     /// Returns an `Error::NotOnCharBoundary` if `length` is not on a char boundary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter};
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    ///
+    /// buffer.as_mut().write_str("foo bâr baz");
+    /// assert_eq!(buffer.as_str(), "foo bâr baz");
+    ///
+    /// assert_eq!(buffer.truncate(6).unwrap_err(), Error::NotOnCharBoundary);
+    ///
+    /// buffer.truncate(3)?;
+    /// assert_eq!(buffer.as_str(), "foo");
+    ///
+    /// buffer.as_mut().write_str("ooooooo");
+    /// assert_eq!(buffer.as_str(), "fooooooooo");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline]
     pub const fn truncate(&mut self, length: usize) -> Result<(), Error> {
         self.as_mut().truncate(length)
     }
 
     /// Truncates this `StrWriter` to length 0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter};
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    ///
+    /// buffer.as_mut().write_str("foo")?;
+    /// assert_eq!(buffer.as_str(), "foo");
+    ///
+    /// buffer.clear();
+    /// assert_eq!(buffer.as_str(), "");
+    /// assert!(buffer.is_empty());
+    ///
+    /// buffer.as_mut().write_str("bar");
+    /// assert_eq!(buffer.as_str(), "bar");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline]
     pub const fn clear(&mut self) {
         self.len = 0;
-    }
-
-    /// Gets how the maximum length for a string written into this.
-    ///
-    /// Trying to write more that the capacity causes is an error,
-    /// returning back an `Err(Error::NotEnoughSpace)`
-    #[inline(always)]
-    pub const fn capacity(&self) -> usize {
-        self.buffer.len()
     }
 
     /// Gets the written part of this `StrWriter` as a `&[u8]`
     ///
     /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
     ///
-    /// ### Constness
-    ///
-    /// This can be always be called in const contexts,
+    /// ### Runtime
     ///
     /// If the "constant_time_as_str" feature is disabled,
     /// thich takes time proportional to `self.capacity() - self.len()`.
@@ -319,5 +431,13 @@ impl StrWriter {
             },
             flags,
         )
+    }
+}
+
+impl<A: ?Sized> StrWriter<A> {
+    // For borrowing this mutably in macros, without getting nested mutable references.
+    #[inline(always)]
+    pub const fn borrow_mutably(&mut self) -> &mut Self {
+        self
     }
 }

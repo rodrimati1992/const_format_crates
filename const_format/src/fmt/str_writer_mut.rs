@@ -8,7 +8,56 @@ use super::{Error, Formatter, StrWriter};
 
 use core::ops::Range;
 
-/// A handle to write a formatted utf8 string into a `[u8]`.
+/// For writing formatted utf8 string into a `[u8]`.
+///
+/// # Construction
+///
+/// This type can be constructed in these ways:
+///
+/// - From a `&mut StrWriter`, with the [`StrWriter::as_mut`] method.
+///
+/// - From a `&mut StrWriter<_>`, with the [`StrWriterMut::new`] constructor.
+///
+/// - From a pair of `usize` and `[u8]` mutable references,
+/// with the [`from_custom_cleared`] safe constructor,
+/// or the [`from_custom`] unsafe constructor.
+///
+/// # Relation to `Formatter`
+///
+/// This is the type that Formatter uses to write formatted text to a slice,
+/// sharing all the `write_*` methods,
+/// the difference is that this doesn't store `FormattingFlags`,
+/// so you must pass them to the `write_*_debug` methods.
+///
+/// # Example
+///
+/// This example demonstrates how you can write a formatted string to a `&mut [u8]`,
+/// using a `StrWriterMut`.
+///
+/// ```rust
+/// use const_format::{Error, StrWriterMut, try_, writec};
+///
+/// fn format_number(number: u32,slice: &mut [u8]) -> Result<usize, Error> {
+///     let mut len = 0;
+///     let mut writer = StrWriterMut::from_custom_cleared(slice, &mut len);
+///     
+///     try_!(writec!(writer, "{0} in binary is {0:#b}", number));
+///
+///     Ok(len)
+/// }
+///
+/// let mut slice = [0; 32];
+///
+/// let len = format_number(100, &mut slice)?;
+///
+/// assert_eq!(&slice[..len], "100 in binary is 0b1100100".as_bytes());
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+/// [`from_custom_cleared`]: #method.from_custom_cleared
+/// [`from_custom`]: #method.from_custom
+///
 ///
 pub struct StrWriterMut<'w> {
     pub(super) len: &'w mut usize,
@@ -23,6 +72,23 @@ macro_rules! borrow_fields {
 }
 
 impl<'w> StrWriterMut<'w> {
+    /// Constructs a `StrWriterMut` from a mutable reference to a `StrWriter`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+    /// {
+    ///     let mut writer = StrWriterMut::new(buffer);
+    ///
+    ///     let _ = writer.write_str("Number: ");
+    ///     let _ = writer.write_u8_display(1);
+    /// }
+    /// assert_eq!(buffer.as_str(), "Number: 1");
+    ///
+    /// ```
     pub const fn new(writer: &'w mut StrWriter) -> Self {
         Self {
             len: &mut writer.len,
@@ -32,10 +98,31 @@ impl<'w> StrWriterMut<'w> {
 
     /// Construct a `StrWriterMut` from length and byte slice mutable references.
     ///
+    /// If `length > buffe.len()` is passed, it's simply assigned the length of the buffer.
+    ///
     /// # Safety
     ///
     /// The bytes up to (and excluding) `length` in `buffer` must be valid utf8.
-    pub const unsafe fn from_custom(length: &'w mut usize, buffer: &'w mut [u8]) -> Self {
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriterMut;
+    ///
+    /// let mut len = 6;
+    /// let mut buffer = *b"Hello,       ";
+    ///
+    /// let mut writer = unsafe{ StrWriterMut::from_custom(&mut buffer, &mut len) };
+    ///
+    /// writer.write_str(" world!")?;
+    ///
+    /// assert_eq!(writer.as_str(), "Hello, world!");
+    /// assert_eq!(buffer, "Hello, world!".as_bytes());
+    /// assert_eq!(len, "Hello, world!".len());
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    pub const unsafe fn from_custom(buffer: &'w mut [u8], length: &'w mut usize) -> Self {
         *length = min_usize(*length, buffer.len());
 
         Self {
@@ -46,7 +133,25 @@ impl<'w> StrWriterMut<'w> {
 
     /// Construct a `StrWriterMut` from length and byte slice mutable references.
     ///
-    pub const fn from_custom_cleared(length: &'w mut usize, buffer: &'w mut [u8]) -> Self {
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriterMut;
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 13];
+    ///
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// writer.write_str("Hello, world!")?;
+    ///
+    /// assert_eq!(writer.as_str(), "Hello, world!");
+    /// assert_eq!(buffer, "Hello, world!".as_bytes());
+    /// assert_eq!(len, "Hello, world!".len());
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    pub const fn from_custom_cleared(buffer: &'w mut [u8], length: &'w mut usize) -> Self {
         *length = 0;
 
         Self {
@@ -57,71 +162,109 @@ impl<'w> StrWriterMut<'w> {
 }
 
 impl<'w> StrWriterMut<'w> {
-    #[inline(always)]
-    pub const fn len(&self) -> usize {
-        *self.len
-    }
-
+    /// Accesses the underlying buffer immutably.
     #[inline(always)]
     pub const fn buffer(&self) -> &[u8] {
         self.buffer
     }
 
+    /// The byte length of the string this is writing.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// assert_eq!(writer.len(), 0);
+    ///
+    /// writer.write_str("foo")?;
+    /// assert_eq!(writer.len(), 3);
+    ///
+    /// writer.write_str("bar")?;
+    /// assert_eq!(writer.len(), 6);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline(always)]
+    pub const fn len(&self) -> usize {
+        *self.len
+    }
+
+    /// Whether the string this is writing is empty.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// assert!( writer.is_empty() );
+    ///
+    /// writer.write_str("foo")?;
+    /// assert!( !writer.is_empty() );
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline(always)]
+    pub const fn is_empty(&self) -> bool {
+        *self.len == 0
+    }
+
+    /// The maximum byte length of the formatted text for this `StrWriterMut`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// assert_eq!(writer.capacity(), 64);
+    ///
+    /// writer.write_ascii_repeated(b'A', 64)?;
+    /// assert_eq!(writer.capacity(), 64);
+    ///
+    /// assert_eq!(writer.write_str("-").unwrap_err(), Error::NotEnoughSpace);
+    /// assert_eq!(writer.capacity(), 64);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline(always)]
     pub const fn capacity(&self) -> usize {
         self.buffer.len()
     }
 
-    #[inline(always)]
-    pub const fn as_bytes_alt(&self) -> &[u8] {
-        crate::utils::slice_up_to_len_alt(self.buffer, *self.len)
-    }
-
-    conditionally_const! {
-        feature = "constant_time_as_str";
-        /// Gets the written part of this StrWriterMut as a `&str`
-        ///
-        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
-        ///
-        #[inline(always)]
-        pub fn as_str(&self) -> &str {
-            // All the methods that modify the buffer must ensure utf8 validity,
-            // only methods from this module need to ensure this.
-            unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
-        }
-
-        /// Gets the written part of this StrWriterMut as a `&[u8]`
-        ///
-        /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
-        ///
-        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
-        ///
-        #[inline(always)]
-        pub fn as_bytes(&self) -> &[u8] {
-            crate::utils::slice_up_to_len(self.buffer, *self.len)
-        }
-    }
-
-    #[inline(always)]
-    pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::from_sw_mut(self.reborrow(), flags)
-    }
-
-    // For borrowing this mutably in macros, without getting nested mutable references.
-    #[inline(always)]
-    pub const fn borrow_mutably(&mut self) -> &mut StrWriterMut<'w> {
-        self
-    }
-
-    // For borrowing this mutably in macros, without getting nested mutable references.
-    #[inline(always)]
-    pub const fn reborrow(&mut self) -> StrWriterMut<'_> {
-        StrWriterMut {
-            len: self.len,
-            buffer: self.buffer,
-        }
+    /// Checks how many more bytes can be written.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// assert_eq!(writer.remaining_capacity(), 64);
+    ///
+    /// writer.write_str("foo")?;
+    /// assert_eq!(writer.remaining_capacity(), 61);
+    ///
+    /// writer.write_ascii_repeated(b'a', 61)?;
+    /// assert_eq!(writer.remaining_capacity(), 0);
+    ///
+    /// assert_eq!(writer.write_str(" ").unwrap_err(), Error::NotEnoughSpace);
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+    #[inline]
+    pub const fn remaining_capacity(&self) -> usize {
+        self.buffer.len() - *self.len
     }
 
     /// Truncates this `StrWriterMut` to `length`.
@@ -131,6 +274,28 @@ impl<'w> StrWriterMut<'w> {
     /// # Errors
     ///
     /// Returns an `Error::NotOnCharBoundary` if `length` is not on a char boundary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// writer.write_str("foo bâr baz");
+    /// assert_eq!(writer.as_str(), "foo bâr baz");
+    ///
+    /// assert_eq!(writer.truncate(6).unwrap_err(), Error::NotOnCharBoundary);
+    ///
+    /// writer.truncate(3)?;
+    /// assert_eq!(writer.as_str(), "foo");
+    ///
+    /// writer.write_str("ooooooo");
+    /// assert_eq!(writer.as_str(), "fooooooooo");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline]
     pub const fn truncate(&mut self, length: usize) -> Result<(), Error> {
         if length <= *self.len {
@@ -144,9 +309,215 @@ impl<'w> StrWriterMut<'w> {
     }
 
     /// Truncates this `StrWriterMut` to length 0.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// writer.write_str("foo")?;
+    /// assert_eq!(writer.as_str(), "foo");
+    ///
+    /// writer.clear();
+    /// assert_eq!(writer.as_str(), "");
+    /// assert!(writer.is_empty());
+    ///
+    /// writer.write_str("bar");
+    /// assert_eq!(writer.as_str(), "bar");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
+
     #[inline]
     pub const fn clear(&mut self) {
         *self.len = 0;
+    }
+
+    /// Gets the written part of this `StrWriterMut` as a `&[u8]`
+    ///
+    /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
+    ///
+    /// ### Runtime
+    ///
+    /// If the "constant_time_as_str" feature is disabled,
+    /// thich takes time proportional to `self.capacity() - self.len()`.
+    ///
+    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
+    /// but uses a few additional nightly features.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// writer.write_str("Hello, World!");
+    ///
+    /// assert_eq!(writer.as_bytes_alt(), "Hello, World!".as_bytes());
+    ///
+    /// ```
+    #[inline(always)]
+    pub const fn as_bytes_alt(&self) -> &[u8] {
+        crate::utils::slice_up_to_len_alt(self.buffer, *self.len)
+    }
+
+    conditionally_const! {
+        feature = "constant_time_as_str";
+        /// Gets the written part of this StrWriterMut as a `&str`
+        ///
+        /// ### Constness
+        ///
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
+        /// which requires nightly Rust versions after 2020-08-15.
+        ///
+        /// # Example
+        ///
+        /// ```rust
+        /// #![feature(const_mut_refs)]
+        ///
+        /// use const_format::{StrWriter, StrWriterMut};
+        ///
+        /// let mut buffer = StrWriter::new([0; 64]);
+        /// let mut writer = StrWriterMut::new(&mut buffer);
+        ///
+        /// writer.write_str("Hello, how are you?");
+        ///
+        /// assert_eq!(writer.as_str(), "Hello, how are you?");
+        ///
+        /// ```
+        #[inline(always)]
+        pub fn as_str(&self) -> &str {
+            // All the methods that modify the buffer must ensure utf8 validity,
+            // only methods from this module need to ensure this.
+            unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
+        }
+
+        /// Gets the written part of this `StrWriterMut` as a `&[u8]`
+        ///
+        /// The slice is guaranteed to be valid utf8, so this is mostly for convenience.
+        ///
+        /// ### Constness
+        ///
+        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
+        /// which requires nightly Rust versions after 2020-08-15.
+        ///
+        /// # Example
+        ///
+        /// ```rust
+        /// #![feature(const_mut_refs)]
+        ///
+        /// use const_format::{StrWriter, StrWriterMut};
+        ///
+        /// let mut buffer = StrWriter::new([0; 64]);
+        /// let mut writer = StrWriterMut::new(&mut buffer);
+        ///
+        /// writer.write_str("Hello, World!");
+        ///
+        /// assert_eq!(writer.as_bytes_alt(), "Hello, World!".as_bytes());
+        ///
+        /// ```
+        #[inline(always)]
+        pub fn as_bytes(&self) -> &[u8] {
+            crate::utils::slice_up_to_len(self.buffer, *self.len)
+        }
+    }
+
+    /// Constructs a [`Formatter`] that writes into this `StrWriterMut`,
+    /// which can be passed to debug and display formatting methods.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Error, Formatter, FormattingFlags, StrWriter, StrWriterMut};
+    /// use const_format::call_debug_fmt;
+    ///
+    /// use std::ops::Range;
+    ///
+    /// const fn range_debug_fmt(
+    ///     slice: &[Range<usize>],
+    ///     f: &mut Formatter<'_>
+    /// ) -> Result<(), Error> {
+    ///     // We need this macro to debug format arrays of non-primitive types
+    ///     // Also, it implicitly returns a `const_format::Error` on error.
+    ///     call_debug_fmt!(array, slice, f);
+    ///     Ok(())
+    /// }
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// range_debug_fmt(
+    ///     &[0..14, 14..31, 31..48],
+    ///     &mut writer.make_formatter(FormattingFlags::new().set_binary())
+    /// )?;
+    ///    
+    /// assert_eq!(writer.as_str(), "[0..1110, 1110..11111, 11111..110000]");
+    ///
+    /// # Ok::<(), Error>(())
+    ///
+    /// ```
+    ///
+    /// [`Formatter`]: ./struct.Formatter.html
+    #[inline(always)]
+    pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
+        Formatter::from_sw_mut(self.reborrow(), flags)
+    }
+
+    // For borrowing this mutably in macros, without getting nested mutable references.
+    #[inline(always)]
+    pub const fn borrow_mutably(&mut self) -> &mut StrWriterMut<'w> {
+        self
+    }
+
+    /// For passing a reborrow of this `StrWriterMit` into functions,
+    /// without this you'd need to pass a mutable reference instead.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Error, FormattingFlags, StrWriter, StrWriterMut, call_debug_fmt};
+    ///
+    /// use std::ops::Range;
+    ///
+    /// const fn range_debug_fmt(
+    ///     slice: &[[u32; 2]],
+    ///     mut writer: StrWriterMut<'_>
+    /// ) -> Result<(), Error> {
+    ///     let mut formatter = writer.make_formatter(FormattingFlags::new().set_binary());
+    ///
+    ///     // We need this macro to debug format arrays of non-primitive types
+    ///     // Also, it implicitly returns a `const_format::Error` on error.
+    ///     call_debug_fmt!(array, slice, formatter);
+    ///     Ok(())
+    /// }
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    /// range_debug_fmt(&[[3, 5], [8, 13]], writer.reborrow())?;
+    ///    
+    /// assert_eq!(writer.as_str(), "[[11, 101], [1000, 1101]]");
+    ///
+    /// # Ok::<(), Error>(())
+    ///
+    /// ```
+    #[inline(always)]
+    pub const fn reborrow(&mut self) -> StrWriterMut<'_> {
+        StrWriterMut {
+            len: self.len,
+            buffer: self.buffer,
+        }
     }
 }
 
@@ -154,12 +525,16 @@ impl<'w> StrWriterMut<'w> {
 
 macro_rules! write_integer_fn {
     (
+        display_attrs $display_attrs:tt
+        debug_attrs $debug_attrs:tt
         $(($display_fn:ident, $debug_fn:ident, $sign:ident, $ty:ident, $Unsigned:ident))*
     )=>{
         impl StrWriterMut<'_>{
             $(
                 write_integer_fn!{
                     @methods
+                    display_attrs $display_attrs
+                    debug_attrs $debug_attrs
                     $display_fn, $debug_fn, $sign, ($ty, $Unsigned), stringify!($ty)
                 }
             )*
@@ -196,15 +571,15 @@ macro_rules! write_integer_fn {
         }
     };
     (@methods
+        display_attrs( $(#[$display_attrs:meta])* )
+        debug_attrs( $(#[$debug_attrs:meta])* )
         $display_fn:ident,
         $debug_fn:ident,
         $sign:ident,
         ($ty:ident, $Unsigned:ident),
         $ty_name:expr
     )=>{
-        /// Writes a
-        #[doc = $ty_name]
-        /// with Display formatting.
+        $(#[$display_attrs])*
         pub const fn $display_fn(&mut self, number: $ty) -> Result<(), Error> {
             borrow_fields!(self, this_len, this_buffer);
 
@@ -233,10 +608,12 @@ macro_rules! write_integer_fn {
             Ok(())
         }
 
-        /// Writes a
-        #[doc = $ty_name]
-        /// with Debug formatting.
-        pub const fn $debug_fn(&mut self, n: $ty, flags: FormattingFlags) -> Result<(), Error> {
+        $(#[$debug_attrs])*
+        pub const fn $debug_fn(
+            &mut self,
+            number: $ty,
+            flags: FormattingFlags,
+        ) -> Result<(), Error> {
             const fn hex(
                 this: &mut StrWriterMut<'_>,
                 n: $ty,
@@ -308,9 +685,9 @@ macro_rules! write_integer_fn {
             }
 
             match flags.num_fmt() {
-                NumberFormatting::Decimal=>self.$display_fn(n),
-                NumberFormatting::Hexadecimal=>hex(self, n, flags),
-                NumberFormatting::Binary=>binary(self, n, flags),
+                NumberFormatting::Decimal=>self.$display_fn(number),
+                NumberFormatting::Hexadecimal=>hex(self, number, flags),
+                NumberFormatting::Binary=>binary(self, number, flags),
             }
         }
     };
@@ -362,6 +739,8 @@ pub(super) const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usiz
 impl StrWriterMut<'_> {
     /// Writes a subslice of `s` with Display formatting.
     ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
     /// # Additional Errors
     ///
     /// This method returns `Error::NotOnCharBoundary` if the range is not
@@ -369,6 +748,22 @@ impl StrWriterMut<'_> {
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`,
     /// this only returns an error on an in-bounds index that is not on a character boundary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{FormattingFlags, StrWriterMut};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_str_range("FOO BAR BAZ", 4..7);
+    ///
+    /// assert_eq!(writer.as_str(), "BAR");
+    ///
+    /// ```
+    ///
     pub const fn write_str_range(&mut self, s: &str, range: Range<usize>) -> Result<(), Error> {
         let bytes = s.as_bytes();
         let Range { start, end } = saturate_range(bytes, &range);
@@ -381,6 +776,23 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `s` with Display formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_str("FOO BAR BAZ");
+    ///
+    /// assert_eq!(writer.as_str(), "FOO BAR BAZ");
+    ///
+    /// ```
+    ///
     pub const fn write_str(&mut self, s: &str) -> Result<(), Error> {
         let bytes = s.as_bytes();
 
@@ -390,6 +802,25 @@ impl StrWriterMut<'_> {
     /// Writes a subslice of `ascii` with Display formatting.
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut, ascii_str};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_ascii_range(ascii_str!("FOO BAR BAZ"), 4..7);
+    ///
+    /// assert_eq!(writer.as_str(), "BAR");
+    ///
+    /// ```
+    ///
     pub const fn write_ascii_range(
         &mut self,
         ascii: AsciiStr<'_>,
@@ -402,6 +833,23 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `ascii` with Display formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut, ascii_str};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_ascii(ascii_str!("FOO BAR BAZ"));
+    ///
+    /// assert_eq!(writer.as_str(), "FOO BAR BAZ");
+    ///
+    /// ```
+    ///
     pub const fn write_ascii(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
 
@@ -409,6 +857,23 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes an ascii `character`, `repeated` times.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_ascii_repeated(b'A', 10);
+    ///
+    /// assert_eq!(writer.as_str(), "AAAAAAAAAA");
+    ///
+    /// ```
+    ///
     pub const fn write_ascii_repeated(
         &mut self,
         mut character: u8,
@@ -462,6 +927,7 @@ impl StrWriterMut<'_> {
 impl StrWriterMut<'_> {
     /// Writes a subslice of `s` with  Debug-like formatting.
     ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
     ///
     /// # Additional Errors
     ///
@@ -470,6 +936,23 @@ impl StrWriterMut<'_> {
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`,
     /// this only returns an error on an in-bounds index that is not on a character boundary.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_str_range_debug("FOO\nBAR\tBAZ", 3..8);
+    ///
+    /// assert_eq!(writer.as_str(), r#""\nBAR\t""#);
+    ///
+    /// ```
+    ///
     pub const fn write_str_range_debug(
         &mut self,
         s: &str,
@@ -486,6 +969,23 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `s` with Debug-like formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_str_debug("FOO\nBAR\tBAZ");
+    ///
+    /// assert_eq!(writer.as_str(), r#""FOO\nBAR\tBAZ""#);
+    ///
+    /// ```
+    ///
     pub const fn write_str_debug(&mut self, str: &str) -> Result<(), Error> {
         let bytes = str.as_bytes();
         self.write_str_debug_inner(bytes, 0, str.len())
@@ -494,6 +994,25 @@ impl StrWriterMut<'_> {
     /// Writes a subslice of `ascii` with Debug-like formatting.
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`.
+    ///
+    /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut, ascii_str};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_ascii_range_debug(ascii_str!("FOO\nBAR\tBAZ"), 3..8);
+    ///
+    /// assert_eq!(writer.as_str(), r#""\nBAR\t""#);
+    ///
+    /// ```
+    ///
     pub const fn write_ascii_range_debug(
         &mut self,
         ascii: AsciiStr<'_>,
@@ -506,6 +1025,23 @@ impl StrWriterMut<'_> {
     }
 
     /// Writes `ascii` with Debug-like formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{FormattingFlags, StrWriterMut, ascii_str};
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_ascii_debug(ascii_str!("FOO\nBAR\tBAZ"));
+    ///
+    /// assert_eq!(writer.as_str(), r#""FOO\nBAR\tBAZ""#);
+    ///
+    /// ```
+    ///
     pub const fn write_ascii_debug(&mut self, ascii: AsciiStr<'_>) -> Result<(), Error> {
         let bytes = ascii.as_bytes();
         self.write_str_debug_inner(bytes, 0, bytes.len())
@@ -584,7 +1120,77 @@ impl StrWriterMut<'_> {
 }
 
 write_integer_fn! {
+    display_attrs(
+        /// Write `number` with display formatting.
+        ///
+        /// # Example
+        ///
+        /// ```rust
+        ///
+        /// use const_format::{Formatter, FormattingFlags, StrWriterMut, ascii_str};
+        ///
+        /// let mut len = 0;
+        /// let mut buffer = [0; 64];
+        /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+        ///
+        /// let _ = writer.write_u8_display(137);
+        ///
+        /// assert_eq!(writer.as_str(), "137");
+        ///
+        /// ```
+        ///
+    )
+    debug_attrs(
+        /// Writes `number` with debug formatting.
+        ///
+        /// # Example
+        ///
+        /// ```rust
+        ///
+        /// use const_format::{FormattingFlags, StrWriterMut};
+        ///
+        /// fn debug_fmt<'a>(writer: &'a mut StrWriterMut<'_>, flag: FormattingFlags) -> &'a str {
+        ///     writer.clear();
+        ///     let _ = writer.write_u8_debug(63, flag);
+        ///     writer.as_str()
+        /// }
+        ///
+        /// let reg_flag = FormattingFlags::NEW.set_alternate(false);
+        /// let alt_flag = FormattingFlags::NEW.set_alternate(true);
+        ///
+        /// let mut len = 0;
+        /// let mut buffer = [0; 64];
+        /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+        ///
+        /// assert_eq!(debug_fmt(&mut writer, reg_flag),                   "63"     );
+        /// assert_eq!(debug_fmt(&mut writer, reg_flag.set_hexadecimal()), "3F"     );
+        /// assert_eq!(debug_fmt(&mut writer, reg_flag.set_binary()),      "111111" );
+        /// assert_eq!(debug_fmt(&mut writer, alt_flag),                   "63"     );
+        /// assert_eq!(debug_fmt(&mut writer, alt_flag.set_hexadecimal()), "0x3F"   );
+        /// assert_eq!(debug_fmt(&mut writer, alt_flag.set_binary()),      "0b111111");
+        ///
+        /// ```
+        ///
+    )
     (write_u8_display, write_u8_debug, unsigned, u8, u8)
+}
+write_integer_fn! {
+    display_attrs(
+        /// Writes `number` with display formatting
+        ///
+        /// For an example,
+        /// you can look at the one for the [`write_u8_display`] method.
+        ///
+        /// [`write_u8_display`]: #method.write_u8_display
+    )
+    debug_attrs(
+        /// Writes `number` with debug formatting.
+        ///
+        /// For an example,
+        /// you can look at the one for the [`write_u8_debug`] method.
+        ///
+        /// [`write_u8_debug`]: #method.write_u8_debug
+    )
     (write_u16_display, write_u16_debug, unsigned, u16, u16)
     (write_u32_display, write_u32_debug, unsigned, u32, u32)
     (write_u64_display, write_u64_debug, unsigned, u64, u64)
