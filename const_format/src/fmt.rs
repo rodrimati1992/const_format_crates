@@ -1,7 +1,9 @@
 //! [`std::fmt`](https://doc.rust-lang.org/std/fmt/)-like
 //! api that can be used at compile-time.
 //!
-//! This module requires the "fmt" feature to be enabled, and the nightly compiler,
+//! # Features
+//!
+//! This module requires the "fmt" feature to be exported, and the nightly compiler,
 //! because at the time of writing these docs (2020-08-XX) mutable references in const fn
 //! require the unstable
 //! [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.

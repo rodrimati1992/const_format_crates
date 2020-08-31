@@ -1,4 +1,11 @@
 //! Types for the documentation examples.
+//!
+//! # Features
+//!
+//! This module is only exported with the "fmt" feature, and the nightly compiler,
+//! because at the time of writing these docs (2020-08-XX) mutable references in const fn
+//! require the unstable
+//! [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
 
 use crate::{impl_fmt, try_, Error, Formatter, PWrapper};
 

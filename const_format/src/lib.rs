@@ -4,7 +4,7 @@
 //!
 //! # Rust versions
 //!
-//! This crate provides some features that require Rust 1.46.0,
+//! There are some features that require Rust 1.46.0,
 //! and others that require Rust nightly,
 //! the sections below describe the features that are available.
 //!
@@ -33,7 +33,8 @@
 //!
 //! - [`writec`]:
 //! [`write`]-like macro that can format many standard library and user defined types
-//! into a [`Formatter`] or [`StrWriter`].
+//! into a type that implements [`WriteMarker`].
+//!
 //!
 //!
 //! The "derive" feature enables the [`ConstDebug`] macro,
@@ -160,7 +161,7 @@
 //! }
 //!
 //! const _: () = {
-//!     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
+//!     if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
 //!         let promoted: &'static StrWriter = &{buffer};
 //!         let message = strwriter_as_str!(promoted);
 //!         panic!(message);
@@ -176,14 +177,14 @@
 //!   --> src/lib.rs:166:9
 //!    |
 //! 43 | / const _: () = {
-//! 44 | |     if let (buffer, Err(_)) = message_and_result("Steve", "pineapple") {
+//! 44 | |     if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
 //! 45 | |         let promoted: &'static StrWriter = &{buffer};
 //! 46 | |         let message = strwriter_as_str!(promoted);
 //! 47 | |         panic!(message);
 //!    | |         ^^^^^^^^^^^^^^^^ the evaluated program panicked at '
 //! ----------------------------------------------------------------
 //!
-//! You can't put pineapple on pizza, Steve.
+//! You can't put pineapple on pizza, Bob.
 //!
 //! ----------------------------------------------------------------
 //! ', src/lib.rs:47:9
@@ -239,6 +240,11 @@
 //! "derive": implies the "fmt" feature,
 //! provides the `ConstDebug` derive macro to format user-defined types at compile-time.
 //!
+//! - "constant_time_as_str": implies the "fmt" feature.
+//! An optimization that requires a few additional nightly features,
+//! allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
+//! in constant time, rather than linear time proportional to the truncated part of the slice.
+//!
 //! # No-std support
 //!
 //! `const_format` is unconditionally `#![no_std]`, it can be used anywhere Rust can be used.
@@ -275,6 +281,7 @@
 //!
 //! [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 //!
+//! [`WriteMarker`]: ./marker_traits/trait.WriteMarker.html
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
@@ -298,6 +305,7 @@ mod formatting;
 
 mod pargument;
 
+#[cfg(feature = "fmt")]
 pub mod utils;
 
 #[cfg(feature = "fmt")]
@@ -323,6 +331,7 @@ pub mod fmt;
 #[doc(hidden)]
 pub mod msg;
 
+#[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub mod wrapper_types;
 
 #[cfg(feature = "fmt")]
@@ -335,6 +344,7 @@ pub use crate::wrapper_types::ascii_str::AsciiStr;
 #[cfg(feature = "fmt")]
 pub use crate::wrapper_types::sliced::Sliced;
 
+#[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub use crate::wrapper_types::pwrapper::PWrapper;
 
 #[doc(hidden)]

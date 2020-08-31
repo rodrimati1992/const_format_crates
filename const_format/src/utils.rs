@@ -1,4 +1,8 @@
 //! Miscelaneous functions.
+//!
+//! # Features
+//!
+//! This module is only exported with the "fmt" feature.
 
 /// Newtype wrapper to get around limitations in `const fn`s
 pub(crate) struct Constructor<T>(fn() -> T);
@@ -157,10 +161,10 @@ slice_up_to_len_alt_docs! {
                 $( ($len:expr, [$($ignored:tt)*]) )*
             )=>{
                 $(
-                    while $rem > $len {
-                        if let [next @ .., $($ignored)* ] = $ret {
-                            $ret = next;
-                            $rem -= $len;
+                    while rem > $len {
+                        if let [next @ .., $($ignored)* ] = ret {
+                            ret = next;
+                            rem -= $len;
                         }
                     }
                 )*
