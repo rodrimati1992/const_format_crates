@@ -30,7 +30,7 @@ constant_time_as_str = ["fmt"]
 testing = []
 
 # "private" features
-only_new_tests = []
+only_new_tests = ["testing"]
 
 [dependencies.const_format_proc_macros]
 version = "=0.1.0"

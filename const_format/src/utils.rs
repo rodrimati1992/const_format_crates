@@ -1,5 +1,8 @@
 //! Miscelaneous functions.
 
+/// Newtype wrapper to get around limitations in `const fn`s
+pub(crate) struct Constructor<T>(fn() -> T);
+
 /// A const equivalent of `&str` equality comparison.
 ///
 /// # Example

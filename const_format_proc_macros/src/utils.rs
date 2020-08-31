@@ -4,7 +4,7 @@ use quote::ToTokens;
 
 use std::{
     fmt::Display,
-    mem::{self, ManuallyDrop},
+    mem,
     ops::{Deref, DerefMut},
 };
 
@@ -29,23 +29,21 @@ pub fn syn_err(span: Span, display: &dyn Display) -> syn::Error {
 /// A result wrapper which panics if it's the error variant is not handled,
 /// by calling `.into_result()`.
 #[derive(Debug, Clone)]
-pub struct LinearResult<T> {
-    errors: ManuallyDrop<Result<T, syn::Error>>,
+pub struct LinearResult<T: Default> {
+    errors: Result<T, syn::Error>,
 }
 
-impl<T> Drop for LinearResult<T> {
+impl<T: Default> Drop for LinearResult<T> {
     fn drop(&mut self) {
-        let res = unsafe { ManuallyDrop::take(&mut self.errors) };
-        res.expect("Expected LinearResult to be handled");
+        mem::replace(&mut self.errors, Ok(T::default()))
+            .expect("Expected LinearResult to be handled");
     }
 }
 
-impl<T> LinearResult<T> {
+impl<T: Default> LinearResult<T> {
     #[inline]
     pub fn new(res: Result<T, syn::Error>) -> Self {
-        Self {
-            errors: ManuallyDrop::new(res),
-        }
+        Self { errors: res }
     }
 
     #[inline]
@@ -54,14 +52,14 @@ impl<T> LinearResult<T> {
     }
 }
 
-impl<T> From<Result<T, syn::Error>> for LinearResult<T> {
+impl<T: Default> From<Result<T, syn::Error>> for LinearResult<T> {
     #[inline]
     fn from(res: Result<T, syn::Error>) -> Self {
         Self::new(res)
     }
 }
 
-impl<T> Deref for LinearResult<T> {
+impl<T: Default> Deref for LinearResult<T> {
     type Target = Result<T, syn::Error>;
 
     fn deref(&self) -> &Result<T, syn::Error> {
@@ -69,13 +67,13 @@ impl<T> Deref for LinearResult<T> {
     }
 }
 
-impl<T> DerefMut for LinearResult<T> {
+impl<T: Default> DerefMut for LinearResult<T> {
     fn deref_mut(&mut self) -> &mut Result<T, syn::Error> {
         &mut self.errors
     }
 }
 
-impl<T> Into<Result<T, syn::Error>> for LinearResult<T> {
+impl<T: Default> Into<Result<T, syn::Error>> for LinearResult<T> {
     #[inline]
     fn into(self) -> Result<T, syn::Error> {
         self.into_result()
@@ -83,11 +81,10 @@ impl<T> Into<Result<T, syn::Error>> for LinearResult<T> {
 }
 
 #[allow(dead_code)]
-impl<T> LinearResult<T> {
+impl<T: Default> LinearResult<T> {
     #[inline]
-    pub fn into_result(self) -> Result<T, syn::Error> {
-        let mut this = ManuallyDrop::new(self);
-        unsafe { ManuallyDrop::take(&mut this.errors) }
+    pub fn into_result(mut self) -> Result<T, syn::Error> {
+        mem::replace(&mut self.errors, Ok(T::default()))
     }
 
     #[inline]
@@ -100,12 +97,12 @@ impl<T> LinearResult<T> {
 
     #[inline]
     pub fn replace(&mut self, other: Result<T, syn::Error>) -> Result<T, syn::Error> {
-        mem::replace(&mut *self.errors, other)
+        mem::replace(&mut self.errors, other)
     }
 
     #[inline]
     pub fn push_err(&mut self, err: syn::Error) {
-        match &mut *self.errors {
+        match &mut self.errors {
             this @ Ok(_) => *this = Err(err),
             Err(e) => e.combine(err),
         }

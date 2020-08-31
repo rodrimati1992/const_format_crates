@@ -246,8 +246,8 @@ pub use self::{
     error::Error,
     formatter::{ComputeStrLength, DebugList, DebugSet, DebugStruct, DebugTuple, Formatter},
     str_writer::StrWriter,
-    str_writer_mut::StrWriterMut,
+    str_writer_mut::{NoEncoding, StrWriterMut, Utf8Encoding},
 };
 
-#[cfg(all(test, not(feature = "only_new_tests")))]
+#[cfg(test)]
 mod tests;

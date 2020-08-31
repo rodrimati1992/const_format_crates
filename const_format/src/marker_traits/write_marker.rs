@@ -69,9 +69,7 @@ use core::marker::PhantomData;
 ///         }
 ///    
 ///         pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-///             unsafe{
 ///             Formatter::from_custom(&mut self.arr, &mut self.len, flags)
-///             }
 ///         }
 ///     }
 /// }

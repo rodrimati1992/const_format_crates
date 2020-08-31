@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types)]
+
 ///
 /// ```rust
 ///
@@ -60,3 +62,37 @@ pub struct ImplFmtWhereClause;
 /// ```
 ///
 pub struct ConstDebugWhereClause;
+
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::StrWriterMut;
+///
+/// let mut len = 0;
+/// let mut buffer = [0; 128];
+///
+/// let mut writer = StrWriterMut::from_custom(&mut buffer, &mut len);
+///
+/// writer.write_str("hello").unwrap();
+///
+/// assert_eq!(writer.as_bytes(), b"hello")
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::StrWriterMut;
+///
+/// let mut len = 0;
+/// let mut buffer = [0; 128];
+///
+/// let mut writer = StrWriterMut::from_custom(&mut buffer, &mut len);
+///
+/// writer.write_str("hello").unwrap();
+///
+/// assert_eq!(writer.as_str(), "hello")
+///
+/// ```
+///
+pub struct AsStr_For_StrWriterMut_NoEncoding;

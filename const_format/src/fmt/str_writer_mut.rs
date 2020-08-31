@@ -1,14 +1,14 @@
 use crate::{
     formatting::{hex_as_ascii, ForEscaping, FormattingFlags, NumberFormatting, FOR_ESCAPING},
-    utils::min_usize,
+    utils::{min_usize, Constructor},
     wrapper_types::{AsciiStr, PWrapper},
 };
 
 use super::{Error, Formatter, StrWriter};
 
-use core::ops::Range;
+use core::{marker::PhantomData, ops::Range};
 
-/// For writing formatted utf8 string into a `[u8]`.
+/// For writing a formatted string into a `[u8]`.
 ///
 /// # Construction
 ///
@@ -19,8 +19,8 @@ use core::ops::Range;
 /// - From a `&mut StrWriter<_>`, with the [`StrWriterMut::new`] constructor.
 ///
 /// - From a pair of `usize` and `[u8]` mutable references,
-/// with the [`from_custom_cleared`] safe constructor,
-/// or the [`from_custom`] unsafe constructor.
+/// with the [`from_custom_cleared`] constructor,
+/// or the [`from_custom`] constructor.
 ///
 /// # Relation to `Formatter`
 ///
@@ -33,6 +33,12 @@ use core::ops::Range;
 ///
 /// Every single `writer_*` method returns an `Error::NotEnoughSpace` if
 /// there is not enough space to write the argument, leaving the string itself unmodified.
+///
+/// # Encoding type parameter
+///
+/// The `E` type parameter represents the encoding of the buffer that this
+/// StrWriterMut writes into,
+/// currently only [`Utf8Encoding`] and [`NoEncoding`] are supported.
 ///
 /// # Example
 ///
@@ -63,10 +69,13 @@ use core::ops::Range;
 /// [`from_custom_cleared`]: #method.from_custom_cleared
 /// [`from_custom`]: #method.from_custom
 ///
+/// [`Utf8Encoding`]: ./strict.Utf8Encoding.html
+/// [`NoEncoding`]: ./strict.NoEncoding.html
 ///
-pub struct StrWriterMut<'w> {
+pub struct StrWriterMut<'w, E = Utf8Encoding> {
     pub(super) len: &'w mut usize,
     pub(super) buffer: &'w mut [u8],
+    pub(super) _encoding: PhantomData<Constructor<E>>,
 }
 
 macro_rules! borrow_fields {
@@ -76,7 +85,19 @@ macro_rules! borrow_fields {
     };
 }
 
-impl<'w> StrWriterMut<'w> {
+/// Marker type indicating that the [`StrWriterMut`] is valid utf8,
+/// enabling the `as_str` method.
+///
+/// [`StrWriterMut`]: ./struct.StrWriterMut.html
+pub enum Utf8Encoding {}
+
+/// Marker type indicating that the [`StrWriterMut`] is arbitrary bytes,
+/// disabling the `as_str` method.
+///
+/// [`StrWriterMut`]: ./struct.StrWriterMut.html
+pub enum NoEncoding {}
+
+impl<'w> StrWriterMut<'w, Utf8Encoding> {
     /// Constructs a `StrWriterMut` from a mutable reference to a `StrWriter`
     ///
     /// # Example
@@ -98,16 +119,15 @@ impl<'w> StrWriterMut<'w> {
         Self {
             len: &mut writer.len,
             buffer: &mut writer.buffer,
+            _encoding: PhantomData,
         }
     }
+}
 
+impl<'w> StrWriterMut<'w, NoEncoding> {
     /// Construct a `StrWriterMut` from length and byte slice mutable references.
     ///
-    /// If `length > buffe.len()` is passed, it's simply assigned the length of the buffer.
-    ///
-    /// # Safety
-    ///
-    /// The bytes up to (and excluding) `length` in `buffer` must be valid utf8.
+    /// If `length > buffer.len()` is passed, it's simply assigned the length of the buffer.
     ///
     /// # Example
     ///
@@ -117,25 +137,28 @@ impl<'w> StrWriterMut<'w> {
     /// let mut len = 6;
     /// let mut buffer = *b"Hello,       ";
     ///
-    /// let mut writer = unsafe{ StrWriterMut::from_custom(&mut buffer, &mut len) };
+    /// let mut writer = StrWriterMut::from_custom(&mut buffer, &mut len);
     ///
     /// writer.write_str(" world!")?;
     ///
-    /// assert_eq!(writer.as_str(), "Hello, world!");
+    /// assert_eq!(writer.as_bytes(), b"Hello, world!");
     /// assert_eq!(buffer, "Hello, world!".as_bytes());
     /// assert_eq!(len, "Hello, world!".len());
     ///
     /// # Ok::<(), const_format::Error>(())
     /// ```
-    pub const unsafe fn from_custom(buffer: &'w mut [u8], length: &'w mut usize) -> Self {
+    pub const fn from_custom(buffer: &'w mut [u8], length: &'w mut usize) -> Self {
         *length = min_usize(*length, buffer.len());
 
         Self {
             len: length,
             buffer,
+            _encoding: PhantomData,
         }
     }
+}
 
+impl<'w> StrWriterMut<'w, Utf8Encoding> {
     /// Construct a `StrWriterMut` from length and byte slice mutable references.
     ///
     /// # Example
@@ -162,11 +185,12 @@ impl<'w> StrWriterMut<'w> {
         Self {
             len: length,
             buffer,
+            _encoding: PhantomData,
         }
     }
 }
 
-impl<'w> StrWriterMut<'w> {
+impl<'w, E> StrWriterMut<'w, E> {
     /// Accesses the underlying buffer immutably.
     #[inline(always)]
     pub const fn buffer(&self) -> &[u8] {
@@ -271,7 +295,10 @@ impl<'w> StrWriterMut<'w> {
     pub const fn remaining_capacity(&self) -> usize {
         self.buffer.len() - *self.len
     }
+}
 
+// Add `StrWriterMut::<'w, NoEncoding>::truncate` later
+impl<'w> StrWriterMut<'w, Utf8Encoding> {
     /// Truncates this `StrWriterMut` to `length`.
     ///
     /// If `length` is greater than the current length, this does nothing.
@@ -312,7 +339,9 @@ impl<'w> StrWriterMut<'w> {
         }
         Ok(())
     }
+}
 
+impl<'w, E> StrWriterMut<'w, E> {
     /// Truncates this `StrWriterMut` to length 0.
     ///
     /// # Example
@@ -372,7 +401,9 @@ impl<'w> StrWriterMut<'w> {
     pub const fn as_bytes_alt(&self) -> &[u8] {
         crate::utils::slice_up_to_len_alt(self.buffer, *self.len)
     }
+}
 
+impl<'w> StrWriterMut<'w, Utf8Encoding> {
     conditionally_const! {
         feature = "constant_time_as_str";
         /// Gets the written part of this StrWriterMut as a `&str`
@@ -403,6 +434,12 @@ impl<'w> StrWriterMut<'w> {
             // only methods from this module need to ensure this.
             unsafe { core::str::from_utf8_unchecked(self.as_bytes()) }
         }
+    }
+}
+
+impl<'w, E> StrWriterMut<'w, E> {
+    conditionally_const! {
+        feature = "constant_time_as_str";
 
         /// Gets the written part of this `StrWriterMut` as a `&[u8]`
         ///
@@ -433,7 +470,9 @@ impl<'w> StrWriterMut<'w> {
             crate::utils::slice_up_to_len(self.buffer, *self.len)
         }
     }
+}
 
+impl<'w, E> StrWriterMut<'w, E> {
     /// Constructs a [`Formatter`] that writes into this `StrWriterMut`,
     /// which can be passed to debug and display formatting methods.
     ///
@@ -474,16 +513,23 @@ impl<'w> StrWriterMut<'w> {
     /// [`Formatter`]: ./struct.Formatter.html
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        Formatter::from_sw_mut(self.reborrow(), flags)
+        Formatter::from_sw_mut(
+            StrWriterMut::<NoEncoding> {
+                len: self.len,
+                buffer: self.buffer,
+                _encoding: PhantomData,
+            },
+            flags,
+        )
     }
 
-    // For borrowing this mutably in macros, without getting nested mutable references.
+    /// For borrowing this mutably in macros, without getting nested mutable references.
     #[inline(always)]
-    pub const fn borrow_mutably(&mut self) -> &mut StrWriterMut<'w> {
+    pub const fn borrow_mutably(&mut self) -> &mut StrWriterMut<'w, E> {
         self
     }
 
-    /// For passing a reborrow of this `StrWriterMit` into functions,
+    /// For passing a reborrow of this `StrWriterMut` into functions,
     /// without this you'd need to pass a mutable reference instead.
     ///
     /// # Example
@@ -518,10 +564,20 @@ impl<'w> StrWriterMut<'w> {
     ///
     /// ```
     #[inline(always)]
-    pub const fn reborrow(&mut self) -> StrWriterMut<'_> {
+    pub const fn reborrow(&mut self) -> StrWriterMut<'_, E> {
         StrWriterMut {
             len: self.len,
             buffer: self.buffer,
+            _encoding: PhantomData,
+        }
+    }
+
+    // Safety: You must not write invalid utf8 bytes with the returned StrWriterMut.
+    pub(crate) const unsafe fn into_byte_encoding(self) -> StrWriterMut<'w, NoEncoding> {
+        StrWriterMut {
+            len: self.len,
+            buffer: self.buffer,
+            _encoding: PhantomData,
         }
     }
 }
@@ -534,7 +590,7 @@ macro_rules! write_integer_fn {
         debug_attrs $debug_attrs:tt
         $(($display_fn:ident, $debug_fn:ident, $sign:ident, $ty:ident, $Unsigned:ident))*
     )=>{
-        impl StrWriterMut<'_>{
+        impl<'w,E> StrWriterMut<'w,E>{
             $(
                 write_integer_fn!{
                     @methods
@@ -619,8 +675,8 @@ macro_rules! write_integer_fn {
             number: $ty,
             flags: FormattingFlags,
         ) -> Result<(), Error> {
-            const fn hex(
-                this: &mut StrWriterMut<'_>,
+            const fn hex<E>(
+                this: &mut StrWriterMut<'_, E>,
                 n: $ty,
                 f: FormattingFlags,
             ) -> Result<(), Error> {
@@ -654,8 +710,8 @@ macro_rules! write_integer_fn {
                 Ok(())
             }
 
-            const fn binary(
-                this: &mut StrWriterMut<'_>,
+            const fn binary<E>(
+                this: &mut StrWriterMut<'_, E>,
                 n: $ty,
                 f: FormattingFlags,
             ) -> Result<(), Error> {
@@ -741,7 +797,7 @@ pub(super) const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usiz
     min_usize(range.start, end)..end
 }
 
-impl StrWriterMut<'_> {
+impl<'w, E> StrWriterMut<'w, E> {
     /// Writes a subslice of `s` with Display formatting.
     ///
     /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
@@ -929,7 +985,7 @@ impl StrWriterMut<'_> {
 }
 
 /// Debug-formatted string writing
-impl StrWriterMut<'_> {
+impl<'w, E> StrWriterMut<'w, E> {
     /// Writes a subslice of `s` with  Debug-like formatting.
     ///
     /// This is a workaround for being unable to do `&foo[start..end]` at compile time.

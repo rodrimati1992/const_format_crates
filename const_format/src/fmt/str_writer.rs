@@ -1,4 +1,6 @@
-use super::{Error, Formatter, FormattingFlags, StrWriterMut};
+use super::{Error, Formatter, FormattingFlags, StrWriterMut, Utf8Encoding};
+
+use core::marker::PhantomData;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -382,6 +384,7 @@ impl StrWriter {
         StrWriterMut {
             len: &mut self.len,
             buffer: &mut self.buffer,
+            _encoding: PhantomData,
         }
     }
 
@@ -425,9 +428,10 @@ impl StrWriter {
     #[inline(always)]
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
         Formatter::from_sw_mut(
-            StrWriterMut {
+            StrWriterMut::<Utf8Encoding> {
                 len: &mut self.len,
                 buffer: &mut self.buffer,
+                _encoding: PhantomData,
             },
             flags,
         )

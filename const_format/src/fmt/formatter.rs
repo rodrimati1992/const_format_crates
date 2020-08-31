@@ -1,5 +1,7 @@
 use crate::{
-    fmt::{str_writer_mut::saturate_range, Error, FormattingFlags, StrWriter, StrWriterMut},
+    fmt::{
+        str_writer_mut::saturate_range, Error, FormattingFlags, NoEncoding, StrWriter, StrWriterMut,
+    },
     wrapper_types::{AsciiStr, PWrapper},
 };
 
@@ -87,7 +89,7 @@ impl ComputeStrLength {
 ////////////////////////////////////////////////////////////////////////////////
 
 enum WriterBackend<'w> {
-    Str(StrWriterMut<'w>),
+    Str(StrWriterMut<'w, NoEncoding>),
     Length(&'w mut ComputeStrLength),
 }
 
@@ -95,11 +97,26 @@ enum WriterBackend<'w> {
 
 /// A handle for writing formatted output.
 ///
+/// `Formatter` writes utf8 encoded text, it can't be used to write arbitrary bytes.
+///
 /// # FormattingFlags
 ///
-/// Types can change how they're formatted based on the value of the
-/// [`FormattingFlags`] returned by `.flags()`,
+/// Types can change how they're formatted based on the value returned by `.flags()`,
 /// for more details on that you can read the documentation for [`FormattingFlags`].
+///
+/// # Construction
+///
+/// This type can be constructed in these ways:
+///
+/// - From a pair of `&mut StrWriter<_>` and [`FormattingFlags`],
+/// with the [`from_sw`] constructor.
+///
+/// - From a pair of `StrWriterMut<_>` and [`FormattingFlags`],
+/// with the [`from_sw_mut`] constructor.
+///
+/// - From a triple of `[u8]` and `usize` mutable references, and a [`FormattingFlags`],
+/// with the [`from_custom_cleared`] constructor,
+/// or the [`from_custom`] constructor.
 ///
 /// # Errors
 ///
@@ -178,7 +195,7 @@ enum WriterBackend<'w> {
 ///
 /// This example demonstrates how you can use a Formatter to write to a byte slice.
 ///
-/// You can use the unsafe [`from_custom`] constructor if you need to start writing from
+/// You can use the [`from_custom`] constructor if you need to start writing from
 /// anywhere other than 0.
 ///
 /// ```rust
@@ -208,7 +225,10 @@ enum WriterBackend<'w> {
 ///
 /// [`DebugStruct`]: ./struct.DebugStruct.html
 /// [`DebugTuple`]: ./struct.DebugTuple.html
-/// [`from_custom`]: #method.from_custom
+/// [`from_sw`]: #method.from_sw
+/// [`from_sw_mut`]: #method.from_sw_mut
+/// [`from_custom_cleared`]: #method.from_custom_cleared
+/// [`from_custom`]:  #method.from_custom
 /// [`NumberFormatting`]: ./enum.NumberFormatting.html
 /// [`FormattingFlags`]: ./struct.FormattingFlags.html
 ///
@@ -247,7 +267,10 @@ impl<'w> Formatter<'w> {
     pub const fn from_sw(writer: &'w mut StrWriter, flags: FormattingFlags) -> Self {
         Self {
             flags,
-            writer: WriterBackend::Str(writer.as_mut()),
+            // safety:
+            // Formatter only writes valid utf8, which is valid for both
+            // encoding type parameters that StrWriterMut can have(Utf8Encoding / NoEncoding).
+            writer: WriterBackend::Str(unsafe { writer.as_mut().into_byte_encoding() }),
         }
     }
 
@@ -280,18 +303,23 @@ impl<'w> Formatter<'w> {
     ///
     /// ```
     #[inline]
-    pub const fn from_sw_mut(writer: StrWriterMut<'w>, flags: FormattingFlags) -> Self {
+    pub const fn from_sw_mut<E: 'static>(
+        writer: StrWriterMut<'w, E>,
+        flags: FormattingFlags,
+    ) -> Self {
         Self {
             flags,
-            writer: WriterBackend::Str(writer),
+            // safety:
+            // Formatter only writes valid utf8, which is valid for both
+            // encoding type parameters that StrWriterMut can have(Utf8Encoding / NoEncoding).
+            writer: WriterBackend::Str(unsafe { writer.into_byte_encoding() }),
         }
     }
 
     /// Construct a `Formatter` from a byte slice.
     ///
-    /// # Safety
-    ///
-    /// The bytes up to (and excluding) `length` in `buffer` must be valid utf8.
+    /// `Formatter` only writes utf8, which means that if `&buffer[..length]` is valid utf8,
+    /// then `buffer` will continue to be `utf8` after being written by the `Formatter`.
     ///
     /// # Example
     ///
@@ -308,7 +336,7 @@ impl<'w> Formatter<'w> {
     /// /// # Safety
     /// ///
     /// /// `&buffer[..start]` must be valid utf8.
-    /// const unsafe fn write_int(
+    /// const fn write_int(
     ///     int: u32,
     ///     buffer: &mut [u8],
     ///     start: usize,
@@ -323,8 +351,7 @@ impl<'w> Formatter<'w> {
     /// let mut buffer = [0;64];
     /// buffer[..start_str.len()].copy_from_slice(start_str.as_bytes());
     ///
-    /// // Safety: The buffer is entirely ascii, so any index is safe.
-    /// let new_len = unsafe{ write_int(20, &mut buffer, start_str.len()).unwrap() };
+    /// let new_len = write_int(20, &mut buffer, start_str.len()).unwrap();
     ///
     /// let string = std::str::from_utf8(&buffer[..new_len])
     ///     .expect("Formatter only writes valid UTF8");
@@ -333,7 +360,7 @@ impl<'w> Formatter<'w> {
     ///
     /// ```
     #[inline]
-    pub const unsafe fn from_custom(
+    pub const fn from_custom(
         buffer: &'w mut [u8],
         length: &'w mut usize,
         flags: FormattingFlags,
@@ -357,9 +384,10 @@ impl<'w> Formatter<'w> {
         length: &'w mut usize,
         flags: FormattingFlags,
     ) -> Self {
+        *length = 0;
         Self {
             flags,
-            writer: WriterBackend::Str(StrWriterMut::from_custom_cleared(buffer, length)),
+            writer: WriterBackend::Str(StrWriterMut::from_custom(buffer, length)),
         }
     }
 
@@ -1024,7 +1052,7 @@ macro_rules! delegate_write_methods {
 delegate_write_methods! {
     shared_attrs()
 
-    /// Writes `&s[range]` into this Formatter.
+    /// Writes `&string[range]` into this Formatter.
     ///
     /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
     ///
@@ -1227,9 +1255,11 @@ delegate_write_methods! {
     /// let writer: &mut StrWriter = &mut StrWriter::new([0; 16]);
     /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
     ///
-    /// let _ = fmt.write_u8_display(137);
+    /// let _ = fmt.write_u8_display(13);
+    /// let _ = fmt.write_u8_display(21);
+    /// let _ = fmt.write_u8_display(34);
     ///
-    /// assert_eq!(writer.as_str(), "137");
+    /// assert_eq!(writer.as_str(), "132134");
     ///
     /// ```
     ///
