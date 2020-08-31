@@ -1,3 +1,5 @@
+//! Marker traits for types that can be formatted and/or be written to.
+
 mod format_marker;
 mod write_marker;
 

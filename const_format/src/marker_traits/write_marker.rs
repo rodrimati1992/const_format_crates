@@ -8,10 +8,86 @@ use core::marker::PhantomData;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Marker trait for types that implement the const formatting methods.
+/// Marker trait for types that can be written into.
+///
+/// # Implementors
+///
+/// Types that implement this trait are also expected to implement these inherent methods:
+///
+/// ```ignore
+/// // use const_format::{FormattingFlags, Formatter};
+///
+/// const fn borrow_mutably(&mut self) -> &mut Self
+/// const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_>
+/// ```
+///
+/// # Coercions
+///
+/// The [`Kind`](#associatedtype.Kind) and [`This`](#associatedtype.This) associated types
+/// are used in the [`IsAWriteMarker`] marker type
+/// to convert a `&mut StrWriter<_>` to a `StrWriterMut<'_>`,
+/// and leave other mutable references unconverted.
+///
+/// # Example
+///
+/// Implementing this trait for a String-like inline allocated type.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
+/// use const_format::{Formatter, FormattingFlags};
+/// use const_format::writec;
+///
+/// mod arraystring {
+///     use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
+///     use const_format::{Formatter, FormattingFlags};
+///
+///     const ARRAY_CAP: usize = 64;
+///     pub struct ArrayString  {
+///         len: usize,
+///         arr: [u8; ARRAY_CAP],
+///     }
+///    
+///     impl WriteMarker for ArrayString  {
+///         type Kind = IsNotAStrWriter;
+///         type This = Self;
+///     }
+///    
+///     impl ArrayString {
+///         pub const fn new() -> Self {
+///             Self { len: 0, arr: [0; ARRAY_CAP] }
+///         }
+///         
+///         // Gets the part of the array that has been written to.
+///         pub const fn as_bytes(&self) -> &[u8] {
+///             const_format::utils::slice_up_to_len_alt(&self.arr, self.len)
+///         }
+///    
+///         pub const fn borrow_mutably(&mut self) -> &mut Self {
+///             self
+///         }
+///    
+///         pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
+///             unsafe{
+///             Formatter::from_custom(&mut self.arr, &mut self.len, flags)
+///             }
+///         }
+///     }
+/// }
+/// use arraystring::ArrayString;
 ///
 ///
+/// let mut buffer = ArrayString::new();
 ///
+/// writec!(buffer, "{:?}", [3u8, 5])?;
+/// assert_eq!(buffer.as_bytes(), b"[3, 5]");
+///
+/// writec!(buffer, "{}{:b}", "Hello, world!", 100u16)?;
+/// assert_eq!(buffer.as_bytes(), b"[3, 5]Hello, world!1100100");
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
 pub trait WriteMarker {
     /// Whether this is a StrWriter or not, this can be either of
     /// [`IsAStrWriter`] or [`IsNotAStrWriter`]
@@ -19,22 +95,23 @@ pub trait WriteMarker {
     /// [`IsAStrWriter`]: ./struct.IsAStrWriter.html
     /// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html
     type Kind;
-    type This: ?Sized;
 
-    const KIND: IsAWriteMarker<Self::Kind, Self::This, Self> = IsAWriteMarker::NEW;
+    /// The type after dereferencing,
+    /// implemented as `type This = Self;` for all non-reference types
+    type This: ?Sized;
 }
 
 /// Marker type for `StrWriter`'s [`Kind`] in [`WriteMarker`]s
 ///
-/// [`Kind`]: ./trait.Write2Marker.html#associatedtype.Kind
-/// [`WriteMarker`]: ./trait.Write2Marker.html
+/// [`Kind`]: ./trait.WriteMarker.html#associatedtype.Kind
+/// [`WriteMarker`]: ./trait.WriteMarker.html
 ///
 pub struct IsAStrWriter;
 
-/// Marker type for the [`Kind`] of all non-`StrWriter` types that implement [`WriteMarker`]s
+/// Marker type for the [`Kind`] of all non-`StrWriter` types that implement [`WriteMarker`].
 ///
-/// [`Kind`]: ./trait.Write2Marker.html#associatedtype.Kind
-/// [`WriteMarker`]: ./trait.Write2Marker.html
+/// [`Kind`]: ./trait.WriteMarker.html#associatedtype.Kind
+/// [`WriteMarker`]: ./trait.WriteMarker.html
 ///
 pub struct IsNotAStrWriter;
 
@@ -73,14 +150,38 @@ where
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/// Hack used to automcatically automatically convert a
+/// Hack used to automatically convert a
 /// mutable reference to a [`StrWriter`] to a [`StrWriterMut`],
 /// and do nothing with other types.
 ///
+/// The conversion is done with the `coerce` methods.
+///
+///
+/// # Type parameters
+///
+/// `K` is `<R as WriteMarker>::Kind`
+/// The kind of type that `T` is, either a [`IsAStrWriter`] or [`IsNotAStrWriter`]
+///
+/// `T` is `<R as WriteMarker>::This`:
+/// The `R` type after removing all layers of references.
+///
+/// # Coerce Method
+///
+/// The `coerce` method is what does the conversion from a `&mut T`
+/// depending on the `K` type parameter:
+///
+/// - [`IsAStrWriter`]: the reference is converted into a `StrWriterMut<'_>`.
+///
+/// - [`IsNotAStrWriter`]: the reference is simply returned as a `&mut 1T`.
+///  
 ///
 /// [`StrWriter`]: ../fmt/struct.StrWriter.html
 ///
 /// [`StrWriterMut`]: ../fmt/struct.StrWriterMut.html
+///
+/// [`IsAStrWriter`]: ./struct.IsAStrWriter.html
+///
+/// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html.
 ///
 pub struct IsAWriteMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
@@ -102,6 +203,7 @@ impl<R> IsAWriteMarker<R::Kind, R::This, R>
 where
     R: ?Sized + WriteMarker,
 {
+    ///
     pub const NEW: Self = Self(PhantomData);
 }
 

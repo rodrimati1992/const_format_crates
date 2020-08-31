@@ -189,7 +189,7 @@ macro_rules! unwrap_or_else {
 ///
 /// ```
 ///
-/// [`PWrapper`]: ./
+/// [`PWrapper`]: ./struct.PWrapper.html
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! coerce_to_fmt {

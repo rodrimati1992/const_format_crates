@@ -1,3 +1,5 @@
+//! Types for the documentation examples.
+
 use crate::{impl_fmt, try_, Error, Formatter, PWrapper};
 
 #[derive(Debug, Copy, Clone)]

@@ -28,9 +28,7 @@
 /// ```rust
 /// use const_format::concatcp;
 ///
-/// const TWO: u64 = 2;
-///
-/// const MSG: &str = concatcp!(TWO, "+", TWO, "=", 2u8 + 2);
+/// const MSG: &str = concatcp!(2u8, "+", 2u8, "=", 2u8 + 2);
 ///
 /// assert_eq!(MSG, "2+2=4");
 ///
@@ -280,7 +278,7 @@ macro_rules! formatcp {
 /// const NUMBER: &str = formatc!("{0},{0:x},{0:b}", 10u8);
 ///
 /// // Formatting the numbers in an array as decimal, hexadecimal, and binary.
-/// // You can use the name of cnstants from scope, instead of named arguments.
+/// // You can use the name of cnstants from scope, as well as named arguments.
 /// const ARR: &[u32] = &[9, 25];
 /// const ARRAY: &str = formatc!("{ARR:?},{ARR:x},{ARR:b}");
 ///
@@ -336,7 +334,7 @@ macro_rules! formatc {
 /// The first argument must be a type that implements the [`WriteMarker`] trait,
 /// and has these inherent methods:
 /// ```ignore
-/// const fo borrow_mutably(&mut self) -> &mut Self
+/// const fn borrow_mutably(&mut self) -> &mut Self
 /// const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_>
 /// ```
 ///
@@ -414,7 +412,7 @@ macro_rules! formatc {
 ///     }
 ///
 ///     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-///         Formatter::from_custom_cleared(&mut self.arr, &mut self.len, FormattingFlags::NEW)
+///         Formatter::from_custom_cleared(&mut self.arr, &mut self.len, flags)
 ///     }
 /// }
 ///

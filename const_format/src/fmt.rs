@@ -98,7 +98,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{ConstDebug, try_, unwrap, writec};
+//! use const_format::{ConstDebug, strwriter_as_str, try_, unwrap, writec};
 //!
 //! use std::ops::Range;
 //!
@@ -128,11 +128,11 @@
 //!     writer
 //! }
 //!
-//! const WRITER: &StrWriter<[u8]> = &build_string();
+//! const STRING: &str = strwriter_as_str!(&build_string());
 //!
 //! // The formatter
 //! assert_eq!(
-//!     WRITER.as_str(),
+//!     STRING,
 //!     "Foo { range: Some(0..A), point: Point { x: D, y: 15 } }",
 //! );
 //!
@@ -147,7 +147,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, try_};
+//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, strwriter_as_str, try_};
 //!
 //! use std::cmp::Ordering;
 //!
@@ -205,10 +205,10 @@
 //!     writer
 //! }
 //!
-//! const STRING: &StrWriter<[u8]> = &build_string();
+//! const STRING: &str = strwriter_as_str!(&build_string());
 //!
 //! assert_eq!(
-//!     STRING.as_str(),
+//!     STRING,
 //!     "\
 //! Foo {
 //!     a: 5,

@@ -1,4 +1,4 @@
-/// Constructs an `AsciiStr` constant from an ascii string,
+/// Constructs an [`AsciiStr`] constant from an ascii string,
 ///
 /// # Compile-time errors
 ///
@@ -28,10 +28,13 @@
 /// let fooo = ascii_str!("Γειά σου Κόσμε!");
 ///
 /// ```
+///
+/// [`AsciiStr`]: ./struct.AsciiStr.html
+///
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! ascii_str {
-    ($str:expr) => {{
+    ($str:expr $(,)*) => {{
         const __CF_ASCII_STR_CONSTANT: $crate::AsciiStr = {
             match $crate::AsciiStr::new($str.as_bytes()) {
                 Ok(x) => x,

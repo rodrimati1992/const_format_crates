@@ -1,3 +1,5 @@
+//! Miscelaneous functions.
+
 /// A const equivalent of `&str` equality comparison.
 ///
 /// # Example

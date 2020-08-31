@@ -4,8 +4,12 @@ use core::fmt::{self, Display};
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {
+    /// Attempted to write something into the buffer when there isn't enough space to write it.
     NotEnoughSpace,
+    /// For compatibility with [`NotAsciiError`](../wrapper_types/struct.NotAsciiError.html)
     NotAscii,
+    /// Attempted to index a string arguent by an range where the one of the bounds
+    /// was not on a char boundary.
     NotOnCharBoundary,
 }
 
