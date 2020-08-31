@@ -189,7 +189,7 @@ enum WriterBackend<'w> {
 ///
 /// const fn write_int(int: u32, buffer: &mut [u8]) -> Result<usize, Error> {
 ///     let mut len = 0;
-///     let mut f = Formatter::from_custom_cleared(FormattingFlags::NEW, buffer, &mut len);
+///     let mut f = Formatter::from_custom_cleared(buffer, &mut len, FormattingFlags::NEW);
 ///     try_!(writec!(f, "{0},{0:x},{0:b}", int));
 ///     Ok(len)
 /// }
@@ -314,7 +314,7 @@ impl<'w> Formatter<'w> {
     ///     start: usize,
     /// ) -> Result<usize, Error> {
     ///     let mut len = start;
-    ///     let mut f = Formatter::from_custom(FormattingFlags::NEW, buffer, &mut len);
+    ///     let mut f = Formatter::from_custom(buffer, &mut len, FormattingFlags::NEW);
     ///     try_!(writec!(f, "{0},{0:x},{0:b}", int));
     ///     Ok(len)
     /// }
@@ -334,9 +334,9 @@ impl<'w> Formatter<'w> {
     /// ```
     #[inline]
     pub const unsafe fn from_custom(
-        flags: FormattingFlags,
         buffer: &'w mut [u8],
         length: &'w mut usize,
+        flags: FormattingFlags,
     ) -> Self {
         Self {
             flags,
@@ -353,9 +353,9 @@ impl<'w> Formatter<'w> {
     ///
     #[inline]
     pub const fn from_custom_cleared(
-        flags: FormattingFlags,
         buffer: &'w mut [u8],
         length: &'w mut usize,
+        flags: FormattingFlags,
     ) -> Self {
         Self {
             flags,
@@ -451,9 +451,12 @@ impl<'w> Formatter<'w> {
     ///
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
         let flags = flags.copy_margin_of(self.flags);
-        match &mut self.writer {
-            WriterBackend::Str(x) => x.make_formatter(flags),
-            WriterBackend::Length(x) => x.make_formatter(flags),
+        Formatter {
+            flags,
+            writer: match &mut self.writer {
+                WriterBackend::Str(x) => WriterBackend::Str(x.reborrow()),
+                WriterBackend::Length(x) => WriterBackend::Length(x),
+            },
         }
     }
 

@@ -31,6 +31,7 @@
 //! - Provide a macro that formats the type.
 //! The `call_debug_fmt` macro is a version of this that formats generic std types.
 //!
+//! <span id = "fmtsyntax"></span>
 //! # Formatting Syntax
 //!
 //! The formatting macros all share the formatting syntax,
@@ -90,7 +91,7 @@
 //!
 //! This example demonstrates how you can derive [`ConstDebug`], and use it with the `fmt` API.
 //!
-//! Ìt uses the "derive" feature
+//! It uses the "derive" feature
 //!
 #![cfg_attr(feature = "derive", doc = "```rust")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]

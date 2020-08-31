@@ -16,6 +16,25 @@ mod fmt_macros;
 mod impl_fmt;
 
 /// For returning early on an error, otherwise evaluating to `()`.
+///
+/// # Example
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, StrWriter};
+/// use const_format::{try_, writec};
+///
+/// const fn write_stuff(buffer: &mut StrWriter) -> Result<&str, Error> {
+///     try_!(writec!(buffer, "Foo{},Bar{},Baz{},", 8u32, 13u32, 21u32));
+///     Ok(buffer.as_str())
+/// }
+///
+/// let mut buffer = StrWriter::new([0; 32]);
+/// assert_eq!(write_stuff(&mut buffer)?, "Foo8,Bar13,Baz21,");
+///
+/// # Ok::<(), Error>(())
+/// ```
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! try_ {
@@ -214,7 +233,10 @@ macro_rules! coerce_to_fmt {
 /// // Can't use mutable references in `const`s yet, the `const fn` is a workaround
 /// const fn formatted() -> StrWriter<[u8; CAP]> {
 ///     let mut writer =  StrWriter::new([0; CAP]);
+///
+///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
 ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
+///
 ///     writer
 /// }
 ///

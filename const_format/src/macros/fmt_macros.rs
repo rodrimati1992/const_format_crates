@@ -254,6 +254,42 @@ macro_rules! formatcp {
     );
 }
 
+/// Formats constants into a `&'static str`.
+///
+/// # Syntax
+///
+/// This macro uses the syntax described in
+/// [the const_format::fmt module](./fmt/index.html#fmtsyntax)
+///
+/// # Limitations
+///
+/// This macro has [the limitations described in here](./index.html#macro-limitations).
+///
+/// # Example
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::for_examples::Point3;
+/// use const_format::formatc;
+///
+/// // Formatting a non-std struct.
+/// const POINT: &str = formatc!("{:?}", Point3{x: 8, y: 13, z: 21});
+///
+/// // Formatting a number as decimal, hexadecimal, and binary
+/// const NUMBER: &str = formatc!("{0},{0:x},{0:b}", 10u8);
+///
+/// // Formatting the numbers in an array as decimal, hexadecimal, and binary.
+/// // You can use the name of cnstants from scope, instead of named arguments.
+/// const ARR: &[u32] = &[9, 25];
+/// const ARRAY: &str = formatc!("{ARR:?},{ARR:x},{ARR:b}");
+///
+///
+/// assert_eq!(POINT, "Point3 { x: 8, y: 13, z: 21 }");
+/// assert_eq!(NUMBER, "10,A,1010");
+/// assert_eq!(ARRAY, "[9, 25],[9, 19],[1001, 11001]");
+///
+/// ```
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
@@ -273,6 +309,134 @@ macro_rules! formatc {
     });
 }
 
+/// Writes some formatted text into a buffer.
+///
+/// This macro evaluates to a `Result<(), const_format::Error>` which must be handled.
+///
+/// # Syntax
+///
+/// The syntax is similar to that of other formatting macros in this crate:
+///
+/// ```ìgnore
+/// ẁritec!(
+///     writer_expression,
+///     "formatting literal",
+///     positional_arg_0_expression,
+///     positional_arg_1_expression,
+///     named_arg_foo = expression,
+///     named_arg_bar = expression,
+/// )
+/// ```
+///
+/// The syntax is otherwise the same as described in
+/// [the const_format::fmt module](./fmt/index.html#fmtsyntax).
+///
+/// # Writers
+///
+/// The first argument must be a type that implements the [`WriteMarker`] trait,
+/// and has these inherent methods:
+/// ```ignore
+/// const fo borrow_mutably(&mut self) -> &mut Self
+/// const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_>
+/// ```
+///
+/// [This example](#custom-writable-example) below shows how to use this macro
+/// with a custom type.
+///
+/// # Limitations
+///
+/// Integer arguments must have a type inferrable from context,
+/// [more details in the Integer arguments section](./index.html#integer-args).
+///
+/// # Examples
+///
+/// ### Ẁriting a Display impl.
+///
+/// ```
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Error, Formatter, StrWriter};
+/// use const_format::{impl_fmt, try_, writec};
+///
+/// pub struct Foo(u32, &'static str);
+///
+/// impl_fmt!{
+///     impl Foo;
+///     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+///         try_!(writec!(f, "{},", self.0));
+///         try_!(writec!(f, "{:?};", self.1));
+///         Ok(())
+///     }
+/// }
+///
+/// // Coerces the `&mut StrWriter<[u8; 128]>` to `&mut StrWriter<[u8]>`.
+/// // This is necessary because the `as_str` method is defined for `StrWriter<[u8]>`.
+/// let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+/// writec!(writer, "{}", Foo(100, "bar"))?;
+///
+/// assert_eq!(writer.as_str(), r#"100,"bar";"#);
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+/// <span id="custom-writable-example"></span>
+/// ### Writing to a custom type
+///
+/// This example demonstrates how you can use the `ẁritec` macro with a custom type,
+/// in this case it's a buffer that is cleared every time it's written.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
+/// use const_format::{Formatter, FormattingFlags};
+/// use const_format::writec;
+///
+/// const ARRAY_CAP: usize = 20;
+/// struct Array {
+///     len: usize,
+///     arr: [u8; ARRAY_CAP],
+/// }
+///
+/// impl WriteMarker for Array{
+///     type Kind = IsNotAStrWriter;
+///     type This = Self;
+/// }
+///
+/// impl Array {
+///     // Gets the part of the array that has been written to.
+///     pub const fn as_bytes(&self) -> &[u8] {
+///         const_format::utils::slice_up_to_len_alt(&self.arr, self.len)
+///     }
+///
+///     pub const fn borrow_mutably(&mut self) -> &mut Self {
+///         self
+///     }
+///
+///     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
+///         Formatter::from_custom_cleared(&mut self.arr, &mut self.len, FormattingFlags::NEW)
+///     }
+/// }
+///
+///
+/// let mut buffer = Array{ arr: [0; ARRAY_CAP], len: 0 };
+///
+/// writec!(buffer, "{:?}", [3u8, 5, 8, 13, 21])?;
+/// assert_eq!(buffer.as_bytes(), b"[3, 5, 8, 13, 21]");
+///
+/// writec!(buffer, "{}{}", "Hello, world!", 100u16)?;
+/// assert_eq!(buffer.as_bytes(), b"Hello, world!100");
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+///
+///
+/// [`WriteMarker`]: ./marker_traits/trait.WriteMarker.html
+///
+///
+///
+///
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! writec {

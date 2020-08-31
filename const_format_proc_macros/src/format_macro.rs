@@ -177,6 +177,7 @@ pub(crate) fn writec_macro_impl(
                     marker = marker.infer_type(&#strwriter);
                 }
                 let mut #strwriter = marker.coerce(#strwriter);
+                let mut #strwriter = #strwriter.make_formatter(#cratep::FormattingFlags::NEW);
 
                 loop {
                     #(
