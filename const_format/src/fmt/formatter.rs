@@ -63,6 +63,7 @@ impl ComputeStrLength {
     /// which instead of writing to a buffer it adds the computed length into this.
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
         Formatter {
+            margin: 0,
             flags,
             writer: WriterBackend::Length(self),
         }
@@ -232,9 +233,12 @@ enum WriterBackend<'w> {
 /// [`FormattingFlags`]: ./struct.FormattingFlags.html
 ///
 pub struct Formatter<'w> {
+    margin: u16,
     flags: FormattingFlags,
     writer: WriterBackend<'w>,
 }
+
+const MARGIN_STEP: u16 = 4;
 
 impl<'w> Formatter<'w> {
     /// Constructs a `Formatter`.
@@ -265,6 +269,7 @@ impl<'w> Formatter<'w> {
     #[inline]
     pub const fn from_sw(writer: &'w mut StrWriter, flags: FormattingFlags) -> Self {
         Self {
+            margin: 0,
             flags,
             // safety:
             // Formatter only writes valid utf8, which is valid for both
@@ -307,6 +312,7 @@ impl<'w> Formatter<'w> {
         flags: FormattingFlags,
     ) -> Self {
         Self {
+            margin: 0,
             flags,
             // safety:
             // Formatter only writes valid utf8, which is valid for both
@@ -365,6 +371,7 @@ impl<'w> Formatter<'w> {
         flags: FormattingFlags,
     ) -> Self {
         Self {
+            margin: 0,
             flags,
             writer: WriterBackend::Str(StrWriterMut::from_custom(buffer, length)),
         }
@@ -385,6 +392,7 @@ impl<'w> Formatter<'w> {
     ) -> Self {
         *length = 0;
         Self {
+            margin: 0,
             flags,
             writer: WriterBackend::Str(StrWriterMut::from_custom(buffer, length)),
         }
@@ -396,15 +404,20 @@ impl<'w> Formatter<'w> {
         self.flags
     }
 
+    /// Gets how indentation a data structure is printed with.
+    pub const fn margin(&self) -> usize {
+        self.margin as usize
+    }
+
     #[inline(always)]
     const fn increment_margin(&mut self) -> &mut Self {
-        self.flags = self.flags.increment_margin();
+        self.margin += 4;
         self
     }
 
     #[inline(always)]
     const fn decrement_margin(&mut self) {
-        self.flags = self.flags.decrement_margin();
+        self.margin -= 4;
     }
 }
 
@@ -477,8 +490,8 @@ impl<'w> Formatter<'w> {
     /// [`writec`]: ../macro.writec.html
     ///
     pub const fn make_formatter(&mut self, flags: FormattingFlags) -> Formatter<'_> {
-        let flags = flags.copy_margin_of(self.flags);
         Formatter {
+            margin: self.margin,
             flags,
             writer: match &mut self.writer {
                 WriterBackend::Str(x) => WriterBackend::Str(x.reborrow()),
@@ -589,9 +602,9 @@ macro_rules! field_method_impl {
                 let is_alternate = $self.fmt.flags.is_alternate();
                 $fmt_len.add_len(match ($self.wrote_field, is_alternate) {
                     (false, false) => OPEN_SPACE,
-                    (false, true) => OPEN_NEWLINE + $self.fmt.flags.margin(),
+                    (false, true) => OPEN_NEWLINE + $self.fmt.margin as usize,
                     (true , false) => COMMA_SPACE_LEN,
-                    (true , true) => COMMA_NL_LEN + $self.fmt.flags.margin(),
+                    (true , true) => COMMA_NL_LEN + $self.fmt.margin as usize,
                 });
                 $($write_name_len)*
             }
@@ -607,7 +620,7 @@ macro_rules! field_method_impl {
                 };
                 trys!($writer.write_str(sep), $self);
                 if is_alternate {
-                    trys!($writer.write_ascii_repeated(b' ', $self.fmt.flags.margin()), $self);
+                    trys!($writer.write_ascii_repeated(b' ', $self.fmt.margin as usize), $self);
                 }
                 $($write_name_fmt)*
             }
@@ -634,7 +647,7 @@ macro_rules! finish_method_impl {
                     const SPACE_CLOSE: usize = $space_close.len();
 
                     if $self.fmt.flags.is_alternate() {
-                        fmt_len.add_len(COMMA_NL_LEN + $self.fmt.flags.margin() + CLOSE_TOKEN);
+                        fmt_len.add_len(COMMA_NL_LEN + $self.fmt.margin as usize + CLOSE_TOKEN);
                     } else {
                         fmt_len.add_len(SPACE_CLOSE);
                     }
@@ -645,7 +658,7 @@ macro_rules! finish_method_impl {
 
                     if $self.fmt.flags.is_alternate() {
                         try_!(writer.write_str(",\n"));
-                        try_!(writer.write_ascii_repeated(b' ', $self.fmt.flags.margin()));
+                        try_!(writer.write_ascii_repeated(b' ', $self.fmt.margin as usize));
                         writer.write_str($close_token)
                     } else {
                         writer.write_str($space_close)
@@ -852,10 +865,10 @@ macro_rules! finish_listset_method_impl {
                 const CLOSE_TOKEN: usize = $close_token.len();
                 const OPEN_CLOSE: usize = $open_close.len();
 
-                $self.fmt.flags = $self.fmt.flags.decrement_margin();
+                $self.fmt.margin -= MARGIN_STEP;
                 if $self.wrote_field {
                     if $self.fmt.flags.is_alternate() {
-                        fmt_len.add_len(COMMA_NL_LEN + $self.fmt.flags.margin());
+                        fmt_len.add_len(COMMA_NL_LEN + $self.fmt.margin as usize);
                     }
                     fmt_len.add_len(CLOSE_TOKEN);
                 } else {
@@ -866,8 +879,8 @@ macro_rules! finish_listset_method_impl {
             WriterBackend::Str(writer) => {
                 let writer = &mut *writer;
 
-                $self.fmt.flags = $self.fmt.flags.decrement_margin();
-                let margin = $self.fmt.flags.margin();
+                $self.fmt.margin -= MARGIN_STEP;
+                let margin = $self.fmt.margin as usize;
                 if $self.wrote_field {
                     if $self.fmt.flags.is_alternate() {
                         try_!(writer.write_str(",\n"));

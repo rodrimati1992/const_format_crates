@@ -11,6 +11,9 @@ mod fmt_tests {
     mod formatted_writing;
 
     #[cfg(not(feature = "only_new_tests"))]
+    mod formatter_methods;
+
+    #[cfg(not(feature = "only_new_tests"))]
     mod std_impl_tests;
 
     #[cfg(not(feature = "only_new_tests"))]

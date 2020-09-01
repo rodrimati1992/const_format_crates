@@ -384,7 +384,7 @@ impl PWrapper<&[u8]> {
         self.compute_utf8_debug_len_in_range(0..self.0.len())
     }
     pub const fn compute_utf8_debug_len_in_range(self, mut range: Range<usize>) -> usize {
-        let mut sum = self.0.len();
+        let mut sum = range.end - range.start;
         while range.start < range.end {
             let c = self.0[range.start];
             if c < 128 {

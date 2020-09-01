@@ -78,10 +78,6 @@ impl NumberFormatting {
 /// - The binary formater (eg: `formatc!("{:#b}", FOO)`):
 /// prefixes numbers with `0b`.`
 ///
-/// # Margin
-///
-/// The amount of leading space when writing structs and enums into a [`Formatter`].
-///
 /// [`Formatter`]: ./struct.Formatter.html
 ///
 #[must_use]
@@ -89,10 +85,7 @@ impl NumberFormatting {
 pub struct FormattingFlags {
     num_fmt: NumberFormatting,
     is_alternate: bool,
-    margin: u16,
 }
-
-const INITIAL_MARGIN: u16 = 0;
 
 #[doc(hidden)]
 impl FormattingFlags {
@@ -109,7 +102,6 @@ impl FormattingFlags {
     pub const DEFAULT: Self = Self {
         num_fmt: NumberFormatting::Decimal,
         is_alternate: false,
-        margin: INITIAL_MARGIN,
     };
 
     /// Constructs a `FormattingFlags` with these values:
@@ -117,13 +109,10 @@ impl FormattingFlags {
     /// - number formatting: NumberFormatting::Decimal
     ///
     /// - is alternate: false
-    ///
-    /// - margin: 0
     ///
     pub const NEW: Self = Self {
         num_fmt: NumberFormatting::Decimal,
         is_alternate: false,
-        margin: INITIAL_MARGIN,
     };
 
     /// Constructs a `FormattingFlags` with these values:
@@ -131,8 +120,6 @@ impl FormattingFlags {
     /// - number formatting: NumberFormatting::Decimal
     ///
     /// - is alternate: false
-    ///
-    /// - margin: 0
     ///
     #[inline]
     pub const fn new() -> Self {
@@ -182,31 +169,6 @@ impl FormattingFlags {
         self
     }
 
-    /// Increments the margin.
-    ///
-    /// The margin is used for pretty printing data structures.
-    #[inline]
-    pub const fn increment_margin(mut self) -> Self {
-        self.margin += 4;
-        self
-    }
-
-    /// Decrements the margin.
-    ///
-    /// The margin is used for pretty printing data structures.
-    #[inline]
-    pub const fn decrement_margin(mut self) -> Self {
-        self.margin -= 4;
-        self
-    }
-
-    #[inline]
-    #[cfg(feature = "fmt")]
-    pub(crate) const fn copy_margin_of(mut self, other: FormattingFlags) -> Self {
-        self.margin = other.margin;
-        self
-    }
-
     /// Gets the current `NumberFormatting`.
     #[inline]
     pub const fn num_fmt(self) -> NumberFormatting {
@@ -217,14 +179,6 @@ impl FormattingFlags {
     #[inline]
     pub const fn is_alternate(self) -> bool {
         self.is_alternate
-    }
-
-    /// Gets the current margin.
-    ///
-    /// The margin is used for pretty printing data structures.
-    #[inline]
-    pub const fn margin(self) -> usize {
-        self.margin as usize
     }
 }
 
