@@ -29,6 +29,11 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
         let mut fmt = fmt.debug_struct("BracedStruct");
+        {
+            let mut fmt = fmt.field("margin");
+            let margin = fmt.margin();
+            try_!(fmt.write_usize_display(margin));
+        }
         try_!(fmt.field("a").write_u32_debug(self.a));
         try_!(format_b_field(self.b, fmt.field("b")));
         if let Some(x) = self.rec {
@@ -43,6 +48,7 @@ fn formatting_struct() {
     let expected = remove_margin(
         "
         BracedStruct {
+            margin: 4,
             a: 3,
             b: [
                 0x9,
@@ -50,9 +56,11 @@ fn formatting_struct() {
                 0xF,
             ],
             rec: BracedStruct {
+                margin: 8,
                 a: 8,
                 b: [A, E, 12],
                 rec: BracedStruct {
+                    margin: 12,
                     a: 21,
                     b: [
                         0xF,
@@ -99,6 +107,11 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
         let mut fmt = fmt.debug_tuple("TupleStruct");
+        {
+            let mut fmt = fmt.field();
+            let margin = fmt.margin();
+            try_!(fmt.write_usize_display(margin));
+        }
         try_!(fmt.field().write_u32_debug(self.a));
         try_!(format_b_field(self.b, fmt.field()));
         if let Some(x) = self.rec {
@@ -113,6 +126,7 @@ fn formatting_tuple() {
     let expected = remove_margin(
         "
         TupleStruct(
+            4,
             3,
             [
                 0x9,
@@ -121,8 +135,10 @@ fn formatting_tuple() {
             ],
             TupleStruct(
                 8,
+                8,
                 [A, E, 12],
                 TupleStruct(
+                    12,
                     21,
                     [
                         0xF,
@@ -169,6 +185,11 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
         let mut fmt = fmt.debug_list();
+        {
+            let mut fmt = fmt.entry();
+            let margin = fmt.margin();
+            try_!(fmt.write_usize_display(margin));
+        }
         try_!(fmt.entry().write_u32_debug(self.a));
         try_!(format_b_field(self.b, fmt.entry()));
         if let Some(x) = self.rec {
@@ -183,6 +204,7 @@ fn formatting_list() {
     let expected = remove_margin(
         "
         [
+            4,
             3,
             [
                 0x9,
@@ -191,8 +213,10 @@ fn formatting_list() {
             ],
             [
                 8,
+                8,
                 [A, E, 12],
                 [
+                    12,
                     21,
                     [
                         0xF,
@@ -239,6 +263,11 @@ impl_fmt! {
 
     pub const fn const_debug_fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), Error> {
         let mut fmt = fmt.debug_set();
+        {
+            let mut fmt = fmt.entry();
+            let margin = fmt.margin();
+            try_!(fmt.write_usize_display(margin));
+        }
         try_!(fmt.entry().write_u32_debug(self.a));
         try_!(format_b_field(self.b, fmt.entry()));
         if let Some(x) = self.rec {
@@ -253,6 +282,7 @@ fn formatting_set() {
     let expected = remove_margin(
         "
         {
+            4,
             3,
             [
                 0x9,
@@ -261,8 +291,10 @@ fn formatting_set() {
             ],
             {
                 8,
+                8,
                 [A, E, 12],
                 {
+                    12,
                     21,
                     [
                         0xF,

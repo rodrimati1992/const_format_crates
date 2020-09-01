@@ -404,7 +404,7 @@ impl<'w> Formatter<'w> {
         self.flags
     }
 
-    /// Gets how indentation a data structure is printed with.
+    /// Gets how much indentation a data structure is printed with.
     pub const fn margin(&self) -> usize {
         self.margin as usize
     }
