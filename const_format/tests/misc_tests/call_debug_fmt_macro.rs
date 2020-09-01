@@ -1,4 +1,5 @@
-use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::{call_debug_fmt, impl_fmt, try_};
 
 use core::{cmp::Reverse, num::Wrapping};
 
@@ -68,7 +69,7 @@ impl_fmt! {
     impl TupleStruct;
 
     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        use crate::wrapper_types::PWrapper;
+        use const_format::PWrapper;
 
         let mut f = f.debug_tuple("TupleStruct");
         try_!(PWrapper(self.0).const_debug_fmt(f.field()));

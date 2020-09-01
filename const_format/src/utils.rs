@@ -4,6 +4,8 @@
 //!
 //! This module is only exported with the "fmt" feature.
 
+use core::ops::Range;
+
 /// Newtype wrapper to get around limitations in `const fn`s
 pub(crate) struct Constructor<T>(fn() -> T);
 
@@ -93,6 +95,14 @@ pub const fn u8_slice_eq(left: &[u8], right: &[u8]) -> bool {
     }
 
     true
+}
+
+#[doc(hidden)]
+#[inline]
+pub const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
+    let len = s.len();
+    let end = min_usize(range.end, len);
+    min_usize(range.start, end)..end
 }
 
 #[doc(hidden)]

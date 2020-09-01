@@ -38,8 +38,8 @@ version = "=0.1.0"
 path = "../const_format_proc_macros"
 
 [dev-dependencies]
-arrayvec = {version = "0.5.1", default_features = false}
 fastrand = {version = "1.3", default_features = false}
+arrayvec = {version = "0.5.1", default_features = false}
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "feature = \"all\""]

@@ -1,4 +1,5 @@
-use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::{coerce_to_fmt, impl_fmt};
 
 #[test]
 fn coercion() {

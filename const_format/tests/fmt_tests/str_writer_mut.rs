@@ -1,11 +1,4 @@
-#[allow(unused_imports)]
-use crate::{
-    fmt::str_writer_mut::saturate_range,
-    fmt::{Error, FormattingFlags, NumberFormatting, StrWriter, StrWriterMut},
-    formatting::Formatting,
-    test_utils::{RngExt, ALL_ASCII, ALL_ASCII_ESCAPED},
-    wrapper_types::{AsciiStr, PWrapper},
-};
+use const_format::fmt::{Error, StrWriterMut};
 
 pub trait Foo {
     fn as_str() -> u64 {

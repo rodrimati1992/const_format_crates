@@ -314,11 +314,8 @@ pub mod for_examples;
 #[cfg(feature = "fmt")]
 pub mod marker_traits;
 
-#[cfg(test)]
-mod misc_tests;
-
-#[cfg(test)]
-mod test_utils;
+#[cfg(feature = "testing")]
+pub mod test_utils;
 
 #[cfg(feature = "fmt")]
 #[cfg(feature = "testing")]

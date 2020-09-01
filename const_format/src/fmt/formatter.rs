@@ -1,7 +1,6 @@
 use crate::{
-    fmt::{
-        str_writer_mut::saturate_range, Error, FormattingFlags, NoEncoding, StrWriter, StrWriterMut,
-    },
+    fmt::{Error, FormattingFlags, NoEncoding, StrWriter, StrWriterMut},
+    utils::saturate_range,
     wrapper_types::{AsciiStr, PWrapper},
 };
 

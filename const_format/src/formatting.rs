@@ -30,6 +30,7 @@ pub enum NumberFormatting {
 
 impl NumberFormatting {
     #[cfg(test)]
+    #[cfg(feature = "fmt")]
     pub(crate) const ALL: &'static [Self; 3] = &[
         NumberFormatting::Decimal,
         NumberFormatting::Hexadecimal,
@@ -199,6 +200,8 @@ impl FormattingFlags {
         self
     }
 
+    #[inline]
+    #[cfg(feature = "fmt")]
     pub(crate) const fn copy_margin_of(mut self, other: FormattingFlags) -> Self {
         self.margin = other.margin;
         self

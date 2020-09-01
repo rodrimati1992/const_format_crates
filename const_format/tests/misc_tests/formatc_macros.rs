@@ -1,4 +1,8 @@
-use crate::test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED};
+use const_format::formatcp;
+use const_format::test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED};
+
+#[cfg(feature = "fmt")]
+use const_format::formatc;
 
 use arrayvec::{ArrayString, ArrayVec};
 

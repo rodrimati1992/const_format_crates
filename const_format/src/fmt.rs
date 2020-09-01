@@ -250,6 +250,3 @@ pub use self::{
     str_writer::StrWriter,
     str_writer_mut::{NoEncoding, StrWriterMut, Utf8Encoding},
 };
-
-#[cfg(test)]
-mod tests;

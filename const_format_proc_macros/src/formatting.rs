@@ -108,12 +108,12 @@ impl FormattingFlags {
         };
 
         match (self.is_alternate, formatting) {
-            (IA::No, FM::Decimal) => quote!(#crate_path::fmt::FormattingFlags::__REG),
-            (IA::No, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__HEX),
-            (IA::No, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__BIN),
-            (IA::Yes, FM::Decimal) => quote!(#crate_path::fmt::FormattingFlags::__A_REG),
-            (IA::Yes, FM::Hexadecimal) => quote!(#crate_path::fmt::FormattingFlags::__A_HEX),
-            (IA::Yes, FM::Binary) => quote!(#crate_path::fmt::FormattingFlags::__A_BIN),
+            (IA::No, FM::Decimal) => quote!(#crate_path::pmr::FormattingFlags::__REG),
+            (IA::No, FM::Hexadecimal) => quote!(#crate_path::pmr::FormattingFlags::__HEX),
+            (IA::No, FM::Binary) => quote!(#crate_path::pmr::FormattingFlags::__BIN),
+            (IA::Yes, FM::Decimal) => quote!(#crate_path::pmr::FormattingFlags::__A_REG),
+            (IA::Yes, FM::Hexadecimal) => quote!(#crate_path::pmr::FormattingFlags::__A_HEX),
+            (IA::Yes, FM::Binary) => quote!(#crate_path::pmr::FormattingFlags::__A_BIN),
         }
     }
 }

@@ -174,9 +174,11 @@ macro_rules! concatcp {
 ///
 /// The `{:?}` formatter formats things similarly to how Debug does it.
 ///
-/// For `&'static str` it only does this:
+/// For `&'static str` it does these things:
 /// - Prepend and append the double quote character (`"`).
-/// - Prepend the `\`, and `"` characters with a backslash (`\`).
+/// - Escape the `'\t'`,`'\n'`,`'\r'`,`'\\'`, `'\''`, and`'\"'` characters.
+/// - Escape control characters with `\xYY`,
+/// where `YY` is the hexadecimal value of the control character.
 ///
 /// Example:
 /// ```

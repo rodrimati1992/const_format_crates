@@ -29,7 +29,8 @@ mod tests;
 /// This example demonstrates how you can implement debug formatting for a type
 /// using PWrapper to write std types.
 ///
-/// ```rust
+#[cfg_attr(feature = "fmt", doc = "```rust")]
+#[cfg_attr(not(feature = "fmt"), doc = "```ignore")]
 /// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper};

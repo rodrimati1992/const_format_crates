@@ -1,5 +1,6 @@
 use proc_macro2::Span;
 
+#[cfg(feature = "derive")]
 use quote::ToTokens;
 
 use std::{

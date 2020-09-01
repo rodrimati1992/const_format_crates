@@ -1,9 +1,10 @@
-#[allow(unused_imports)]
-use crate::{
-    fmt::str_writer_mut::saturate_range,
-    fmt::{Error, FormattingFlags, NumberFormatting, StrWriter, StrWriterMut},
-    formatting::Formatting,
-    test_utils::{RngExt, ALL_ASCII, ALL_ASCII_ESCAPED},
+use crate::RngExt;
+
+use const_format::{
+    fmt::{Error, FormattingFlags, StrWriter, StrWriterMut},
+    formatcp,
+    test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED},
+    utils::saturate_range,
     wrapper_types::{AsciiStr, PWrapper},
 };
 
@@ -12,6 +13,12 @@ use arrayvec::ArrayString;
 use fastrand::Rng;
 
 use core::{fmt::Write, ops::Range};
+
+#[derive(Debug, Copy, Clone)]
+enum Formatting {
+    Debug,
+    Display,
+}
 
 macro_rules! write_integer_tests {
     (
@@ -150,7 +157,7 @@ struct WriteArgs<'sw, 's> {
 fn test_unescaped_str_fn(
     formatting: Formatting,
     rng: &mut dyn FnMut() -> char,
-    write: &mut dyn FnMut(WriteArgs<'_, '_>) -> Result<(), crate::fmt::Error>,
+    write: &mut dyn FnMut(WriteArgs<'_, '_>) -> Result<(), const_format::fmt::Error>,
 ) {
     for _ in 0..64 {
         let mut input = ArrayString::<[u8; 32]>::new();

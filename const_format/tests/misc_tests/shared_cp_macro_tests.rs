@@ -1,3 +1,5 @@
+use const_format::{concatcp, formatcp};
+
 use arrayvec::ArrayString;
 
 use core::fmt::Write;

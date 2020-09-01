@@ -258,6 +258,7 @@ macro_rules! strwriter_as_str {
     };
 }
 
+#[cfg(feature = "fmt")]
 macro_rules! conditionally_const {
     (
         feature = $feature:literal;
@@ -278,6 +279,7 @@ macro_rules! conditionally_const {
     )
 }
 
+#[cfg(feature = "fmt")]
 macro_rules! std_kind_impl {
     (
         impl[$($impl:tt)*] $self:ty

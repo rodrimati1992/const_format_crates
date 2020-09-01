@@ -1,6 +1,6 @@
 use crate::{
     formatting::{hex_as_ascii, ForEscaping, FormattingFlags, NumberFormatting, FOR_ESCAPING},
-    utils::{min_usize, Constructor},
+    utils::{min_usize, saturate_range, Constructor},
     wrapper_types::{AsciiStr, PWrapper},
 };
 
@@ -788,13 +788,6 @@ const fn is_valid_str_index(s: &[u8], index: usize) -> bool {
     let len = s.len();
 
     index == len || ((s[index] as i8) >= -0x40)
-}
-
-#[inline]
-pub(super) const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
-    let len = s.len();
-    let end = min_usize(range.end, len);
-    min_usize(range.start, end)..end
 }
 
 impl<'w, E> StrWriterMut<'w, E> {

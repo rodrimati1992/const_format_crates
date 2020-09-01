@@ -1,7 +1,8 @@
 // Don't need the tests for this macro to be thorough,
 // since this uses a lot of the same machinery as `formatcp` and `formatc`
 
-use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use const_format::{try_, writec};
 
 struct Foo {
     x: u32,
