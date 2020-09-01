@@ -1,8 +1,12 @@
 use const_format::{
     ascii_str,
     fmt::{ComputeStrLength, Formatter, FormattingFlags},
-    AsciiStr, PWrapper,
+    AsciiStr,
 };
+
+mod debug_methods;
+
+////////////////////////////////////////////////////////////////////////////////
 
 macro_rules! append_str {
     ($formatter:ident, $str:expr; $($statement:stmt;)*) => (
@@ -22,12 +26,14 @@ fn write_with_flag(flags: FormattingFlags, expected: &str, takes_fmt: &dyn Fn(Fo
     }
 
     takes_fmt(Formatter::from_custom(&mut buffer, &mut len, flags));
-    assert_eq!(std::str::from_utf8(&buffer[..len]).unwrap(), expected);
+    let found = std::str::from_utf8(&buffer[..len]).unwrap();
+    assert_eq!(found, expected, "\n{}\n{}\n", found, expected);
 
     len = usize::MAX / 2;
     reset_start(&mut buffer, expected);
     takes_fmt(Formatter::from_custom_cleared(&mut buffer, &mut len, flags));
-    assert_eq!(std::str::from_utf8(&buffer[..len]).unwrap(), expected);
+    let found = std::str::from_utf8(&buffer[..len]).unwrap();
+    assert_eq!(found, expected, "\n{}\n{}\n", found, expected);
 
     let mut compute = ComputeStrLength::new();
     takes_fmt(compute.make_formatter(flags));
@@ -135,4 +141,28 @@ fn write_str_methods() {
     ";
 
     write_with_flag(FormattingFlags::NEW, expected, &inner);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+fn remove_margin(s: &str) -> String {
+    let margin = s
+        .lines()
+        .skip(1)
+        .filter_map(|s| {
+            let trimmed = s.trim_start();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(s.len() - trimmed.len())
+            }
+        })
+        .min()
+        .unwrap();
+
+    s.lines()
+        .skip(1)
+        .map(|s| s.get(margin..).unwrap_or(""))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
