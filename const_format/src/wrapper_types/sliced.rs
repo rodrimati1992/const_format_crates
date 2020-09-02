@@ -16,11 +16,13 @@ impl_fmt! {
     impl['a,] Sliced<&'a str, RangeTo<usize>>;
     impl['a,] Sliced<&'a str, RangeToInclusive<usize>>;
 
+    ///
     #[inline]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str_range_debug(self.0, self.range())
     }
 
+    ///
     #[inline]
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str_range(self.0, self.range())
@@ -35,11 +37,13 @@ impl_fmt! {
     impl['a,] Sliced<AsciiStr<'a>, RangeTo<usize>>;
     impl['a,] Sliced<AsciiStr<'a>, RangeToInclusive<usize>>;
 
+    ///
     #[inline]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_ascii_range_debug(self.0, self.range())
     }
 
+    ///
     #[inline]
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_ascii_range(self.0, self.range())

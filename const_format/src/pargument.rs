@@ -3,6 +3,7 @@ use crate::{
     wrapper_types::PWrapper,
 };
 
+#[doc(hidden)]
 /// The uniform representation for every argument of the concatcp macro.
 pub struct PArgument {
     pub elem: PVariant,
@@ -24,6 +25,7 @@ pub struct Integer {
     pub mask: &'static u128, // A mask which disables the bits that weren't in the original number
 }
 
+#[doc(hidden)]
 pub struct PConvWrapper<T>(pub T);
 
 macro_rules! pconvwrapper_impls {
@@ -38,6 +40,7 @@ macro_rules! pconvwrapper_impls {
         }
 
         $(
+            #[doc(hidden)]
             impl PConvWrapper<$Signed>{
                 pub const fn to_integer(self)->Integer{
                     Integer{
@@ -47,6 +50,8 @@ macro_rules! pconvwrapper_impls {
                     }
                 }
             }
+
+            #[doc(hidden)]
             impl PConvWrapper<$Unsigned>{
                 pub const fn to_integer(self)->Integer{
                     Integer{
@@ -65,6 +70,7 @@ macro_rules! pconvwrapper_impls {
         $( ($Signed:ty, $Unsigned:ty) )*
     ) => (
         $(
+            #[doc(hidden)]
             impl PConvWrapper<$Signed> {
                 pub const fn $method(self, fmt_flags: FormattingFlags)->PArgument{
                     PArgument {
@@ -76,6 +82,7 @@ macro_rules! pconvwrapper_impls {
                 }
             }
 
+            #[doc(hidden)]
             impl PConvWrapper<$Unsigned> {
                 pub const fn $method(self, fmt_flags: FormattingFlags)->PArgument{
                     PArgument {
@@ -99,6 +106,7 @@ pconvwrapper_impls! {
     (isize, usize)
 }
 
+#[doc(hidden)]
 impl PConvWrapper<bool> {
     #[inline]
     pub const fn to_pargument_display(self, _: FormattingFlags) -> PArgument {
@@ -111,6 +119,7 @@ impl PConvWrapper<bool> {
     }
 }
 
+#[doc(hidden)]
 impl PConvWrapper<&'static str> {
     #[inline]
     pub const fn to_pargument_display(self, fmt_flags: FormattingFlags) -> PArgument {

@@ -170,7 +170,7 @@ where
 ///
 /// - [`IsAStrWriter`]: the reference is converted into a `StrWriterMut<'_>`.
 ///
-/// - [`IsNotAStrWriter`]: the reference is simply returned as a `&mut 1T`.
+/// - [`IsNotAStrWriter`]: the reference is simply returned unchanged.
 ///  
 ///
 /// [`StrWriter`]: ../fmt/struct.StrWriter.html
@@ -179,7 +179,7 @@ where
 ///
 /// [`IsAStrWriter`]: ./struct.IsAStrWriter.html
 ///
-/// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html.
+/// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html
 ///
 pub struct IsAWriteMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
@@ -201,13 +201,14 @@ impl<R> IsAWriteMarker<R::Kind, R::This, R>
 where
     R: ?Sized + WriteMarker,
 {
-    ///
+    /// Constructs a `IsAWriteMarker`
     pub const NEW: Self = Self(PhantomData);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 impl<K, T: ?Sized, R: ?Sized> IsAWriteMarker<K, T, R> {
+    /// Infers the type parmaeters of this `IsAWriteMarker` with the passed reference.
     #[inline(always)]
     pub const fn infer_type(self, _: &R) -> Self {
         self
@@ -217,6 +218,7 @@ impl<K, T: ?Sized, R: ?Sized> IsAWriteMarker<K, T, R> {
 /////////////////////////////////////////////////////////////////////////////
 
 impl<T: ?Sized, R: ?Sized> IsAWriteMarker<IsAStrWriter, StrWriter<T>, R> {
+    /// Converts the `&mut StrWriter` to a `StrWriterMut<'_>`.
     #[inline(always)]
     pub const fn coerce(self, mutref: &mut StrWriter) -> StrWriterMut<'_> {
         mutref.as_mut()
@@ -224,6 +226,7 @@ impl<T: ?Sized, R: ?Sized> IsAWriteMarker<IsAStrWriter, StrWriter<T>, R> {
 }
 
 impl<T: ?Sized, R: ?Sized> IsAWriteMarker<IsNotAStrWriter, T, R> {
+    /// An idntity function, just takes`mutref` and returns it.
     #[inline(always)]
     pub const fn coerce(self, mutref: &mut T) -> &mut T {
         mutref

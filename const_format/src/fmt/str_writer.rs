@@ -439,7 +439,7 @@ impl StrWriter {
 }
 
 impl<A: ?Sized> StrWriter<A> {
-    // For borrowing this mutably in macros, without getting nested mutable references.
+    /// For borrowing this mutably in macros, without getting nested mutable references.
     #[inline(always)]
     pub const fn borrow_mutably(&mut self) -> &mut Self {
         self

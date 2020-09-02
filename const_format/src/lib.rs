@@ -203,7 +203,8 @@
 //!
 //! All of the macros from `const_format` have these limitations:
 //!
-//! - The macros that expand to `&'static str`s can only use constants of concrete types,
+//! - The formatting macros that expand to
+//! `&'static str`s can only use constants of concrete types,
 //! so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
 //!
 //! - Integer arguments must have a type inferrable from context,
@@ -234,11 +235,13 @@
 //!
 //! # Cargo features
 //!
-//! "fmt": Enables the [`std::fmt`]-like API,
-//! requires Rust nightly becauase it uses mutable references in const fn.
+//! - "fmt": Enables the [`std::fmt`]-like API,
+//! requires Rust nightly because it uses mutable references in const fn.<br>
+//! This feature includes the `formatc`/`writec` formatting macros.
 //!
-//! "derive": implies the "fmt" feature,
-//! provides the `ConstDebug` derive macro to format user-defined types at compile-time.
+//! - "derive": implies the "fmt" feature,
+//! provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
+//! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -293,8 +296,15 @@
         const_fn_union
     )
 )]
-
-extern crate self as const_format;
+#![deny(rust_2018_idioms)]
+// This lint is silly
+#![allow(clippy::blacklisted_name)]
+// This lint is silly
+#![allow(clippy::needless_doctest_main)]
+#![deny(clippy::missing_safety_doc)]
+#![deny(clippy::shadow_unrelated)]
+#![deny(clippy::wildcard_imports)]
+#![deny(missing_docs)]
 
 include! {"const_debug_derive.rs"}
 

@@ -181,10 +181,12 @@ impl Display for NotAsciiError {
 impl_fmt! {
     impl AsciiStr<'_>;
 
+    ///
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_ascii(*self)
     }
 
+    ///
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_ascii_debug(*self)
     }

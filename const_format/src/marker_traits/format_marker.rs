@@ -142,6 +142,7 @@ macro_rules! std_kind_impls {
             }
 
             impl<T> IsAFormatMarker<IsStdKind, $ty, T> {
+                /// Copies the value from `reference`, and wraps it in a `PWrapper`
                 #[inline(always)]
                 pub const fn coerce(self, reference: &$ty) -> PWrapper<$ty> {
                     PWrapper(*reference)
@@ -230,6 +231,7 @@ impl<K, T: ?Sized, R: ?Sized> IsAFormatMarker<K, T, R> {
 /////////////////////////////////////////////////////////////////////////////
 
 impl<U, T: ?Sized, R: ?Sized> IsAFormatMarker<IsArrayKind<U>, T, R> {
+    /// Coerces an array to a slice, then wraps the slice in a `PWrapper`
     #[inline(always)]
     pub const fn coerce(self, slice: &[U]) -> PWrapper<&[U]> {
         PWrapper(slice)
@@ -237,6 +239,7 @@ impl<U, T: ?Sized, R: ?Sized> IsAFormatMarker<IsArrayKind<U>, T, R> {
 }
 
 impl<T: ?Sized, R: ?Sized> IsAFormatMarker<IsNotStdKind, T, R> {
+    /// An identity function, just takes `reference` and returns it.
     #[inline(always)]
     pub const fn coerce(self, reference: &T) -> &T {
         reference
@@ -272,6 +275,7 @@ impl FormatMarker for str {
 }
 
 impl<R: ?Sized> IsAFormatMarker<IsStdKind, str, R> {
+    /// Wraps `reference` in a `PWrapper`.
     #[inline(always)]
     pub const fn coerce(self, reference: &str) -> PWrapper<&str> {
         PWrapper(reference)

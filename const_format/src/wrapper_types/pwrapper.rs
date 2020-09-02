@@ -126,6 +126,7 @@ macro_rules! impl_number_of_digits {
     }};
     (@shared $This:ty, $bits:tt)=>{
         impl PWrapper<$This> {
+            /// Computes how long much space is necessary to write this integer as a literal.
             #[allow(unused_mut,unused_variables)]
             #[doc(hidden)]
             pub const fn compute_debug_len(self, fmt: FormattingFlags)-> usize {
@@ -139,10 +140,14 @@ macro_rules! impl_number_of_digits {
                 }
             }
 
+            /// Computes how long much space is necessary to
+            /// write this integer as a hexadecimal literal.
             pub const fn hexadecimal_len(self, fmt: FormattingFlags)-> usize {
                 compute_hex_count!($bits, self.0, fmt.is_alternate())
             }
 
+            /// Computes how long much space is necessary to
+            /// write this integer as a binary literal.
             pub const fn binary_len(self, fmt: FormattingFlags)-> usize {
                 compute_binary_count!($bits, self.0, fmt.is_alternate())
             }
@@ -156,6 +161,7 @@ macro_rules! impl_number_of_digits {
         impl_number_of_digits!{@shared $This, $bits}
 
         impl PWrapper<$This> {
+            /// Returns the absolute value of this integer, as the equivalent unsigned type.
             pub const fn unsigned_abs(self) -> $Unsigned {
                 self.0.wrapping_abs() as $Unsigned
             }
@@ -179,6 +185,7 @@ macro_rules! impl_number_of_digits {
         impl_number_of_digits!{@shared $This, $bits}
 
         impl PWrapper<$This> {
+            /// Returns the absolute value of this integer, as the equivalent unsigned type.
             pub const fn unsigned_abs(self) -> $Unsigned {
                 self.0
             }
@@ -225,23 +232,27 @@ type IWord = i128;
 macro_rules! impl_for_xsize {
     ($XSize:ident, $XWord:ident) => {
         impl PWrapper<$XSize> {
+            /// Computes how long much space is necessary to write this integer as a literal.
             #[inline(always)]
-            #[doc(hidden)]
             pub const fn compute_display_len(self, fmt: FormattingFlags) -> usize {
                 PWrapper(self.0 as $XWord).compute_display_len(fmt)
             }
 
+            /// Computes how long much space is necessary to write this integer as a literal.
             #[inline(always)]
-            #[doc(hidden)]
             pub const fn compute_debug_len(self, fmt: FormattingFlags) -> usize {
                 PWrapper(self.0 as $XWord).compute_debug_len(fmt)
             }
 
+            /// Computes how long much space is necessary to
+            /// write this integer as a hexadecimal literal.
             #[inline(always)]
             pub const fn hexadecimal_len(self, fmt: FormattingFlags) -> usize {
                 PWrapper(self.0 as $XWord).hexadecimal_len(fmt)
             }
 
+            /// Computes how long much space is necessary to
+            /// write this integer as a binary literal.
             #[inline(always)]
             pub const fn binary_len(self, fmt: FormattingFlags) -> usize {
                 PWrapper(self.0 as $XWord).binary_len(fmt)
@@ -254,12 +265,14 @@ impl_for_xsize! {usize, UWord}
 impl_for_xsize! {isize, IWord}
 
 impl PWrapper<usize> {
+    /// Returns the absolute value of this integer.
     pub const fn unsigned_abs(self) -> usize {
         self.0
     }
 }
 
 impl PWrapper<isize> {
+    /// Returns the absolute value of this integer, as the equivalent unsigned type.
     pub const fn unsigned_abs(self) -> usize {
         self.0.wrapping_abs() as usize
     }
@@ -272,6 +285,7 @@ impl Integer {
     }
 }
 
+#[doc(hidden)]
 impl PWrapper<Integer> {
     pub const fn to_start_array_binary(self, flags: FormattingFlags) -> StartAndArray<[u8; 130]> {
         let mut n = if self.0.is_negative {
@@ -380,9 +394,14 @@ impl PWrapper<Integer> {
 }
 
 impl PWrapper<&[u8]> {
+    /// Computes how much space is necessary to write `&self.0[range]` as a utf8 string,
+    /// with debug formatting
     pub const fn compute_utf8_debug_len(self) -> usize {
         self.compute_utf8_debug_len_in_range(0..self.0.len())
     }
+
+    /// Computes how much space is necessary to write `&self.0[range]` as a utf8 string,
+    /// with debug formatting
     pub const fn compute_utf8_debug_len_in_range(self, mut range: Range<usize>) -> usize {
         let mut sum = range.end - range.start;
         while range.start < range.end {
@@ -404,12 +423,14 @@ impl PWrapper<&[u8]> {
 }
 
 impl PWrapper<&str> {
+    /// Computes how much space is necessary to write a `&str` with debug formatting
     #[inline(always)]
     #[doc(hidden)]
     pub const fn compute_debug_len(self, _: FormattingFlags) -> usize {
         PWrapper(self.0.as_bytes()).compute_utf8_debug_len()
     }
 
+    /// Computes how much space is necessary to write a `&str` with display formatting
     #[inline(always)]
     #[doc(hidden)]
     pub const fn compute_display_len(self, _: FormattingFlags) -> usize {

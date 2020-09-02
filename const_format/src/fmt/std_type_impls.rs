@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::{
     fmt::{Error, Formatter},
     marker_traits::IsStdKind,
@@ -9,24 +11,20 @@ mod ranges;
 ////////////////////////////////////////////////////////////////////////////////
 
 impl PWrapper<&str> {
-    /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str(self.0)
     }
 
-    /// Writes a `&str` with Debug formatting.
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str_debug(self.0)
     }
 }
 
 impl PWrapper<bool> {
-    /// Writes a `&str` with Display formatting.
     pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str(if self.0 { "true" } else { "false" })
     }
 
-    /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         self.const_display_fmt(f)
@@ -118,7 +116,6 @@ macro_rules! non_zero_impls {
             std_kind_impl!{ impl[] $ty }
 
             impl PWrapper<$ty> {
-                /// Writes a `&str` with Debug formatting.
                 #[inline(always)]
                 pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                     PWrapper(self.0.get()).const_debug_fmt(f)
@@ -139,7 +136,6 @@ std_kind_impl! { impl[T,] *mut T }
 impl<T> PWrapper<*mut T> {
     const PTR: &'static str = "<pointer>";
 
-    /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str(Self::PTR)
@@ -148,7 +144,6 @@ impl<T> PWrapper<*mut T> {
 
 std_kind_impl! { impl[T,] *const T }
 impl<T> PWrapper<*const T> {
-    /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         PWrapper(self.0 as *mut T).const_debug_fmt(f)
@@ -157,7 +152,6 @@ impl<T> PWrapper<*const T> {
 
 std_kind_impl! { impl[T,] NonNull<T> }
 impl<T> PWrapper<NonNull<T>> {
-    /// Writes a `&str` with Debug formatting.
     #[inline(always)]
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         PWrapper(self.0.as_ptr()).const_debug_fmt(f)
@@ -174,7 +168,6 @@ macro_rules! impl_std_marker_type {
             impl<$($impl_)*> PWrapper<$type> {
                 const NAME: &'static str = $tyname;
 
-                /// Writes a `&str` with Debug formatting.
                 #[inline(always)]
                 pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                     PWrapper(Self::NAME).const_display_fmt(f)

@@ -7,7 +7,8 @@
 mod format_marker;
 mod write_marker;
 
+#[doc(inline)]
 pub use self::{
     format_marker::{FormatMarker, IsAFormatMarker, IsArrayKind, IsNotStdKind, IsStdKind},
-    write_marker::{IsAWriteMarker, IsNotAStrWriter, WriteMarker},
+    write_marker::{IsAStrWriter, IsAWriteMarker, IsNotAStrWriter, WriteMarker},
 };

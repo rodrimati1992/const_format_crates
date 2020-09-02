@@ -205,7 +205,8 @@ You can't put pineapple on pizza, Bob.
 
 All of the macros from `const_format` have these limitations:
 
-- The macros that expand to `&'static str`s can only use constants of concrete types,
+- The formatting macros that expand to 
+`&'static str`s can only use constants of concrete types,
 so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
 
 - Integer arguments must have a type inferrable from context,
@@ -237,10 +238,12 @@ assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 # Cargo features
 
 - "fmt": Enables the [`std::fmt`]-like API,
-requires Rust nightly becauase it uses mutable references in const fn.
+requires Rust nightly because it uses mutable references in const fn.<br>
+This feature includes the `formatc`/`writec` formatting macros.
 
 - "derive": implies the "fmt" feature,
-provides the `ConstDebug` derive macro to format user-defined types at compile-time.
+provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
+This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,

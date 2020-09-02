@@ -69,8 +69,8 @@ use core::{marker::PhantomData, ops::Range};
 /// [`from_custom_cleared`]: #method.from_custom_cleared
 /// [`from_custom`]: #method.from_custom
 ///
-/// [`Utf8Encoding`]: ./strict.Utf8Encoding.html
-/// [`NoEncoding`]: ./strict.NoEncoding.html
+/// [`Utf8Encoding`]: ./enum.Utf8Encoding.html
+/// [`NoEncoding`]: ./enum.NoEncoding.html
 ///
 pub struct StrWriterMut<'w, E = Utf8Encoding> {
     pub(super) len: &'w mut usize,

@@ -40,6 +40,7 @@ macro_rules! index_vars{
 }
 
 impl Error {
+    /// For panicking at compile-time, with a compile-time error that says what the error is.
     #[track_caller]
     pub const fn unwrap<T>(&self) -> T {
         index_vars! {

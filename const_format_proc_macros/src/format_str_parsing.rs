@@ -250,7 +250,8 @@ fn is_ident(s: &str) -> bool {
     let mut chars = s.chars();
     let first = chars.next().unwrap();
 
-    first.is_xid_start() && chars.all(|c| c.is_xid_continue())
+    // For some reason '_' is not considered a valid character for the stard of an ident
+    (first.is_xid_start() || first == '_') && chars.all(|c| c.is_xid_continue())
 }
 
 ////////////////////////////////////////////////////////////////////////////////

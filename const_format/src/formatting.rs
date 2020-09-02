@@ -1,3 +1,4 @@
+#[doc(hidden)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Formatting {
     Debug,
@@ -184,6 +185,7 @@ impl FormattingFlags {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[doc(hidden)]
 /// For writing into an array from the start
 pub struct LenAndArray<T: ?Sized> {
     /// The amount of elements written in `array`
@@ -191,6 +193,7 @@ pub struct LenAndArray<T: ?Sized> {
     pub array: T,
 }
 
+#[doc(hidden)]
 /// For writing into an array from the end
 pub struct StartAndArray<T: ?Sized> {
     /// The first element in `array`
@@ -200,6 +203,7 @@ pub struct StartAndArray<T: ?Sized> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[doc(hidden)]
 pub struct ForEscaping {
     pub is_escaped: u128,
     pub is_backslash_escaped: u128,
@@ -214,6 +218,7 @@ impl ForEscaping {
     }
 }
 
+#[doc(hidden)]
 /// Converts 0..=0xF to its ascii representation of '0'..='9' and 'A'..='F'
 #[inline(always)]
 pub const fn hex_as_ascii(n: u8) -> u8 {
@@ -224,6 +229,7 @@ pub const fn hex_as_ascii(n: u8) -> u8 {
     }
 }
 
+#[doc(hidden)]
 pub const FOR_ESCAPING: &ForEscaping = {
     let mut is_backslash_escaped = 0;
 
