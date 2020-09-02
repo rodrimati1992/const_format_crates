@@ -61,6 +61,7 @@ pub struct ImplFmtWhereClause;
 /// fn main(){}
 /// ```
 ///
+#[cfg(feature = "derive")]
 pub struct ConstDebugWhereClause;
 
 /// ```rust

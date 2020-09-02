@@ -241,17 +241,16 @@ fn parse_ident(ident_str: &str, starts_at: usize) -> Result<WhichArg, ParseError
 ////////////////////////////////////////////////////////////////////////////////
 
 fn is_ident(s: &str) -> bool {
+    use unicode_xid::UnicodeXID;
+
     if s.is_empty() || s == "_" {
         return false;
     }
+
     let mut chars = s.chars();
     let first = chars.next().unwrap();
 
-    if !first.is_alphabetic() && first != '_' {
-        return false;
-    }
-
-    chars.all(|c| c.is_alphanumeric() || c == '_')
+    first.is_xid_start() && chars.all(|c| c.is_xid_continue())
 }
 
 ////////////////////////////////////////////////////////////////////////////////

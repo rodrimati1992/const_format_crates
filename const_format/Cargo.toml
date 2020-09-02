@@ -21,7 +21,6 @@ include = [
 travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
-# Remember to disable these feature before releasing this crate!!
 default = []
 fmt = []
 derive = ["fmt", "const_format_proc_macros/derive"]

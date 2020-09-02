@@ -297,7 +297,6 @@ impl<'w, E> StrWriterMut<'w, E> {
     }
 }
 
-// Add `StrWriterMut::<'w, NoEncoding>::truncate` later
 impl<'w> StrWriterMut<'w, Utf8Encoding> {
     /// Truncates this `StrWriterMut` to `length`.
     ///
@@ -338,6 +337,42 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
             *self.len = length;
         }
         Ok(())
+    }
+}
+
+impl<'w> StrWriterMut<'w, NoEncoding> {
+    /// Truncates this `StrWriterMut<'w, NoEncoding>` to `length`.
+    ///
+    /// If `length` is greater than the current length, this does nothing.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{Error, StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = [0; 32];
+    /// let mut len = 0;
+    /// let mut writer = StrWriterMut::from_custom(&mut buffer, &mut len);
+    ///
+    /// writer.write_str("foo bar baz");
+    /// assert_eq!(writer.as_bytes(), b"foo bar baz");
+    ///
+    /// // Truncating to anything larger than the length is a no-op.
+    /// writer.truncate(usize::MAX / 2);
+    /// assert_eq!(writer.as_bytes(), b"foo bar baz");
+    ///
+    /// writer.truncate(3);
+    /// assert_eq!(writer.as_bytes(), b"foo");
+    ///
+    /// writer.write_str("ooooooo");
+    /// assert_eq!(writer.as_bytes(), b"fooooooooo");
+    ///
+    /// ```
+    #[inline]
+    pub const fn truncate(&mut self, length: usize) {
+        if length < *self.len {
+            *self.len = length;
+        }
     }
 }
 
