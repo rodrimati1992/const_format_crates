@@ -301,15 +301,8 @@ mod tests {
 
         (100..).zip(list.iter_mut()).for_each(|(i, m)| *m = i);
 
-        fn sub_test(sub: &[u16]) {
-            for j in 0..sub.len() {
-                assert_eq!(slice_up_to_len_alt(sub, j), &sub[..j]);
-            }
-        }
-
         for i in 0..list.len() {
-            sub_test(&list[..i]);
-            sub_test(&list[i..]);
+            assert_eq!(slice_up_to_len_alt(&list, i), &list[..i]);
         }
     }
 

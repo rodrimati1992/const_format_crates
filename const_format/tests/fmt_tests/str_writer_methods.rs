@@ -108,6 +108,8 @@ macro_rules! write_integer_tests {
     })
 }
 
+// This is really slow in miri.
+#[cfg(not(miri))]
 #[test]
 fn test_write_ints() {
     write_integer_tests! {
@@ -164,16 +166,30 @@ fn test_unescaped_str_fn(
     rng: &mut dyn FnMut() -> char,
     write: &mut dyn FnMut(WriteArgs<'_, '_>) -> Result<(), const_format::fmt::Error>,
 ) {
-    for _ in 0..64 {
-        let mut input = ArrayString::<[u8; 32]>::new();
+    #[cfg(not(miri))]
+    let tries = 64;
+
+    #[cfg(miri)]
+    let tries = 1;
+
+    #[cfg(not(miri))]
+    const CAP: usize = 32;
+
+    #[cfg(miri)]
+    const CAP: usize = 10;
+
+    for _ in 0..tries {
+        let mut input = ArrayString::<[u8; CAP]>::new();
         while input.try_push(rng()).is_ok() {}
 
         let input = input.as_str();
         let input_bytes = input.as_bytes();
 
+        let writer: &mut StrWriter = &mut StrWriter::new([0; 192]);
+
         for end in 0..input.len() {
             for start in 0..end + 2 {
-                let writer: &mut StrWriter = &mut StrWriter::new([0; 192]);
+                writer.clear();
                 let mut writer = writer.as_mut();
 
                 let toosmall: &mut StrWriter = &mut StrWriter::new([0; 8]);
@@ -228,7 +244,7 @@ fn test_unescaped_str_fn(
 
 #[test]
 fn write_str() {
-    let rng = Rng::new();
+    let rng = Rng::with_seed(1989152812982806979);
     test_unescaped_str_fn(
         Formatting::Display,
         &mut || rng.unicode_char(),
@@ -246,7 +262,7 @@ fn write_str() {
 
 #[test]
 fn write_ascii() {
-    let rng = Rng::new();
+    let rng = Rng::with_seed(1989152812982806979);
     let mut rng_fn = || rng.char_('\0'..='\u{7F}');
     test_unescaped_str_fn(Formatting::Display, &mut rng_fn, &mut |mut p| {
         let ascii = AsciiStr::new(p.input.as_bytes()).unwrap();
@@ -265,7 +281,7 @@ fn is_it_escaped(c: char) -> bool {
 #[test]
 fn write_str_debug() {
     {
-        let rng = Rng::new();
+        let rng = Rng::with_seed(1989152812982806979);
         let mut rng_fn = || loop {
             let c = rng.unicode_char();
             if !is_it_escaped(c) {
@@ -314,7 +330,7 @@ fn write_str_debug() {
     // Testing that escaping random ranges in ALL_ASCII produces escaped strings
     // that can be found in ALL_ASCII_ESCAPED
     {
-        let rng = Rng::new();
+        let rng = Rng::with_seed(1989152812982806979);
         fn write_range(rng: &Rng, mut w: StrWriterMut<'_>) -> Range<usize> {
             let gen_range = || rng.usize(..ALL_ASCII.len())..rng.usize(..ALL_ASCII.len());
             let start = w.len();
@@ -323,7 +339,13 @@ fn write_str_debug() {
             start + 1..end - 1
         };
 
-        for _ in 1..1000 {
+        #[cfg(not(miri))]
+        const ITERATIONS: usize = 1000;
+
+        #[cfg(miri)]
+        const ITERATIONS: usize = 30;
+
+        for _ in 1..ITERATIONS {
             writer.truncate(snapshot).unwrap();
 
             let range_a = write_range(&rng, writer.reborrow());
@@ -532,7 +554,7 @@ fn clear() {
 
 #[test]
 fn write_ascii_debug() {
-    let rng = Rng::new();
+    let rng = Rng::with_seed(1989152812982806979);
     let mut rng_fn = || loop {
         let c = rng.char_('\0'..='\u{7F}');
         if !is_it_escaped(c) {

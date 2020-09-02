@@ -26,6 +26,8 @@ fn get_binary_digits(n: impl fmt::Binary) -> ArrayString<[u8; 192]> {
 
 const DEF_FLAGS: FormattingFlags = FormattingFlags::DEFAULT;
 
+// This doesn't use unsafe code
+#[cfg(not(miri))]
 macro_rules! check_number_of_digits_ {
     ($ty:ty) => {{
         fn number_of_digits_test_case(val: $ty) {
@@ -121,6 +123,8 @@ macro_rules! check_number_of_digits_ {
     }};
 }
 
+// This doesn't use unsafe code
+#[cfg(not(miri))]
 #[test]
 fn pwrapper_methods() {
     check_number_of_digits_!(i8);

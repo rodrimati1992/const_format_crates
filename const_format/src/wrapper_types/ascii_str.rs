@@ -219,6 +219,9 @@ mod tests {
             assert_eq!(err.invalid_from, 6)
         }
     }
+
+    // This doesn't use unsafe code
+    #[cfg(not(miri))]
     #[test]
     fn only_ascii_constructible() {
         let mut string = ArrayString::<[u8; 1024]>::new();
