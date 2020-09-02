@@ -19,7 +19,7 @@ pub(crate) struct ConstDebugConfig<'a> {
 }
 
 impl<'a> ConstDebugConfig<'a> {
-    fn new(roa: ConstDebugAttrs<'a>) -> Result<Self, syn::Error> {
+    fn new(roa: ConstDebugAttrs<'a>) -> Result<Self, crate::Error> {
         let ConstDebugAttrs {
             debug_print,
             impls,
@@ -41,7 +41,7 @@ struct ConstDebugAttrs<'a> {
     debug_print: bool,
     impls: Vec<ImplHeader>,
     field_map: FieldMap<FieldConfig<'a>>,
-    errors: LinearResult<()>,
+    errors: LinearResult,
     _marker: PhantomData<&'a ()>,
 }
 
@@ -83,14 +83,14 @@ enum ParseContext<'a> {
 
 pub(crate) fn parse_attrs_for_derive<'a>(
     ds: &'a DataStructure<'a>,
-) -> Result<ConstDebugConfig<'a>, syn::Error> {
+) -> Result<ConstDebugConfig<'a>, crate::Error> {
     let mut this = ConstDebugAttrs {
         debug_print: false,
         impls: Vec::new(),
         field_map: FieldMap::with(ds, |f| FieldConfig {
             how_to_fmt: type_detection::detect_type_formatting(f.ty),
         }),
-        errors: LinearResult::ok(()),
+        errors: LinearResult::ok(),
         _marker: PhantomData,
     };
 
@@ -113,7 +113,7 @@ fn parse_inner<'a, I>(
     this: &mut ConstDebugAttrs<'a>,
     attrs: I,
     pctx: ParseContext<'a>,
-) -> Result<(), syn::Error>
+) -> Result<(), crate::Error>
 where
     I: IntoIterator<Item = &'a Attribute>,
 {
@@ -137,7 +137,7 @@ fn parse_attr_list<'a>(
     this: &mut ConstDebugAttrs<'a>,
     pctx: ParseContext<'a>,
     list: MetaList,
-) -> Result<(), syn::Error> {
+) -> Result<(), crate::Error> {
     if list.path.is_ident("cdeb") {
         with_nested_meta("cdeb", list.nested, |attr| {
             let x = parse_sabi_attr(this, pctx, attr);
@@ -149,7 +149,7 @@ fn parse_attr_list<'a>(
     Ok(())
 }
 
-fn make_err(tokens: &dyn ToTokens) -> syn::Error {
+fn make_err(tokens: &dyn ToTokens) -> crate::Error {
     spanned_err!(tokens, "unrecognized attribute")
 }
 
@@ -158,7 +158,7 @@ fn parse_sabi_attr<'a>(
     this: &mut ConstDebugAttrs<'a>,
     pctx: ParseContext<'a>,
     attr: Meta,
-) -> Result<(), syn::Error> {
+) -> Result<(), crate::Error> {
     match (pctx, attr) {
         (ParseContext::Field { field, .. }, Meta::Path(path)) => {
             let f_config = &mut this.field_map[field.index];
@@ -232,7 +232,7 @@ fn parse_sabi_attr<'a>(
 fn parse_the_is_a_attribute<'a>(
     attr: syn::Meta,
     f: &Field<'a>,
-) -> Result<HowToFmt<'a>, syn::Error> {
+) -> Result<HowToFmt<'a>, crate::Error> {
     match attr {
         Meta::Path(path) => {
             if path.is_ident("array") || path.is_ident("slice") {
@@ -254,12 +254,12 @@ fn parse_the_is_a_attribute<'a>(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-fn parse_lit<T>(lit: &syn::Lit) -> Result<T, syn::Error>
+fn parse_lit<T>(lit: &syn::Lit) -> Result<T, crate::Error>
 where
     T: syn::parse::Parse,
 {
     match lit {
-        syn::Lit::Str(x) => x.parse(),
+        syn::Lit::Str(x) => x.parse().map_err(crate::Error::from),
         _ => Err(spanned_err!(
             lit,
             "Expected string literal containing identifier"
@@ -268,12 +268,13 @@ where
 }
 
 #[allow(dead_code)]
-fn parse_expr(lit: syn::Lit) -> Result<syn::Expr, syn::Error> {
+fn parse_expr(lit: syn::Lit) -> Result<syn::Expr, crate::Error> {
     match lit {
         syn::Lit::Str(x) => x.parse(),
         syn::Lit::Int(x) => syn::parse_str(x.base10_digits()),
         _ => return_spanned_err!(lit, "Expected string or integer literal"),
     }
+    .map_err(crate::Error::from)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,9 +283,9 @@ pub fn with_nested_meta<F>(
     attr_name: &str,
     iter: syn::punctuated::Punctuated<NestedMeta, syn::Token!(,)>,
     mut f: F,
-) -> Result<(), syn::Error>
+) -> Result<(), crate::Error>
 where
-    F: FnMut(Meta) -> Result<(), syn::Error>,
+    F: FnMut(Meta) -> Result<(), crate::Error>,
 {
     for repr in iter {
         match repr {

@@ -12,7 +12,7 @@ mod type_detection;
 
 use self::attribute_parsing::HowToFmt;
 
-pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
+pub(crate) fn derive_constdebug_impl(input: DeriveInput) -> Result<TokenStream2, crate::Error> {
     let ds = &DataStructure::new(&input);
     let config = attribute_parsing::parse_attrs_for_derive(ds)?;
     let cratep = quote!(::const_format);

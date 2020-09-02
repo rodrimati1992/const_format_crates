@@ -2,11 +2,14 @@ use proc_macro::TokenStream as TokenStream1;
 
 use proc_macro2::TokenStream as TokenStream2;
 
+#[cfg(feature = "derive")]
 #[macro_use]
 mod macros;
 
 #[cfg(feature = "derive")]
 mod datastructure;
+
+mod error;
 
 #[cfg(feature = "derive")]
 mod derive_debug;
@@ -26,7 +29,10 @@ mod utils;
 #[cfg(test)]
 mod test_utils;
 
-fn compile_err_empty_str(e: syn::Error) -> TokenStream2 {
+use crate::error::Error;
+use crate::parse_utils::MyParse;
+
+fn compile_err_empty_str(e: crate::Error) -> TokenStream2 {
     let e = e.to_compile_error();
     quote::quote!({
         #e;
@@ -44,7 +50,7 @@ fn compile_err_empty_str(e: syn::Error) -> TokenStream2 {
 #[doc(hidden)]
 #[proc_macro]
 pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
-    syn::parse(input)
+    MyParse::parse_token_stream_1(input)
         .and_then(format_macro::macro_impl)
         .unwrap_or_else(compile_err_empty_str)
         .into()
@@ -53,7 +59,7 @@ pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
 #[doc(hidden)]
 #[proc_macro]
 pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
-    syn::parse(input)
+    MyParse::parse_token_stream_1(input)
         .and_then(format_macro::formatc_macro_impl)
         .unwrap_or_else(compile_err_empty_str)
         .into()
@@ -62,7 +68,7 @@ pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
 #[doc(hidden)]
 #[proc_macro]
 pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
-    syn::parse(input)
+    MyParse::parse_token_stream_1(input)
         .and_then(format_macro::writec_macro_impl)
         .unwrap_or_else(compile_err_empty_str)
         .into()
@@ -72,22 +78,8 @@ pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
 #[proc_macro_derive(ConstDebug, attributes(cdeb))]
 pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
     syn::parse(input)
+        .map_err(crate::Error::from)
         .and_then(derive_debug::derive_constdebug_impl)
         .unwrap_or_else(|e| e.to_compile_error())
         .into()
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-#[allow(dead_code)]
-fn parse_or_compile_err<P, F>(input: TokenStream1, f: F) -> TokenStream2
-where
-    P: syn::parse::Parse,
-    F: FnOnce(P) -> Result<TokenStream2, syn::Error>,
-{
-    // println!("{}", input);
-
-    syn::parse::<P>(input)
-        .and_then(f)
-        .unwrap_or_else(|e| e.to_compile_error())
 }

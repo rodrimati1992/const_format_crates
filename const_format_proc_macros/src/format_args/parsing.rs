@@ -5,32 +5,26 @@ use super::{
 
 use crate::{
     format_str_parsing::{FmtStrComponent, FormatStr, WhichArg},
-    parse_utils::ParseBufferExt,
+    parse_utils::{MyParse, ParseBuffer, ParseStream, TokenTreeExt},
     utils::{dummy_ident, LinearResult},
 };
 
-use proc_macro2::Span;
-
-use syn::{
-    parse::{Parse, ParseStream},
-    Ident, LitStr, Token,
-};
+use proc_macro2::{Ident, Span};
 
 ////////////////////////////////////////////////
 
-impl Parse for UncheckedFormatArg {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
-        let content;
-        let _parentheses = syn::parenthesized!(content in input);
+impl MyParse for UncheckedFormatArg {
+    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
+        let paren = input.parse_paren()?;
+
+        let mut content = ParseBuffer::new(paren.contents);
 
         content.parse_unwrap_tt(|content| {
-            let ident;
-            if content.peek2(Token!(=)) {
-                ident = Some(content.parse()?);
-                let _: Token!(=) = content.parse()?;
-            } else {
-                ident = None;
-            };
+            let mut ident = None;
+            if matches!(content.peek2(), Some(x) if x.is_punct('=')) {
+                ident = Some(content.parse_ident()?);
+                content.next();
+            }
 
             let (expr, span) = content.parse_token_stream_and_span();
 
@@ -41,47 +35,50 @@ impl Parse for UncheckedFormatArg {
 
 ////////////////////////////////////////////////
 
-impl Parse for UncheckedFormatArgs {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
-        let lit = input.parse::<LitStr>()?;
+impl MyParse for UncheckedFormatArgs {
+    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
+        let lit = input.parse_litstr()?;
         let lit_str = lit.value();
-        let format_str_span = lit.span();
-        let literal = lit
-            .value()
-            .parse::<FormatStr>()
-            .map_err(|e| e.into_syn_err(format_str_span, &lit_str))?;
+        let format_str_span = lit.span;
+        let literal = FormatStr::parse(lit.value(), lit.rawness)
+            .map_err(|e| e.into_crate_err(format_str_span, &lit_str))?;
 
-        let comma: Option<Token!(,)> = input.parse()?;
+        let mut args = Vec::new();
 
-        if !input.is_empty() && comma.is_none() {
-            return Err(syn::Error::new(
-                format_str_span,
-                "Expected comma or the end of the formatting arguments",
-            ));
+        if !input.is_empty() {
+            input.parse_punct(',')?;
+        }
+
+        while !input.is_empty() {
+            args.push(UncheckedFormatArg::parse(input)?);
+
+            if !input.is_empty() {
+                input.parse_punct(',')?;
+            }
         }
 
         Ok(Self {
             format_str_span,
             literal,
-            args: input.parse_terminated(Parse::parse)?,
+            args,
         })
     }
 }
 
 ////////////////////////////////////////////////
 
-impl Parse for FormatArgs {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
+impl MyParse for FormatArgs {
+    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
         let prefix = Ident::new("const_fmt_local_", Span::call_site());
         FormatArgs::parse_with(input, prefix)
     }
 }
 
 impl FormatArgs {
-    pub fn parse_with(input: ParseStream, prefix: Ident) -> Result<FormatArgs, syn::Error> {
-        let mut res = LinearResult::ok(());
+    pub fn parse_with(input: ParseStream<'_>, prefix: Ident) -> Result<FormatArgs, crate::Error> {
+        let mut res = LinearResult::ok();
 
-        let unchecked_fargs = input.parse::<UncheckedFormatArgs>()?;
+        let unchecked_fargs = UncheckedFormatArgs::parse(input)?;
 
         let mut first_named_arg = unchecked_fargs.args.len();
 
@@ -113,7 +110,7 @@ impl FormatArgs {
                     name
                 } else {
                     if prev_is_named_arg {
-                        return Err(syn::Error::new(
+                        return Err(crate::Error::new(
                             expr_span,
                             "expected a named argument, \
                              named arguments cannot be followed by positional arguments.",
@@ -143,6 +140,7 @@ impl FormatArgs {
         let named_args = &args[first_named_arg..];
 
         let fmt_str_components = unchecked_fargs.literal.list;
+        let str_rawness = unchecked_fargs.literal.rawness;
 
         let expanded_into: Vec<ExpandInto> = {
             let mut current_pos_arg = 0;
@@ -154,7 +152,7 @@ impl FormatArgs {
                             named_args[pos].local_variable.clone()
                         } else {
                             // `formatcp!("{FOO}")` assumes that FOO is a constant in scope
-                            ident
+                            Ident::new(&ident, str_rawness.span())
                         }
                     }
                     WhichArg::Positional(opt_pos) => {
@@ -170,7 +168,7 @@ impl FormatArgs {
                                 arg.local_variable.clone()
                             }
                             None => {
-                                res.push_err(syn::Error::new(
+                                res.push_err(crate::Error::new(
                                     format_str_span,
                                     format!(
                                         "attempting to use nonexistent  positional argument `{}`",
@@ -187,7 +185,7 @@ impl FormatArgs {
             fmt_str_components
                 .into_iter()
                 .map(|fmt_str_comp| match fmt_str_comp {
-                    FmtStrComponent::Str(str) => ExpandInto::Str(str),
+                    FmtStrComponent::Str(str) => ExpandInto::Str(str, str_rawness),
                     FmtStrComponent::Arg(arg) => ExpandInto::Formatted(ExpandFormatted {
                         local_variable: get_variable_name(arg.which_arg),
                         format: arg.formatting,
@@ -205,7 +203,7 @@ impl FormatArgs {
                 } else {
                     format!("argument number {} is unused", i)
                 };
-                res.push_err(syn::Error::new(*span, msg));
+                res.push_err(crate::Error::new(*span, msg));
             }
         }
         res.take()?;
@@ -219,12 +217,14 @@ impl FormatArgs {
 
 ////////////////////////////////////////////////
 
-impl Parse for WriteArgs {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
+impl MyParse for WriteArgs {
+    fn parse(input: ParseStream) -> Result<Self, crate::Error> {
         let prefix = Ident::new("const_fmt_local_", Span::call_site());
 
-        let content;
-        let _parentheses = syn::parenthesized!(content in input);
+        let paren = input.parse_paren()?;
+
+        let mut content = ParseBuffer::new(paren.contents);
+
         let (writer_expr, _span) =
             content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?;
 

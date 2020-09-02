@@ -1,8 +1,7 @@
-use crate::formatting::{FormattingFlags, IsAlternate, NumberFormatting};
-
-use syn::Ident;
-
-use std::str::FromStr;
+use crate::{
+    formatting::{FormattingFlags, IsAlternate, NumberFormatting},
+    parse_utils::StrRawness,
+};
 
 mod errors;
 
@@ -13,6 +12,7 @@ pub(crate) use self::errors::{ParseError, ParseErrorKind};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct FormatStr {
+    pub(crate) rawness: StrRawness,
     pub(crate) list: Vec<FmtStrComponent>,
 }
 
@@ -30,7 +30,7 @@ pub(crate) struct FmtArg {
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum WhichArg {
-    Ident(syn::Ident),
+    Ident(String),
     Positional(Option<usize>),
 }
 
@@ -62,20 +62,28 @@ impl FmtArg {
 #[allow(dead_code)]
 impl WhichArg {
     fn ident(s: &str) -> Self {
-        Self::Ident(Ident::new(s, proc_macro2::Span::mixed_site()))
+        Self::Ident(s.to_string())
     }
 }
 
 /////////////////////////////////////
 
-impl FromStr for FormatStr {
+#[cfg(test)]
+impl std::str::FromStr for FormatStr {
     type Err = ParseError;
+
     fn from_str(input: &str) -> Result<FormatStr, ParseError> {
-        parse_format_str(input)
+        parse_format_str(input, StrRawness::dummy())
     }
 }
 
-fn parse_format_str(input: &str) -> Result<FormatStr, ParseError> {
+impl FormatStr {
+    pub fn parse(input: &str, rawness: StrRawness) -> Result<FormatStr, ParseError> {
+        parse_format_str(input, rawness)
+    }
+}
+
+fn parse_format_str(input: &str, rawness: StrRawness) -> Result<FormatStr, ParseError> {
     let mut components = Vec::<FmtStrComponent>::new();
 
     let mut arg_start = 0;
@@ -110,7 +118,10 @@ fn parse_format_str(input: &str) -> Result<FormatStr, ParseError> {
         }
     }
 
-    Ok(FormatStr { list: components })
+    Ok(FormatStr {
+        rawness,
+        list: components,
+    })
 }
 
 /// Parses the text between arguments, to unescape `}}` into `}`
@@ -211,20 +222,36 @@ fn parse_formatting(input: &str, starts_at: usize) -> Result<FormattingFlags, Pa
     Ok(FormattingFlags::debug(num_fmt, is_alternate))
 }
 
-// Parses an identifier in a formatting argument.
-// This panics if called with an empty string
+/// Parses an identifier in a formatting argument.
 ///
 /// `starts_at` is the offset of `input` in the formatting string.
 fn parse_ident(ident_str: &str, starts_at: usize) -> Result<WhichArg, ParseError> {
-    match syn::parse_str::<Ident>(ident_str) {
-        Ok(x) => Ok(WhichArg::Ident(x)),
-        Err(_) => Err(ParseError {
+    if is_ident(ident_str) {
+        Ok(WhichArg::Ident(ident_str.to_string()))
+    } else {
+        Err(ParseError {
             pos: starts_at,
             kind: ParseErrorKind::NotAnIdent {
                 what: ident_str.to_string(),
             },
-        }),
+        })
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+fn is_ident(s: &str) -> bool {
+    if s.is_empty() || s == "_" {
+        return false;
+    }
+    let mut chars = s.chars();
+    let first = chars.next().unwrap();
+
+    if !first.is_alphabetic() && first != '_' {
+        return false;
+    }
+
+    chars.all(|c| c.is_alphanumeric() || c == '_')
 }
 
 ////////////////////////////////////////////////////////////////////////////////

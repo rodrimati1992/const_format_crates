@@ -1,9 +1,6 @@
-use crate::format_str_parsing::FormatStr;
-use crate::formatting::FormattingFlags;
+use crate::{format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness};
 
-use proc_macro2::{Span, TokenStream as TokenStream2};
-
-use syn::{punctuated::Punctuated, Ident, Token};
+use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 
 use quote::{quote, quote_spanned};
 
@@ -16,7 +13,7 @@ mod parsing;
 struct UncheckedFormatArgs {
     format_str_span: Span,
     literal: FormatStr,
-    args: Punctuated<UncheckedFormatArg, Token!(,)>,
+    args: Vec<UncheckedFormatArg>,
 }
 
 struct UncheckedFormatArg {
@@ -39,7 +36,7 @@ pub(crate) struct WriteArgs {
 }
 
 pub(crate) enum ExpandInto {
-    Str(String),
+    Str(String, StrRawness),
     Formatted(ExpandFormatted),
 }
 
@@ -67,10 +64,10 @@ impl ExpandInto {
             Self::Formatted(fmted) => fmted.format,
         }
     }
-    pub(crate) fn len_call(&self, cratep: &TokenStream2, strlen: &Ident) -> TokenStream2 {
-        let flags = self.formatting_flags().tokens(cratep);
+    pub(crate) fn len_call(&self, strlen: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags();
         match self {
-            ExpandInto::Str(str) => {
+            ExpandInto::Str(str, _) => {
                 let len = str.len();
                 quote!( #strlen.add_len(#len); )
             }
@@ -80,23 +77,27 @@ impl ExpandInto {
                 let span = local_variable.span();
 
                 quote_spanned!(span=>
-                    let _ = #cratep::coerce_to_fmt!(#local_variable)
+                    let _ = __cf_osRcTFl4A::coerce_to_fmt!(#local_variable)
                         .#len_method(&mut #strlen.make_formatter(#flags));
                 )
             }
         }
     }
-    pub(crate) fn fmt_call(&self, cratep: &TokenStream2, formatter: &Ident) -> TokenStream2 {
-        let flags = self.formatting_flags().tokens(cratep);
+    pub(crate) fn fmt_call(&self, formatter: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags();
         match self {
-            ExpandInto::Str(str) => quote!( #formatter.write_str(#str) ),
+            ExpandInto::Str(str, rawness) => {
+                let str_tokens = rawness.tokenize_sub(str);
+
+                quote_spanned!(rawness.span()=> #formatter.write_str(#str_tokens) )
+            }
             ExpandInto::Formatted(fmted) => {
                 let fmt_method = fmted.format.fmt_method_name();
                 let local_variable = &fmted.local_variable;
                 let span = local_variable.span();
 
                 quote_spanned!(span=>
-                    #cratep::coerce_to_fmt!(&#local_variable)
+                    __cf_osRcTFl4A::coerce_to_fmt!(&#local_variable)
                         .#fmt_method(&mut #formatter.make_formatter(#flags))
                 )
             }

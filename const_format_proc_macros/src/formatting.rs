@@ -1,8 +1,6 @@
-use proc_macro2::{Span, TokenStream as TokenStream2};
+use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 
 use quote::{quote, ToTokens, TokenStreamExt};
-
-use syn::Ident;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub(crate) enum Formatting {
@@ -98,8 +96,10 @@ impl FormattingFlags {
 
         Ident::new(name, Span::mixed_site())
     }
+}
 
-    pub(crate) fn tokens(self, crate_path: &TokenStream2) -> TokenStream2 {
+impl ToTokens for FormattingFlags {
+    fn to_tokens(&self, ts: &mut TokenStream2) {
         use self::{IsAlternate as IA, NumberFormatting as FM};
 
         let formatting = match self.formatting {
@@ -107,13 +107,13 @@ impl FormattingFlags {
             Formatting::Debug(num_fmt) => num_fmt,
         };
 
-        match (self.is_alternate, formatting) {
-            (IA::No, FM::Decimal) => quote!(#crate_path::pmr::FormattingFlags::__REG),
-            (IA::No, FM::Hexadecimal) => quote!(#crate_path::pmr::FormattingFlags::__HEX),
-            (IA::No, FM::Binary) => quote!(#crate_path::pmr::FormattingFlags::__BIN),
-            (IA::Yes, FM::Decimal) => quote!(#crate_path::pmr::FormattingFlags::__A_REG),
-            (IA::Yes, FM::Hexadecimal) => quote!(#crate_path::pmr::FormattingFlags::__A_HEX),
-            (IA::Yes, FM::Binary) => quote!(#crate_path::pmr::FormattingFlags::__A_BIN),
-        }
+        ts.append_all(match (self.is_alternate, formatting) {
+            (IA::No, FM::Decimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__REG),
+            (IA::No, FM::Hexadecimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__HEX),
+            (IA::No, FM::Binary) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__BIN),
+            (IA::Yes, FM::Decimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_REG),
+            (IA::Yes, FM::Hexadecimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_HEX),
+            (IA::Yes, FM::Binary) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_BIN),
+        });
     }
 }

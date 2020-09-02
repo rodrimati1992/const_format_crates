@@ -25,13 +25,13 @@ mod impl_fmt;
 /// use const_format::{Error, StrWriter};
 /// use const_format::{try_, writec};
 ///
-/// const fn write_stuff(buffer: &mut StrWriter) -> Result<&str, Error> {
+/// const fn write_stuff(buffer: &mut StrWriter) -> Result<&[u8], Error> {
 ///     try_!(writec!(buffer, "Foo{},Bar{},Baz{},", 8u32, 13u32, 21u32));
-///     Ok(buffer.as_str())
+///     Ok(buffer.as_bytes_alt())
 /// }
 ///
 /// let mut buffer = StrWriter::new([0; 32]);
-/// assert_eq!(write_stuff(&mut buffer)?, "Foo8,Bar13,Baz21,");
+/// assert_eq!(write_stuff(&mut buffer)?, "Foo8,Bar13,Baz21,".as_bytes());
 ///
 /// # Ok::<(), Error>(())
 /// ```

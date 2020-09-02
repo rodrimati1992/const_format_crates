@@ -1,7 +1,7 @@
-use crate::test_utils::StrExt;
+use crate::{parse_utils::MyParse, test_utils::StrExt};
 
 fn process_str(s: &str) -> Result<String, String> {
-    syn::parse_str(s)
+    MyParse::parse_token_stream_2(s.parse().unwrap())
         .and_then(crate::format_macro::macro_impl)
         .map(|x| x.to_string())
         .map_err(|e| e.to_compile_error().to_string())

@@ -45,7 +45,7 @@ fn is_path_an_option(path: &syn::Path) -> bool {
 }
 
 /// Parses the type as an identifier, or the last identifier of a path.
-pub(super) fn parse_type_as_ident(ty: &Type) -> Result<&syn::Ident, syn::Error> {
+pub(super) fn parse_type_as_ident(ty: &Type) -> Result<&syn::Ident, crate::Error> {
     let ty = unwrap_reference(ty);
     match ty {
         Type::Path(typath) if typath.qself.is_none() && !typath.path.segments.is_empty() => {
