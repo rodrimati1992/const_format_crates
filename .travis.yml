@@ -6,8 +6,8 @@ os:
   - windows
 
 rust: 
-  # Remember to uncomment after 2020-08-27
-  # - rust: 1.46.0
+  - rust: 1.46.0
+  - stable
   - beta
   - nightly
 
