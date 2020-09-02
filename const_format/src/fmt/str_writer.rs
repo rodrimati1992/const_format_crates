@@ -111,6 +111,23 @@ impl<A> StrWriter<A> {
 
 impl<A: ?Sized> StrWriter<A> {
     /// Accesses the underlying buffer immutably.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let buffer: &mut StrWriter = &mut StrWriter::new([0; 7]);
+    /// assert_eq!(buffer.buffer(), &[0; 7]);
+    ///
+    /// buffer.as_mut().write_str("foo")?;
+    /// assert_eq!(buffer.buffer(), b"foo\0\0\0\0");
+    ///
+    /// buffer.as_mut().write_str("bar")?;
+    /// assert_eq!(buffer.buffer(), b"foobar\0");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline(always)]
     pub const fn buffer(&self) -> &A {
         &self.buffer

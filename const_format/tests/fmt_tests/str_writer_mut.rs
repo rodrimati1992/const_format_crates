@@ -19,15 +19,25 @@ fn from_custom() -> Result<(), Error> {
     writer.write_str("hello")?;
     assert_eq!(writer.as_bytes(), b"    hello");
 
+    assert_eq!(writer.len(), 9);
+    assert!(writer.buffer().starts_with(b"    hello"));
+
     assert_eq!(len, 9);
     assert!(buffer.starts_with(b"    hello"));
 
     len = 6;
     let mut writer = StrWriterMut::from_custom(&mut buffer, &mut len);
 
+    assert_eq!(writer.len(), 6);
     assert_eq!(writer.as_bytes(), b"    he");
+
     writer.write_str("roic")?;
+    assert_eq!(writer.len(), 10);
     assert_eq!(writer.as_bytes(), b"    heroic");
+    assert!(writer.buffer().starts_with(b"    heroic"));
+
+    assert_eq!(len, 10);
+    assert!(buffer.starts_with(b"    heroic"));
 
     Ok(())
 }
@@ -41,17 +51,33 @@ fn from_custom_cleared() -> Result<(), Error> {
     assert_eq!(writer.as_str(), "");
 
     writer.write_str("hello")?;
+    assert_eq!(writer.len(), 5);
     assert_eq!(writer.as_str(), "hello");
+    assert!(writer.buffer().starts_with(b"hello"));
+
+    assert_eq!(len, 5);
+    assert!(buffer.starts_with(b"hello"));
 
     let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
 
+    assert!(writer.is_empty());
+    assert_eq!(writer.len(), 0);
     assert_eq!(writer.as_str(), "");
 
     writer.write_str("he")?;
+    assert!(!writer.is_empty());
+    assert_eq!(writer.len(), 2);
     assert_eq!(writer.as_str(), "he");
+    assert!(writer.buffer().starts_with(b"he"));
 
     writer.write_str("roic")?;
+    assert!(!writer.is_empty());
+    assert_eq!(writer.len(), 6);
     assert_eq!(writer.as_str(), "heroic");
+    assert!(writer.buffer().starts_with(b"heroic"));
+
+    assert_eq!(len, 6);
+    assert!(buffer.starts_with(b"heroic"));
 
     Ok(())
 }
@@ -101,4 +127,56 @@ fn truncate_no_encoding() -> Result<(), Error> {
     assert_eq!(writer.as_bytes(), b"fooo");
 
     Ok(())
+}
+
+#[test]
+fn clear_test() {
+    const CAP: usize = 512;
+    let mut buffer = [0; CAP];
+    let mut len = 0;
+    let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+
+    writer.write_str("hello").unwrap();
+    assert_eq!(writer.as_str(), "hello");
+
+    writer.write_str("world").unwrap();
+    assert_eq!(writer.as_str(), "helloworld");
+
+    writer.clear();
+    assert_eq!(writer.as_str(), "");
+    assert_eq!(writer.len(), 0);
+
+    assert_eq!(len, 0);
+
+    let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+
+    writer.write_str("foo").unwrap();
+    assert_eq!(writer.as_str(), "foo");
+
+    writer.write_str("bar").unwrap();
+    assert_eq!(writer.as_str(), "foobar");
+}
+
+#[test]
+fn as_bytes() {
+    const CAP: usize = 512;
+    let mut buffer = [0; CAP];
+    let mut len = 0;
+    let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    let mut string = String::new();
+
+    for i in 0..CAP {
+        assert_eq!(writer.capacity(), CAP);
+        assert_eq!(writer.remaining_capacity(), CAP - i);
+
+        let ascii_char = ((i % 61) + 32) as u8;
+        writer.write_ascii_repeated(ascii_char, 1).unwrap();
+        string.push(ascii_char as char);
+
+        assert_eq!(writer.as_bytes(), string.as_bytes());
+        assert_eq!(writer.as_bytes_alt(), string.as_bytes());
+        assert_eq!(writer.as_str(), string.as_str());
+
+        assert_eq!(writer.remaining_capacity(), CAP - i - 1);
+    }
 }

@@ -329,6 +329,7 @@ pub mod test_utils;
 
 #[cfg(feature = "fmt")]
 #[cfg(feature = "testing")]
+#[allow(missing_docs)]
 pub mod doctests;
 
 #[cfg(feature = "fmt")]

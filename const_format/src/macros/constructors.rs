@@ -35,7 +35,7 @@
 #[macro_export]
 macro_rules! ascii_str {
     ($str:expr $(,)*) => {{
-        const __CF_ASCII_STR_CONSTANT: $crate::AsciiStr = {
+        const __CF_ASCII_STR_CONSTANT: $crate::AsciiStr<'static> = {
             match $crate::AsciiStr::new($str.as_bytes()) {
                 Ok(x) => x,
                 $crate::pmr::Err(e) => [][e.invalid_from],

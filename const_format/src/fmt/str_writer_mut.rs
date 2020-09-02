@@ -192,6 +192,24 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
 
 impl<'w, E> StrWriterMut<'w, E> {
     /// Accesses the underlying buffer immutably.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::{StrWriter, StrWriterMut};
+    ///
+    /// let mut buffer = StrWriter::new([0; 7]);
+    /// let mut writer = StrWriterMut::new(&mut buffer);
+    /// assert_eq!(writer.buffer(), &[0; 7]);
+    ///
+    /// writer.write_str("foo")?;
+    /// assert_eq!(writer.buffer(), b"foo\0\0\0\0");
+    ///
+    /// writer.write_str("bar")?;
+    /// assert_eq!(writer.buffer(), b"foobar\0");
+    ///
+    /// # Ok::<(), const_format::Error>(())
+    /// ```
     #[inline(always)]
     pub const fn buffer(&self) -> &[u8] {
         self.buffer

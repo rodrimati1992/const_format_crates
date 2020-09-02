@@ -27,6 +27,9 @@ macro_rules! write_integer_tests {
         $({
             let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
             let mut writer = writer.as_mut();
+
+            assert!( writer.is_empty() );
+
             let snapshot = writer.len();
             let mut string = ArrayString::<[u8; 1024]>::new();
 
@@ -48,6 +51,8 @@ macro_rules! write_integer_tests {
                     writer.write_str("_").unwrap();
                     writer.$debug_fn(number, flags.set_hexadecimal()).unwrap();
                     writer.write_str("__").unwrap();
+
+                    assert!( !writer.is_empty() );
 
 
                     let fmt = &mut writer.make_formatter(flags);
@@ -393,6 +398,26 @@ fn returns_error() {
 }
 
 #[test]
+fn remaining_capacity_test() {
+    const CAP: usize = 16;
+
+    let underscored = "___________________________________";
+
+    let str_writer: &mut StrWriter = &mut StrWriter::new([0; CAP]);
+    assert_eq!(str_writer.remaining_capacity(), CAP);
+
+    for i in (0..CAP).rev() {
+        str_writer.as_mut().write_str("_").unwrap();
+        assert_eq!(str_writer.remaining_capacity(), i);
+    }
+    assert_eq!(str_writer.remaining_capacity(), 0);
+    assert_eq!(str_writer.as_str(), &underscored[..str_writer.capacity()]);
+
+    str_writer.truncate(5).unwrap();
+    assert_eq!(str_writer.remaining_capacity(), CAP - 5);
+}
+
+#[test]
 fn truncation() {
     let str_writer: &mut StrWriter = &mut StrWriter::new([0; 4096]);
     let mut writer = str_writer.as_mut();
@@ -463,6 +488,22 @@ fn truncation() {
 
     writer.truncate(5).unwrap();
     assert_eq!(writer.len(), 0);
+}
+
+#[test]
+fn as_bytes() {
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
+    let mut string = String::new();
+
+    for i in 0..512 {
+        let ascii_char = ((i % 61) + 32) as u8;
+        writer.as_mut().write_ascii_repeated(ascii_char, 1).unwrap();
+        string.push(ascii_char as char);
+
+        assert_eq!(writer.as_bytes(), string.as_bytes());
+        assert_eq!(writer.as_bytes_alt(), string.as_bytes());
+        assert_eq!(writer.as_str(), string.as_str());
+    }
 }
 
 #[test]

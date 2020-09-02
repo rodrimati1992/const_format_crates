@@ -185,7 +185,7 @@ mod tests {
     }
     #[test]
     fn asciistr_tests() {
-        const ASCII: AsciiStr = ascii_str!(S);
+        const ASCII: AsciiStr<'_> = ascii_str!(S);
         generate_test!(ASCII);
     }
 }

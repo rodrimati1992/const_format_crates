@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __declare_rng_ext {
