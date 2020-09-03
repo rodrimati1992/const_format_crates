@@ -1,10 +1,10 @@
 [package]
 name = "const_format"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
-description = "Concatenate/format contants into `&'static str` constants."
+description = "Compile-time string formatting"
 documentation = "https://docs.rs/const_format/"
 readme="../README.md"
 keywords = ["no-std", "format", "concat"]

@@ -84,7 +84,9 @@ and then format the type into a `&'static str` constant.
 
 This example requires Rust nightly, and the "derive" feature.
 
+
 ```rust
+
 #![feature(const_mut_refs)]
 
 use const_format::{ConstDebug, formatc};
@@ -111,6 +113,7 @@ assert_eq!(
 );
 
 ```
+
 
 ### Formatted const panics
 
