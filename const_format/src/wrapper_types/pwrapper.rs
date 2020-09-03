@@ -14,6 +14,13 @@ mod tests;
 /// The macros from this crate automatically wraps std types in this type,
 /// so you only need to use it if you're manually calling the `const_*_fmt` methods.
 ///
+/// ### Constructors
+///
+/// Most std types can be wrapped in this type simply by doing `PWrapper(value)`.
+///
+/// To wrap arrays, there is the [`PWrapper::slice`](#method.slice) constructor
+/// for convenience.
+///
 /// ### Excluded std types
 ///
 /// Note that this type does not implement the formatting methods for all std types,
@@ -394,7 +401,7 @@ impl PWrapper<Integer> {
 }
 
 impl PWrapper<&[u8]> {
-    /// Computes how much space is necessary to write `&self.0[range]` as a utf8 string,
+    /// Computes how much space is necessary to write the wrapped `&[u8]` as a utf8 string,
     /// with debug formatting
     pub const fn compute_utf8_debug_len(self) -> usize {
         self.compute_utf8_debug_len_in_range(0..self.0.len())

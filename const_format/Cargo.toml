@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -33,7 +33,7 @@ only_new_tests = ["testing"]
 all = ["fmt", "derive", "constant_time_as_str"]
 
 [dependencies.const_format_proc_macros]
-version = "=0.1.0"
+version = "=0.2.0"
 path = "../const_format_proc_macros"
 
 [dev-dependencies]

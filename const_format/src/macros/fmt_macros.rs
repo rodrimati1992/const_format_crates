@@ -233,7 +233,7 @@ macro_rules! formatcp {
     );
 }
 
-/// Formats constants into a `&'static str`.
+/// Formats constants of standard library and/or user-defined types into a `&'static str`.
 ///
 /// # Syntax
 ///
@@ -288,7 +288,7 @@ macro_rules! formatc {
     });
 }
 
-/// Writes some formatted text into a buffer.
+/// Writes some formatted standard library and/or user-defined types into a buffer.
 ///
 /// This macro evaluates to a `Result<(), const_format::Error>` which must be handled.
 ///

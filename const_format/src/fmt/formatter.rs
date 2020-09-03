@@ -108,11 +108,15 @@ enum WriterBackend<'w> {
 ///
 /// This type can be constructed in these ways:
 ///
-/// - From a pair of `&mut StrWriter<_>` and [`FormattingFlags`],
+/// - From a pair of mutable reference to a [`StrWriter`] and a [`FormattingFlags`],
 /// with the [`from_sw`] constructor.
 ///
-/// - From a pair of `StrWriterMut<_>` and [`FormattingFlags`],
+/// - From a pair of [`StrWriterMut`] and [`FormattingFlags`],
 /// with the [`from_sw_mut`] constructor.
+///
+/// - From a [`ComputeStrLength`], by calling its
+/// [`make_formatter`](./struct.ComputeStrLength.html#method.make_formatter) method.
+/// This allows computing the length of formatted output without writing to anything.
 ///
 /// - From a triple of `[u8]` and `usize` mutable references, and a [`FormattingFlags`],
 /// with the [`from_custom_cleared`] constructor,
@@ -129,10 +133,9 @@ enum WriterBackend<'w> {
 ///
 /// # Examples
 ///
-/// ### Debug and Display formatting
+/// ### Display formatting
 ///
-/// This example demonstrates how you can do display and/or debug-like formatting
-/// with a Formatter.
+/// This example demonstrates how you can do display formatting with a Formatter.
 ///
 /// If you want to write a braced struct/variant you can use [`DebugStruct`],
 /// or [`DebugTuple`] for tuple structs/variants.
@@ -156,17 +159,7 @@ enum WriterBackend<'w> {
 ///         try_!(f.write_str("\n\n\n...figters"));
 ///         Ok(())
 ///     }
-///     
-///     const fn const_debug_fmt(&self, mut f: Formatter<'_>) -> Result<(), Error> {
-///         let string = "foo bar baz";
-///         try_!(f.write_u8_debug(100));
-///         try_!(f.write_str_range_debug(string, 8..usize::MAX));
-///         try_!(f.write_str_debug("\n\n\n...figters"));
-///         Ok(())
-///     }
 /// }
-///
-///
 ///
 /// // We have to coerce `&mut StrWriter<[u8; 256]>` to `&mut StrWriter` to call the
 /// // `make_formatter` method.
@@ -179,15 +172,6 @@ enum WriterBackend<'w> {
 /// Foo.const_display_fmt(writer.make_formatter(flags));
 ///
 /// assert_eq!(writer.as_str(), "100 bar\n\n\n...figters");
-///
-/// writer.clear();
-///
-/// Foo.const_debug_fmt(writer.make_formatter(flags)).unwrap();
-/// // Another way to write the above
-/// // writec!(writer, "{:b?}", Foo).unwrap();
-///
-/// assert_eq!(writer.as_str(), "1100100\"baz\"\"\\n\\n\\n...figters\"");
-///
 /// ```
 ///
 /// <span id = "write_array_example"></span>
@@ -225,6 +209,9 @@ enum WriterBackend<'w> {
 ///
 /// [`DebugStruct`]: ./struct.DebugStruct.html
 /// [`DebugTuple`]: ./struct.DebugTuple.html
+/// [`StrWriter`]: ./struct.StrWriter.html
+/// [`StrWriterMut`]: ./struct.StrWriterMut.html
+/// [`ComputeStrLength`]: ./struct.ComputeStrLength.html
 /// [`from_sw`]: #method.from_sw
 /// [`from_sw_mut`]: #method.from_sw_mut
 /// [`from_custom_cleared`]: #method.from_custom_cleared

@@ -54,7 +54,6 @@ use core::marker::PhantomData;
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]
-/// #![feature(const_panic)]
 ///
 /// use const_format::{StrWriter, strwriter_as_str, writec, unwrap};
 ///

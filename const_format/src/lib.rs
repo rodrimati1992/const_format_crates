@@ -112,7 +112,7 @@
 //!
 //! ### Formatted const panics
 //!
-//! This example demonstrates how you can use the StrWriter to format
+//! This example demonstrates how you can use a [`StrWriter`] to format
 //! a compile-time panic message.
 //!
 //! As of writing these docs (2020-08-29), panicking at compile-time requires a
