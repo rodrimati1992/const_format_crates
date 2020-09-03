@@ -2,10 +2,27 @@ use proc_macro::TokenStream as TokenStream1;
 
 use proc_macro2::TokenStream as TokenStream2;
 
+#[cfg(feature = "derive")]
+#[macro_use]
+mod macros;
+
+mod concat_macro_parsing;
+
+#[cfg(feature = "derive")]
+mod datastructure;
+
+mod error;
+
+#[cfg(feature = "derive")]
+mod derive_debug;
+
 mod format_args;
+
 mod format_str_parsing;
 
 mod format_macro;
+
+mod formatting;
 
 mod parse_utils;
 
@@ -13,6 +30,26 @@ mod utils;
 
 #[cfg(test)]
 mod test_utils;
+
+use crate::error::Error;
+use crate::parse_utils::MyParse;
+
+fn compile_err_empty_str(e: crate::Error) -> TokenStream2 {
+    let e = e.to_compile_error();
+    quote::quote!({
+        #e;
+        ""
+    })
+}
+
+#[doc(hidden)]
+#[proc_macro]
+pub fn __concatcp_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::concatcp_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
 
 /// Input syntax: `"format string", (arg0), (name = arg1)` (with optional trailing comma).
 ///
@@ -24,27 +61,36 @@ mod test_utils;
 #[doc(hidden)]
 #[proc_macro]
 pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
-    syn::parse(input)
-        .and_then(format_macro::macro_impl)
-        .unwrap_or_else(|e| {
-            let e = e.to_compile_error();
-            quote::quote!({
-                #e;
-                ""
-            })
-        })
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::formatcp_impl)
+        .unwrap_or_else(compile_err_empty_str)
         .into()
 }
 
-#[allow(dead_code)]
-fn parse_or_compile_err<P, F>(input: TokenStream1, f: F) -> TokenStream2
-where
-    P: syn::parse::Parse,
-    F: FnOnce(P) -> Result<TokenStream2, syn::Error>,
-{
-    // println!("{}", input);
+#[doc(hidden)]
+#[proc_macro]
+pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::formatc_macro_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
 
-    syn::parse::<P>(input)
-        .and_then(f)
+#[doc(hidden)]
+#[proc_macro]
+pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::writec_macro_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
+
+#[cfg(feature = "derive")]
+#[proc_macro_derive(ConstDebug, attributes(cdeb))]
+pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
+    syn::parse(input)
+        .map_err(crate::Error::from)
+        .and_then(derive_debug::derive_constdebug_impl)
         .unwrap_or_else(|e| e.to_compile_error())
+        .into()
 }

@@ -2,17 +2,22 @@ use super::*;
 
 use super::{ParseError as PE, ParseErrorKind as PEK};
 
+use crate::formatting::{FormattingFlags as FF, IsAlternate};
+
 use fastrand::Rng;
 
 use std::ops::RangeInclusive;
 
 fn err(s: &'static str) -> ParseError {
-    <FormatStr as FromStr>::from_str(s).unwrap_err()
+    FormatStr::parse(s, StrRawness::dummy()).unwrap_err()
 }
 
 fn ok(s: &'static str) -> FormatStr {
-    <FormatStr as FromStr>::from_str(s).unwrap()
+    FormatStr::parse(s, StrRawness::dummy()).unwrap()
 }
+
+const NOALT: IsAlternate = IsAlternate::No;
+const NFDEC: NumberFormatting = NumberFormatting::Decimal;
 
 #[test]
 fn unclosed_arg() {
@@ -145,10 +150,10 @@ fn ok_cases() {
         ok("{{{100}}}{200:}{300:?}").list,
         vec![
             FmtStrComponent::str("{"),
-            FmtStrComponent::arg(WhichArg::Positional(Some(100)), Formatting::Display),
+            FmtStrComponent::arg(WhichArg::Positional(Some(100)), FF::display(NOALT)),
             FmtStrComponent::str("}"),
-            FmtStrComponent::arg(WhichArg::Positional(Some(200)), Formatting::Display),
-            FmtStrComponent::arg(WhichArg::Positional(Some(300)), Formatting::Debug),
+            FmtStrComponent::arg(WhichArg::Positional(Some(200)), FF::display(NOALT)),
+            FmtStrComponent::arg(WhichArg::Positional(Some(300)), FF::debug(NFDEC, NOALT)),
         ]
     );
 
@@ -156,10 +161,10 @@ fn ok_cases() {
         ok("{{{}}}{:}{:?}").list,
         vec![
             FmtStrComponent::str("{"),
-            FmtStrComponent::arg(WhichArg::Positional(None), Formatting::Display),
+            FmtStrComponent::arg(WhichArg::Positional(None), FF::display(NOALT)),
             FmtStrComponent::str("}"),
-            FmtStrComponent::arg(WhichArg::Positional(None), Formatting::Display),
-            FmtStrComponent::arg(WhichArg::Positional(None), Formatting::Debug),
+            FmtStrComponent::arg(WhichArg::Positional(None), FF::display(NOALT)),
+            FmtStrComponent::arg(WhichArg::Positional(None), FF::debug(NFDEC, NOALT)),
         ]
     );
 
@@ -167,10 +172,10 @@ fn ok_cases() {
         ok("{{{AA}}}{BB:}{CC:?}").list,
         vec![
             FmtStrComponent::str("{"),
-            FmtStrComponent::arg(WhichArg::ident("AA"), Formatting::Display),
+            FmtStrComponent::arg(WhichArg::ident("AA"), FF::display(NOALT)),
             FmtStrComponent::str("}"),
-            FmtStrComponent::arg(WhichArg::ident("BB"), Formatting::Display),
-            FmtStrComponent::arg(WhichArg::ident("CC"), Formatting::Debug),
+            FmtStrComponent::arg(WhichArg::ident("BB"), FF::display(NOALT)),
+            FmtStrComponent::arg(WhichArg::ident("CC"), FF::debug(NFDEC, NOALT)),
         ]
     );
 
@@ -178,11 +183,11 @@ fn ok_cases() {
         ok("AA {BB} CC {__:}{_aA0ñÑóö:}{FF:?} EE").list,
         vec![
             FmtStrComponent::str("AA "),
-            FmtStrComponent::arg(WhichArg::ident("BB"), Formatting::Display),
+            FmtStrComponent::arg(WhichArg::ident("BB"), FF::display(NOALT)),
             FmtStrComponent::str(" CC "),
-            FmtStrComponent::arg(WhichArg::ident("__"), Formatting::Display),
-            FmtStrComponent::arg(WhichArg::ident("_aA0ñÑóö"), Formatting::Display),
-            FmtStrComponent::arg(WhichArg::ident("FF"), Formatting::Debug),
+            FmtStrComponent::arg(WhichArg::ident("__"), FF::display(NOALT)),
+            FmtStrComponent::arg(WhichArg::ident("_aA0ñÑóö"), FF::display(NOALT)),
+            FmtStrComponent::arg(WhichArg::ident("FF"), FF::debug(NFDEC, NOALT)),
             FmtStrComponent::str(" EE"),
         ]
     );

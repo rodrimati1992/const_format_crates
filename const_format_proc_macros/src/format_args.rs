@@ -1,10 +1,8 @@
-use crate::format_str_parsing::{FormatStr, Formatting};
+use crate::{format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness};
 
-use proc_macro2::{Span, TokenStream as TokenStream2};
+use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 
-use quote::quote;
-
-use syn::{punctuated::Punctuated, Ident, Token};
+use quote::{quote, quote_spanned};
 
 ////////////////////////////////////////////////
 
@@ -15,7 +13,7 @@ mod parsing;
 struct UncheckedFormatArgs {
     format_str_span: Span,
     literal: FormatStr,
-    args: Punctuated<UncheckedFormatArg, Token!(,)>,
+    args: Vec<UncheckedFormatArg>,
 }
 
 struct UncheckedFormatArg {
@@ -31,13 +29,19 @@ pub(crate) struct FormatArgs {
     pub(crate) expanded_into: Vec<ExpandInto>,
 }
 
+/// The arguments of `writec`
+pub(crate) struct WriteArgs {
+    pub(crate) writer_expr: TokenStream2,
+    pub(crate) format_args: FormatArgs,
+}
+
 pub(crate) enum ExpandInto {
-    Str(String),
+    Str(String, StrRawness),
     Formatted(ExpandFormatted),
 }
 
 pub(crate) struct ExpandFormatted {
-    pub(crate) format: Formatting,
+    pub(crate) format: FormattingFlags,
     pub(crate) local_variable: Ident,
 }
 
@@ -53,11 +57,50 @@ pub(crate) struct FormatArg {
 
 ////////////////////////////////////////////////
 
-impl Formatting {
-    pub(crate) fn tokens(&self, root_mod: &TokenStream2) -> TokenStream2 {
+impl ExpandInto {
+    pub(crate) fn formatting_flags(&self) -> FormattingFlags {
         match self {
-            Formatting::Display => quote!(#root_mod::pmr::Formatting::Display),
-            Formatting::Debug => quote!(#root_mod::pmr::Formatting::Debug),
+            Self::Str { .. } => FormattingFlags::NEW,
+            Self::Formatted(fmted) => fmted.format,
+        }
+    }
+    pub(crate) fn len_call(&self, strlen: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags();
+        match self {
+            ExpandInto::Str(str, _) => {
+                let len = str.len();
+                quote!( #strlen.add_len(#len); )
+            }
+            ExpandInto::Formatted(fmted) => {
+                let len_method = fmted.format.len_method_name();
+                let local_variable = &fmted.local_variable;
+                let span = local_variable.span();
+
+                quote_spanned!(span=>
+                    let _ = __cf_osRcTFl4A::coerce_to_fmt!(#local_variable)
+                        .#len_method(&mut #strlen.make_formatter(#flags));
+                )
+            }
+        }
+    }
+    pub(crate) fn fmt_call(&self, formatter: &Ident) -> TokenStream2 {
+        let flags = self.formatting_flags();
+        match self {
+            ExpandInto::Str(str, rawness) => {
+                let str_tokens = rawness.tokenize_sub(str);
+
+                quote_spanned!(rawness.span()=> #formatter.write_str(#str_tokens) )
+            }
+            ExpandInto::Formatted(fmted) => {
+                let fmt_method = fmted.format.fmt_method_name();
+                let local_variable = &fmted.local_variable;
+                let span = local_variable.span();
+
+                quote_spanned!(span=>
+                    __cf_osRcTFl4A::coerce_to_fmt!(&#local_variable)
+                        .#fmt_method(&mut #formatter.make_formatter(#flags))
+                )
+            }
         }
     }
 }

@@ -6,8 +6,8 @@ os:
   - windows
 
 rust: 
-  # Remember to uncomment after 2020-08-27
-  # - rust: 1.46.0
+  - 1.46.0
+  - stable
   - beta
   - nightly
 
@@ -20,9 +20,13 @@ matrix:
         - cd "${TRAVIS_BUILD_DIR}/const_format_proc_macros/"
         - cargo test
 
-
         - cd "${TRAVIS_BUILD_DIR}/const_format/"
-        - cargo build --tests
+        
+        - cargo test --features "testing"
+        - cargo test --features "testing fmt"
+        - cargo test --features "testing derive"
+        - cargo test --features "testing constant_time_as_str"
+        - cargo test --features "testing derive constant_time_as_str"
 
         - MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)
         - echo "Installing latest nightly with Miri"
@@ -33,11 +37,14 @@ matrix:
         - rustup component add miri
         - cargo miri setup
 
-        - cargo test 
-
         - cargo clean 
 
-        - cargo miri test
+        - cargo miri test --features "testing"
+        - cargo miri test --features "testing fmt"
+        - cargo miri test --features "testing derive"
+        - cargo miri test --features "testing constant_time_as_str"
+        - cargo miri test --features "testing derive constant_time_as_str"
+
 
 script:
   - cargo update
@@ -46,6 +53,6 @@ script:
   - cargo test
 
   - cd "${TRAVIS_BUILD_DIR}/const_format/"
-  - cargo test
+  - cargo test --features "testing"
 
 

@@ -1,27 +1,98 @@
-use proc_macro2::{Span, TokenStream as TokenStream2, TokenTree};
+use crate::{utils::Peekable2, Error};
 
-use syn::parse::{Parse, ParseBuffer, ParseStream, Parser};
+use proc_macro2::{
+    token_stream::IntoIter, Delimiter, Group, Ident, Punct, Span, TokenStream as TokenStream2,
+    TokenTree as TokenTree2,
+};
 
-pub(crate) trait ParseBufferExt {
-    fn as_parse_buffer(&self) -> &ParseBuffer<'_>;
+use std::{cmp::PartialEq, ops::Range};
 
-    fn parse_token_stream_and_span(&self) -> (TokenStream2, Span) {
-        let input = self.as_parse_buffer();
-        let mut span = input.span();
-        let ts = std::iter::from_fn(|| {
-            if input.is_empty() {
-                None
-            } else {
-                if let Some(x) = span.join(input.span()) {
-                    span = x;
-                }
+pub type ParseStream<'a> = &'a mut ParseBuffer;
 
-                let tt = input
-                    .parse::<proc_macro2::TokenTree>()
-                    .expect("A non-empty ParseStream cannot fail to parse a TokenTree");
+pub struct ParseBuffer {
+    iter: Peekable2<IntoIter>,
+}
 
-                Some(tt)
+impl ParseBuffer {
+    pub fn new(ts: TokenStream2) -> Self {
+        let iter = Peekable2::new(ts);
+        Self { iter }
+    }
+
+    pub fn next(&mut self) -> Option<TokenTree2> {
+        self.iter.next()
+    }
+
+    pub fn is_empty(&mut self) -> bool {
+        self.iter.is_empty()
+    }
+
+    pub fn peek(&mut self) -> Option<&TokenTree2> {
+        self.iter.peek()
+    }
+    pub fn peek2(&mut self) -> Option<&TokenTree2> {
+        self.iter.peek2()
+    }
+
+    pub fn parse_punct(&mut self, c: char) -> Result<Punct, crate::Error> {
+        match self.next() {
+            Some(TokenTree2::Punct(x)) if x.as_char() == c => Ok(x),
+            Some(x) => Err(Error::new(x.span(), &format!("Expected a '{}' token", c))),
+            None => Err(Error::new(
+                Span::mixed_site(),
+                &format!("Expected a '{}' token", c),
+            )),
+        }
+    }
+
+    pub fn parse_litstr(&mut self) -> Result<LitStr, crate::Error> {
+        self.parse_unwrap_tt(|input| match input.next() {
+            Some(TokenTree2::Literal(x)) => LitStr::parse_from_literal(&x),
+            Some(x) => Err(Error::new(x.span(), "Expected a string literal")),
+            None => Err(Error::new(Span::mixed_site(), "Expected a string literal")),
+        })
+    }
+
+    pub fn parse_ident(&mut self) -> Result<Ident, crate::Error> {
+        match self.next() {
+            Some(TokenTree2::Ident(x)) => Ok(x),
+            Some(x) => Err(Error::new(x.span(), "Expected an identifier")),
+            None => Err(Error::new(Span::mixed_site(), "Expected an identifier")),
+        }
+    }
+
+    pub fn parse_paren(&mut self) -> Result<Parentheses, crate::Error> {
+        match self.next() {
+            Some(TokenTree2::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
+                Ok(Parentheses {
+                    paren_span: group.span(),
+                    contents: group.stream(),
+                })
             }
+            Some(x) => Err(Error::new(
+                x.span(),
+                &format!("Expected an argument: found {}", x),
+            )),
+            None => Err(Error::new(
+                Span::mixed_site(),
+                "Expected an argument, found nothing",
+            )),
+        }
+    }
+
+    pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Span) {
+        let mut span = match self.peek() {
+            Some(x) => x.span(),
+            None => Span::call_site(),
+        };
+        let ts = std::iter::from_fn(|| {
+            let tt = self.next()?;
+
+            if let Some(x) = span.join(tt.span()) {
+                span = x;
+            }
+
+            Some(tt)
         })
         .collect::<TokenStream2>();
 
@@ -31,56 +102,239 @@ pub(crate) trait ParseBufferExt {
     /// Unwraps a none-delimited token tree to parse a type,
     /// if the first token is not a none-delimited token tree it parses the type in
     /// the passed in ParseStream.
-    fn parse_unwrap_tt<F, T>(&self, f: F) -> Result<T, syn::Error>
+    pub fn parse_unwrap_tt<F, T>(&mut self, f: F) -> Result<T, crate::Error>
     where
-        F: FnOnce(ParseStream) -> Result<T, syn::Error>,
-        T: Parse,
+        F: FnOnce(ParseStream<'_>) -> Result<T, crate::Error>,
     {
-        let input = self.as_parse_buffer();
-        if input.peek(syn::token::Group) {
-            if let TokenTree::Group(group) = input.parse::<TokenTree>()? {
-                Parser::parse2(f, group.stream())
+        if matches!(self.peek(), Some(TokenTree2::Group(x)) if x.delimiter() == Delimiter::None ) {
+            if let Some(TokenTree2::Group(group)) = self.next() {
+                ParseBuffer::new(group.stream()).parse_unwrap_tt(f)
             } else {
-                unreachable!("But I peeked for a syn::Token::Group!!")
+                unreachable!("But I peeked for a None delimited TokenTree::Group!!")
             }
         } else {
-            f(input)
+            f(self)
         }
     }
 }
 
-impl ParseBufferExt for ParseBuffer<'_> {
-    #[inline(always)]
-    fn as_parse_buffer(&self) -> &ParseBuffer<'_> {
+///////////////////////////////////////////////////////////////////////////////
+
+pub struct Parentheses {
+    #[allow(dead_code)]
+    pub paren_span: Span,
+    pub contents: TokenStream2,
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+pub struct LitStr {
+    value: String,
+    pub rawness: StrRawness,
+    pub inside_lit: Range<usize>,
+    pub span: Span,
+}
+
+impl LitStr {
+    pub fn value(&self) -> &str {
+        &self.value[self.inside_lit.clone()]
+    }
+    fn parse_from_literal(literal: &proc_macro2::Literal) -> Result<Self, Error> {
+        let mut value = literal.to_string();
+        // Ignoring the quote characters
+        let mut range = 1..value.len() - 1;
+        let span = literal.span();
+
+        let is_raw = if value.starts_with("r") {
+            let hashes = value[1..].bytes().take_while(|x| *x == b'#').count();
+
+            if value.as_bytes()[1 + hashes] != b'"' {
+                return Err(Error::new(
+                    span,
+                    &format!("Expected a string literal, found: {}", literal),
+                ));
+            }
+
+            // Ignoring the r and hashes
+            range.start += 1 + hashes;
+            range.end -= hashes;
+            Some(hashes as u32)
+        } else {
+            let mut matches = value.match_indices(r#"\u"#).peekable();
+            if matches.peek().is_some() {
+                let mut prev_end = 0;
+                let mut new = String::with_capacity(value.len());
+
+                for (pos, _) in matches {
+                    new.push_str(&value[prev_end..pos]);
+
+                    let past_open = pos + 3;
+
+                    let off_close = value[pos..].find('}').unwrap();
+
+                    let c = &value[past_open..pos + off_close];
+                    let c = u32::from_str_radix(c, 16).unwrap();
+                    let c = std::char::from_u32(c).unwrap();
+
+                    // if matches!(c, '\\' | '"') {
+                    //     new.push('\\');
+                    // }
+                    new.push(c);
+
+                    prev_end = pos + off_close + 1;
+                }
+                new.push_str(&value[prev_end..]);
+                value = new;
+            }
+
+            range = 1..value.len() - 1;
+
+            None
+        };
+
+        Ok(Self {
+            value,
+            rawness: StrRawness { is_raw, span },
+            inside_lit: range,
+            span,
+        })
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct StrRawness {
+    is_raw: Option<u32>,
+    span: Span,
+}
+
+impl PartialEq for StrRawness {
+    fn eq(&self, other: &Self) -> bool {
+        self.is_raw == other.is_raw
+    }
+}
+
+impl StrRawness {
+    #[cfg(test)]
+    pub fn dummy() -> Self {
+        Self {
+            is_raw: Some(4),
+            span: Span::mixed_site(),
+        }
+    }
+
+    pub fn span(&self) -> Span {
+        self.span
+    }
+
+    /// Tokenizes a slice of the parsed string literal.
+    pub fn tokenize_sub(&self, str: &str) -> TokenStream2 {
+        let mut buffer = String::new();
+        match self.is_raw {
+            Some(hashes) => {
+                let hashes = hashes as usize;
+                buffer.reserve(3 + hashes + str.len() + hashes);
+                buffer.push('r');
+                let hashes = (0..hashes).map(|_| '#');
+                buffer.extend(hashes.clone());
+                buffer.push('"');
+                buffer.push_str(str);
+                buffer.push('"');
+                buffer.extend(hashes.clone());
+            }
+            None => {
+                buffer.reserve(2 + str.len());
+                buffer.push('"');
+                buffer.push_str(str);
+                buffer.push('"');
+            }
+        }
+
+        buffer
+            .parse::<TokenStream2>()
+            .unwrap()
+            .set_span_recursive(self.span)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+pub trait TokenTreeExt {
+    fn as_token_tree(&self) -> &TokenTree2;
+
+    fn is_punct(&self, c: char) -> bool {
+        matches!(self.as_token_tree(), TokenTree2::Punct(p)  if p.as_char() == c)
+    }
+}
+
+impl TokenTreeExt for TokenTree2 {
+    fn as_token_tree(&self) -> &TokenTree2 {
         self
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
+pub trait TokenStream2Ext: Sized {
+    fn into_token_stream(self) -> TokenStream2;
+
+    fn set_span_recursive(self, span: Span) -> TokenStream2 {
+        self.into_token_stream()
+            .into_iter()
+            .map(|mut tt| {
+                tt.set_span(span);
+                if let TokenTree2::Group(group) = tt {
+                    let delim = group.delimiter();
+                    let stream = group.stream().set_span_recursive(span);
+                    tt = TokenTree2::Group(Group::new(delim, stream));
+                }
+                tt.set_span(span);
+                tt
+            })
+            .collect()
+    }
+}
+
+impl TokenStream2Ext for TokenStream2 {
+    fn into_token_stream(self) -> TokenStream2 {
+        self
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+pub trait MyParse: Sized {
+    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error>;
+    fn parse_token_stream_1(input: proc_macro::TokenStream) -> Result<Self, crate::Error> {
+        Self::parse(&mut ParseBuffer::new(TokenStream2::from(input)))
+    }
+    fn parse_token_stream_2(input: TokenStream2) -> Result<Self, crate::Error> {
+        Self::parse(&mut ParseBuffer::new(input))
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Configuration for all function-like proc macros,
 /// parsed from the first tokens of function-like proc macros.
-pub(crate) struct WithProcMacroArgs<P> {
+pub struct WithProcMacroArgs<P> {
     /// The path to the `const_format` crate
-    pub(crate) crate_path: TokenStream2,
+    pub crate_path: TokenStream2,
 
-    pub(crate) value: P,
+    pub value: P,
 }
 
-impl<P> Parse for WithProcMacroArgs<P>
+impl<P> MyParse for WithProcMacroArgs<P>
 where
-    P: Parse,
+    P: MyParse,
 {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
-        let content;
-        let _ = syn::parenthesized!(content in input);
+    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
+        let paren = input.parse_paren()?;
+
+        let mut content = ParseBuffer::new(paren.contents);
 
         let crate_path = {
-            let inside;
-            let _ = syn::parenthesized!(inside in content);
-            inside.parse::<TokenStream2>().unwrap()
+            let paren = content.parse_paren()?;
+            paren.contents
         };
 
         Ok(Self {

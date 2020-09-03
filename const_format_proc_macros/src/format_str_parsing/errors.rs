@@ -70,14 +70,14 @@ impl ParseError {
         self.pos..self.pos + len
     }
 
-    pub(crate) fn into_syn_err(self, span: Span, original_str: &str) -> syn::Error {
+    pub(crate) fn into_crate_err(self, span: Span, original_str: &str) -> crate::Error {
         let display = DisplayParseError {
             str: original_str,
             error_span: self.error_span(),
             kind: self.kind,
         };
 
-        syn::Error::new(span, display)
+        crate::Error::new(span, display)
     }
 }
 
