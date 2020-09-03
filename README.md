@@ -1,3 +1,5 @@
+
+
 [![Build Status](https://travis-ci.org/rodrimati1992/const_format_crates.svg?branch=master)](https://travis-ci.org/rodrimati1992/const_format_crates)
 [![crates-io](https://img.shields.io/crates/v/const_format.svg)](https://crates.io/crates/const_format)
 [![api-docs](https://docs.rs/const_format/badge.svg)](https://docs.rs/const_format/*)
@@ -73,7 +75,7 @@ const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
 
 assert_eq!(FOO, "John, age 24!");
 
-# const fn compute_age(s: &str) -> usize { s.len() * 6 }
+const fn compute_age(s: &str) -> usize { s.len() * 6 }
 
 ```
 
@@ -84,8 +86,9 @@ and then format the type into a `&'static str` constant.
 
 This example requires Rust nightly, and the "derive" feature.
 
+
 ```rust
-#![feature(const_mut_refs)]
+    #![feature(const_mut_refs)]
 
 use const_format::{ConstDebug, formatc};
 
@@ -112,6 +115,7 @@ assert_eq!(
 
 ```
 
+
 ### Formatted const panics
 
 This example demonstrates how you can use a [`StrWriter`] to format
@@ -122,8 +126,8 @@ nightly feature, and only supports passing a `&'static str` argument,
 so this only works in the initialization block of `const` items.
 
 ```rust
-#![feature(const_mut_refs)]
-#![feature(const_panic)]
+    #![feature(const_mut_refs)]
+    #![feature(const_panic)]
 
 use const_format::{StrWriter, strwriter_as_str, writec};
 use const_format::utils::str_eq;
@@ -173,7 +177,7 @@ const _: () = {
 
 This is what it prints in rust nightly :
 
-```rust
+```
 error: any use of this value will cause an error
   --> src/lib.rs:166:9
    |
@@ -231,6 +235,7 @@ assert_eq!(const_format::concatcp!(2u32, 2 + 1u8, 3u8 + 1), "234");
 ```
 
 Example of what does not compile:
+
 ```compile_fail
 assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 ```
@@ -262,29 +267,29 @@ Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
 
-[`concatcp`]: https://docs.rs/const_format/0.2.0/const_format/macro.concatcp.html
+[`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
 
-[`formatcp`]: https://docs.rs/const_format/0.2.0/const_format/macro.formatcp.html
+[`formatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatcp.html
 
 [`format`]: https://doc.rust-lang.org/std/macro.format.html
 
 [`std::fmt`]: https://doc.rust-lang.org/std/fmt/index.html
 
-[`const_format::fmt`]: https://docs.rs/const_format/0.2.0/const_format/fmt/index.html
+[`const_format::fmt`]: https://docs.rs/const_format/0.2.*/const_format/fmt/index.html
 
-[`formatc`]: https://docs.rs/const_format/0.2.0/const_format/macro.formatc.html
+[`formatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatc.html
 
-[`writec`]: https://docs.rs/const_format/0.2.0/const_format/macro.writec.html
+[`writec`]: https://docs.rs/const_format/0.2.*/const_format/macro.writec.html
 
 [`write`]: https://doc.rust-lang.org/std/macro.write.html
 
-[`Formatter`]: https://docs.rs/const_format/0.2.0/const_format/fmt/struct.Formatter.html
+[`Formatter`]: https://docs.rs/const_format/0.2.*/const_format/fmt/struct.Formatter.html
 
-[`StrWriter`]: https://docs.rs/const_format/0.2.0/const_format/fmt/struct.StrWriter.html
+[`StrWriter`]: https://docs.rs/const_format/0.2.*/const_format/fmt/struct.StrWriter.html
 
-[`ConstDebug`]: https://docs.rs/const_format/0.2.0/const_format/derive.ConstDebug.html
+[`ConstDebug`]: https://docs.rs/const_format/0.2.*/const_format/derive.ConstDebug.html
 
-[`FormatMarker`]: https://docs.rs/const_format/0.2.0/const_format/marker_traits/trait.FormatMarker.html
+[`FormatMarker`]: https://docs.rs/const_format/0.2.*/const_format/marker_traits/trait.FormatMarker.html
 
-[`WriteMarker`]: https://docs.rs/const_format/0.2.0/const_format/marker_traits/trait.WriteMarker.html
+[`WriteMarker`]: https://docs.rs/const_format/0.2.*/const_format/marker_traits/trait.WriteMarker.html
 
