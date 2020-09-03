@@ -2,7 +2,7 @@ use crate::{parse_utils::MyParse, test_utils::StrExt};
 
 fn process_str(s: &str) -> Result<String, String> {
     MyParse::parse_token_stream_2(s.parse().unwrap())
-        .and_then(crate::format_macro::macro_impl)
+        .and_then(crate::format_macro::formatcp_impl)
         .map(|x| x.to_string())
         .map_err(|e| e.to_compile_error().to_string())
 }
