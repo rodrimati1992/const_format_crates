@@ -239,6 +239,9 @@ Example of what does not compile:
 ```compile_fail
 assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 ```
+# Plans
+
+- Add assertion macros.
 
 # Cargo features
 
