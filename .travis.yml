@@ -6,7 +6,7 @@ os:
   - windows
 
 rust: 
-  - rust: 1.46.0
+  - 1.46.0
   - stable
   - beta
   - nightly
