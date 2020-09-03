@@ -268,29 +268,29 @@ Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
 
-[`concatcp`]: https://docs.rs/const_format/0.2.0/const_format/macro.concatcp.html
+[`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
 
-[`formatcp`]: https://docs.rs/const_format/0.2.0/const_format/macro.formatcp.html
+[`formatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatcp.html
 
 [`format`]: https://doc.rust-lang.org/std/macro.format.html
 
 [`std::fmt`]: https://doc.rust-lang.org/std/fmt/index.html
 
-[`const_format::fmt`]: https://docs.rs/const_format/0.2.0/const_format/fmt/index.html
+[`const_format::fmt`]: https://docs.rs/const_format/0.2.*/const_format/fmt/index.html
 
-[`formatc`]: https://docs.rs/const_format/0.2.0/const_format/macro.formatc.html
+[`formatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatc.html
 
-[`writec`]: https://docs.rs/const_format/0.2.0/const_format/macro.writec.html
+[`writec`]: https://docs.rs/const_format/0.2.*/const_format/macro.writec.html
 
 [`write`]: https://doc.rust-lang.org/std/macro.write.html
 
-[`Formatter`]: https://docs.rs/const_format/0.2.0/const_format/fmt/struct.Formatter.html
+[`Formatter`]: https://docs.rs/const_format/0.2.*/const_format/fmt/struct.Formatter.html
 
-[`StrWriter`]: https://docs.rs/const_format/0.2.0/const_format/fmt/struct.StrWriter.html
+[`StrWriter`]: https://docs.rs/const_format/0.2.*/const_format/fmt/struct.StrWriter.html
 
-[`ConstDebug`]: https://docs.rs/const_format/0.2.0/const_format/derive.ConstDebug.html
+[`ConstDebug`]: https://docs.rs/const_format/0.2.*/const_format/derive.ConstDebug.html
 
-[`FormatMarker`]: https://docs.rs/const_format/0.2.0/const_format/marker_traits/trait.FormatMarker.html
+[`FormatMarker`]: https://docs.rs/const_format/0.2.*/const_format/marker_traits/trait.FormatMarker.html
 
-[`WriteMarker`]: https://docs.rs/const_format/0.2.0/const_format/marker_traits/trait.WriteMarker.html
+[`WriteMarker`]: https://docs.rs/const_format/0.2.*/const_format/marker_traits/trait.WriteMarker.html
 

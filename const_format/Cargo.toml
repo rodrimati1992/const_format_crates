@@ -41,5 +41,5 @@ fastrand = {version = "1.3.5", default_features = false}
 arrayvec = {version = "0.5.1", default_features = false}
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "feature=\"all\""]
+features = ["all"]
 
