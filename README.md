@@ -1,3 +1,5 @@
+
+
 [![Build Status](https://travis-ci.org/rodrimati1992/const_format_crates.svg?branch=master)](https://travis-ci.org/rodrimati1992/const_format_crates)
 [![crates-io](https://img.shields.io/crates/v/const_format.svg)](https://crates.io/crates/const_format)
 [![api-docs](https://docs.rs/const_format/badge.svg)](https://docs.rs/const_format/*)
@@ -73,7 +75,7 @@ const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
 
 assert_eq!(FOO, "John, age 24!");
 
-# const fn compute_age(s: &str) -> usize { s.len() * 6 }
+const fn compute_age(s: &str) -> usize { s.len() * 6 }
 
 ```
 
@@ -86,7 +88,6 @@ This example requires Rust nightly, and the "derive" feature.
 
 
 ```rust
-
 #![feature(const_mut_refs)]
 
 use const_format::{ConstDebug, formatc};
@@ -125,6 +126,7 @@ nightly feature, and only supports passing a `&'static str` argument,
 so this only works in the initialization block of `const` items.
 
 ```rust
+//
 #![feature(const_mut_refs)]
 #![feature(const_panic)]
 
@@ -176,7 +178,7 @@ const _: () = {
 
 This is what it prints in rust nightly :
 
-```rust
+```
 error: any use of this value will cause an error
   --> src/lib.rs:166:9
    |
@@ -234,6 +236,7 @@ assert_eq!(const_format::concatcp!(2u32, 2 + 1u8, 3u8 + 1), "234");
 ```
 
 Example of what does not compile:
+
 ```compile_fail
 assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 ```
