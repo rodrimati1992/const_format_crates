@@ -53,27 +53,17 @@
 #[macro_export]
 macro_rules! concatcp {
     ()=>{""};
-    ($($arg: expr),* $(,)?)=>(
-        $crate::concatcp!(
-            @with_fmt
-            locals()
-            $((to_pargument_display, $crate::pmr::FormattingFlags::DEFAULT, $arg))*
-        )
-    );
-    (@with_fmt
-        locals($(($local:ident, $local_init:expr))*)
-        $(($to_pargument_fn:ident, $fmt:expr, $arg: expr))*
-    )=>({
+    ($($arg: expr),* $(,)?)=>({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
         const CONCATP_NHPMWYD3NJA : (usize, &[$crate::pmr::PArgument]) = {
             let mut len = 0usize;
 
-            $(let $local = $local_init;)*
+            let fmt = $crate::pmr::FormattingFlags::NEW;
 
             let array = [
                 $({
-                    let arg = $crate::pmr::PConvWrapper($arg).$to_pargument_fn($fmt);
+                    let arg = $crate::pmr::PConvWrapper($arg).to_pargument_display(fmt);
                     len += arg.fmt_len;
                     arg
                 }),*
@@ -82,44 +72,45 @@ macro_rules! concatcp {
             (len, &{array})
         };
 
-        {
-            const ARR_LEN: usize = CONCATP_NHPMWYD3NJA.0;
-
-            const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
-                use $crate::{
-                    pmr::PVariant,
-                    __write_pvariant,
-                };
-
-                let mut out = $crate::pmr::LenAndArray{
-                    len: 0,
-                    array: [0u8; ARR_LEN],
-                };
-
-                let input = CONCATP_NHPMWYD3NJA.1;
-
-                $crate::__for_range!{ outer_i in 0..input.len() =>
-                    let current = &input[outer_i];
-
-                    match current.elem {
-                        PVariant::Str(s) => __write_pvariant!(str, current, s => out),
-                        PVariant::Int(int) => __write_pvariant!(int, current, int => out),
-                    }
-                }
-                &{out}
-            };
-            const CONCAT_STR: &str = unsafe{
-                // This transmute truncates the length of the array to the amound of written bytes.
-                let slice =
-                    $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(
-                        &CONCAT_ARR.array,
-                    );
-
-                $crate::pmr::transmute::<&[u8], &str>(slice)
-            };
-            CONCAT_STR
-        }
+        $crate::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
     });
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __concatcp_inner {
+    ($variables:ident) => {{
+        const ARR_LEN: usize = $variables.0;
+
+        const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
+            use $crate::{__write_pvariant, pmr::PVariant};
+
+            let mut out = $crate::pmr::LenAndArray {
+                len: 0,
+                array: [0u8; ARR_LEN],
+            };
+
+            let input = $variables.1;
+
+            $crate::__for_range! { outer_i in 0..input.len() =>
+                let current = &input[outer_i];
+
+                match current.elem {
+                    PVariant::Str(s) => __write_pvariant!(str, current, s => out),
+                    PVariant::Int(int) => __write_pvariant!(int, current, int => out),
+                }
+            }
+            &{ out }
+        };
+        const CONCAT_STR: &str = unsafe {
+            // This transmute truncates the length of the array to the amound of written bytes.
+            let slice =
+                $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
+
+            $crate::pmr::transmute::<&[u8], &str>(slice)
+        };
+        CONCAT_STR
+    }};
 }
 
 /// Formats constants of primitive types into a `&'static str`

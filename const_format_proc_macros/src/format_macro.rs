@@ -1,6 +1,6 @@
 use crate::{
     format_args::{ExpandInto, FormatArgs, WriteArgs},
-    parse_utils::WithProcMacroArgs,
+    parse_utils::{TokenStream2Ext, WithProcMacroArgs},
     Error,
 };
 
@@ -23,31 +23,53 @@ pub(crate) fn macro_impl(
         let local_variable = &arg.local_variable;
         let expr = &arg.expr;
         let span = local_variable.span();
-        quote_spanned!(span=> #local_variable, #expr)
+        quote_spanned!(span=> let #local_variable = #expr;)
     });
 
-    let arg_pairs = fmt_args.expanded_into.iter().map(|ei| match ei {
+    let parg_constructor = fmt_args.expanded_into.iter().map(|ei| match ei {
         ExpandInto::Str(str, rawness) => {
             let str_tokens = rawness.tokenize_sub(str);
-            quote!(to_pargument_display, __cf_osRcTFl4A::pmr::FormattingFlags::NEW, #str_tokens)
+            quote!(
+                __cf_osRcTFl4A::pmr::PConvWrapper(#str_tokens)
+                    .to_pargument_display(__cf_osRcTFl4A::pmr::FormattingFlags::NEW)
+            )
         }
         ExpandInto::Formatted(fmted) => {
             let to_pargument_m = fmted.format.to_pargument_method_name();
             let formatting = fmted.format;
             let local_variable = &fmted.local_variable;
             let span = local_variable.span();
-            quote_spanned!(span=> #to_pargument_m, #formatting, #local_variable)
+            // I had to use `set_span_recursive` to set the span to that of the argument,
+            // quote_span doesn't work for that somehow.
+            quote!(
+                __cf_osRcTFl4A::pmr::PConvWrapper(#local_variable).#to_pargument_m(#formatting)
+            )
+            .set_span_recursive(span)
         }
     });
 
     Ok(quote!(({
         use #cratep as __cf_osRcTFl4A;
 
-        __cf_osRcTFl4A::concatcp!(
-            @with_fmt
-            locals(#( (#locals) )*)
-            #((#arg_pairs)) *
-        )
+        // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+        #[allow(unused_mut, non_snake_case)]
+        const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
+            let mut len = 0usize;
+
+            #( #locals )*
+
+            let array = [
+                #({
+                    let arg = #parg_constructor;
+                    len += arg.fmt_len;
+                    arg
+                }),*
+            ];
+
+            (len, &{array})
+        };
+
+        __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
     })))
 }
 
