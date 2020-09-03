@@ -1,4 +1,5 @@
 use crate::{
+    concat_macro_parsing::{ConcatArg, ConcatArgs},
     format_args::{ExpandInto, FormatArgs, WriteArgs},
     parse_utils::{TokenStream2Ext, WithProcMacroArgs},
     Error,
@@ -13,7 +14,45 @@ mod tests;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) fn macro_impl(
+pub(crate) fn concatcp_impl(
+    args: WithProcMacroArgs<ConcatArgs>,
+) -> Result<TokenStream2, crate::Error> {
+    let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
+
+    let fmt_var = Ident::new("fmt", Span::mixed_site());
+
+    let concat_args = args.value.args.iter().map(|ConcatArg { expr, span }| {
+        quote_spanned!(*span=>
+            __cf_osRcTFl4A::pmr::PConvWrapper(#expr).to_pargument_display(#fmt_var)
+        )
+    });
+
+    Ok(quote!(({
+        use #cratep as __cf_osRcTFl4A;
+
+        // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+        #[allow(unused_mut, non_snake_case)]
+        const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
+            let mut len = 0usize;
+
+            let #fmt_var = __cf_osRcTFl4A::pmr::FormattingFlags::NEW;
+
+            let array = [
+                #({
+                    let arg = #concat_args;
+                    len += arg.fmt_len;
+                    arg
+                }),*
+            ];
+
+            (len, &{array})
+        };
+
+        __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
+    })))
+}
+
+pub(crate) fn formatcp_impl(
     args: WithProcMacroArgs<FormatArgs>,
 ) -> Result<TokenStream2, crate::Error> {
     let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();

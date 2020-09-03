@@ -6,6 +6,8 @@ use proc_macro2::TokenStream as TokenStream2;
 #[macro_use]
 mod macros;
 
+mod concat_macro_parsing;
+
 #[cfg(feature = "derive")]
 mod datastructure;
 
@@ -40,6 +42,15 @@ fn compile_err_empty_str(e: crate::Error) -> TokenStream2 {
     })
 }
 
+#[doc(hidden)]
+#[proc_macro]
+pub fn __concatcp_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::concatcp_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
+
 /// Input syntax: `"format string", (arg0), (name = arg1)` (with optional trailing comma).
 ///
 /// The arguments are parenthesized to not require syn to parse `arg0` and `arg1` as syn::Expr,
@@ -51,7 +62,7 @@ fn compile_err_empty_str(e: crate::Error) -> TokenStream2 {
 #[proc_macro]
 pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
     MyParse::parse_token_stream_1(input)
-        .and_then(format_macro::macro_impl)
+        .and_then(format_macro::formatcp_impl)
         .unwrap_or_else(compile_err_empty_str)
         .into()
 }

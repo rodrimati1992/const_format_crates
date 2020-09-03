@@ -54,26 +54,14 @@
 macro_rules! concatcp {
     ()=>{""};
     ($($arg: expr),* $(,)?)=>({
-        // The suffix is to avoid name collisions with identifiers in the passed-in expression.
-        #[allow(unused_mut, non_snake_case)]
-        const CONCATP_NHPMWYD3NJA : (usize, &[$crate::pmr::PArgument]) = {
-            let mut len = 0usize;
-
-            let fmt = $crate::pmr::FormattingFlags::NEW;
-
-            let array = [
-                $({
-                    let arg = $crate::pmr::PConvWrapper($arg).to_pargument_display(fmt);
-                    len += arg.fmt_len;
-                    arg
-                }),*
-            ];
-
-            (len, &{array})
-        };
-
-        $crate::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
+        $crate::concatcp!(@inner (($crate)), $( ( $arg ), )* )
     });
+    (@inner (($path:path)) $($everything:tt)*  ) => (
+        $crate::pmr::__concatcp_impl!{
+            (($path))
+            $($everything)*
+        }
+    );
 }
 
 #[doc(hidden)]

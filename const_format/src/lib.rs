@@ -357,7 +357,7 @@ pub use crate::wrapper_types::pwrapper::PWrapper;
 
 #[doc(hidden)]
 pub mod pmr {
-    pub use const_format_proc_macros::__formatcp_impl;
+    pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl};
 
     #[cfg(feature = "fmt")]
     pub use const_format_proc_macros::{__formatc_impl, __writec_impl};
