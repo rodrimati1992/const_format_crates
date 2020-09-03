@@ -31,7 +31,7 @@ use core::{marker::PhantomData, ops::Range};
 ///
 /// # Errors
 ///
-/// Every single `writer_*` method returns an `Error::NotEnoughSpace` if
+/// Every single `write_*` method returns an `Error::NotEnoughSpace` if
 /// there is not enough space to write the argument, leaving the string itself unmodified.
 ///
 /// # Encoding type parameter
