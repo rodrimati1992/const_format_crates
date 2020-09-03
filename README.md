@@ -88,7 +88,7 @@ This example requires Rust nightly, and the "derive" feature.
 
 
 ```rust
-#![feature(const_mut_refs)]
+    #![feature(const_mut_refs)]
 
 use const_format::{ConstDebug, formatc};
 
@@ -126,9 +126,8 @@ nightly feature, and only supports passing a `&'static str` argument,
 so this only works in the initialization block of `const` items.
 
 ```rust
-//
-#![feature(const_mut_refs)]
-#![feature(const_panic)]
+    #![feature(const_mut_refs)]
+    #![feature(const_panic)]
 
 use const_format::{StrWriter, strwriter_as_str, writec};
 use const_format::utils::str_eq;
