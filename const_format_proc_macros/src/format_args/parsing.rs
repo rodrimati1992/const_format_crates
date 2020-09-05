@@ -1,15 +1,16 @@
 use super::{
-    ExpandFormatted, ExpandInto, FormatArg, FormatArgs, UncheckedFormatArg, UncheckedFormatArgs,
-    WriteArgs,
+    ExpandFormatted, ExpandInto, FormatArg, FormatArgs, FormatIfArgs, UncheckedFormatArg,
+    UncheckedFormatArgs, WriteArgs,
 };
 
 use crate::{
     format_str_parsing::{FmtStrComponent, FormatStr, WhichArg},
-    parse_utils::{MyParse, ParseBuffer, ParseStream, TokenTreeExt},
+    parse_utils::{LitStr, MyParse, ParseBuffer, ParseStream, StrRawness, TokenTreeExt},
+    shared_arg_parsing::ExprArg,
     utils::{dummy_ident, LinearResult},
 };
 
-use proc_macro2::{Ident, Span};
+use proc_macro2::{Ident, Span, TokenTree};
 
 ////////////////////////////////////////////////
 
@@ -35,33 +36,66 @@ impl MyParse for UncheckedFormatArg {
 
 ////////////////////////////////////////////////
 
+fn lit_str_to_fmt_lit(lit: &LitStr) -> Result<FormatStr, crate::Error> {
+    let lit_str = lit.value();
+    let format_str_span = lit.span;
+    FormatStr::parse(lit.value(), lit.rawness)
+        .map_err(|e| e.into_crate_err(format_str_span, &lit_str))
+}
+
+fn parse_fmt_lit(this: &mut FormatStr, input: ParseStream<'_>) -> Result<(), crate::Error> {
+    input.parse_unwrap_tt(|input| {
+        let tt = input.next();
+
+        let res = match tt {
+            Some(TokenTree::Literal(lit)) => {
+                let mut lit = lit_str_to_fmt_lit(&LitStr::parse_from_literal(&lit)?)?;
+
+                this.list.append(&mut lit.list);
+
+                Ok(())
+            }
+            Some(TokenTree::Ident(ident)) if ident == "concat" => {
+                input.next(); // skipping the `!`
+                let paren = input.parse_paren()?;
+                let mut input = ParseBuffer::new(paren.contents);
+
+                while !input.is_empty() {
+                    parse_fmt_lit(this, &mut input)?;
+                    input.parse_opt_punct(',')?;
+                }
+                Ok(())
+            }
+            _ => return Ok(()),
+        };
+
+        res
+    })
+}
+
 impl MyParse for UncheckedFormatArgs {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
-        let lit = input.parse_litstr()?;
-        let lit_str = lit.value();
-        let format_str_span = lit.span;
-        let literal = FormatStr::parse(lit.value(), lit.rawness)
-            .map_err(|e| e.into_crate_err(format_str_span, &lit_str))?;
+        let mut literal = FormatStr { list: Vec::new() };
+
+        // Have to parse `concat!()` because it's not expanded before the proc macro is called.
+        {
+            let paren = input.parse_paren()?;
+            let mut input = ParseBuffer::new(paren.contents);
+
+            parse_fmt_lit(&mut literal, &mut input)?;
+        }
+
+        input.parse_opt_punct(',')?;
 
         let mut args = Vec::new();
-
-        if !input.is_empty() {
-            input.parse_punct(',')?;
-        }
 
         while !input.is_empty() {
             args.push(UncheckedFormatArg::parse(input)?);
 
-            if !input.is_empty() {
-                input.parse_punct(',')?;
-            }
+            input.parse_opt_punct(',')?;
         }
 
-        Ok(Self {
-            format_str_span,
-            literal,
-            args,
-        })
+        Ok(Self { literal, args })
     }
 }
 
@@ -131,7 +165,6 @@ impl FormatArgs {
 
         let mut unused_args = vec![true; args.len()];
 
-        let format_str_span = unchecked_fargs.format_str_span;
         let first_named_arg = first_named_arg;
         let named_arg_names = named_arg_names;
         let args = args;
@@ -140,11 +173,10 @@ impl FormatArgs {
         let named_args = &args[first_named_arg..];
 
         let fmt_str_components = unchecked_fargs.literal.list;
-        let str_rawness = unchecked_fargs.literal.rawness;
 
         let expanded_into: Vec<ExpandInto> = {
             let mut current_pos_arg = 0;
-            let mut get_variable_name = |which_arg: WhichArg| -> Ident {
+            let mut get_variable_name = |which_arg: WhichArg, str_rawness: StrRawness| -> Ident {
                 match which_arg {
                     WhichArg::Ident(ident) => {
                         if let Some(pos) = named_arg_names.iter().position(|x| *x == ident) {
@@ -169,7 +201,7 @@ impl FormatArgs {
                             }
                             None => {
                                 res.push_err(crate::Error::new(
-                                    format_str_span,
+                                    str_rawness.span(),
                                     format!(
                                         "attempting to use nonexistent  positional argument `{}`",
                                         pos,
@@ -185,9 +217,9 @@ impl FormatArgs {
             fmt_str_components
                 .into_iter()
                 .map(|fmt_str_comp| match fmt_str_comp {
-                    FmtStrComponent::Str(str) => ExpandInto::Str(str, str_rawness),
+                    FmtStrComponent::Str(str, str_rawness) => ExpandInto::Str(str, str_rawness),
                     FmtStrComponent::Arg(arg) => ExpandInto::Formatted(ExpandFormatted {
-                        local_variable: get_variable_name(arg.which_arg),
+                        local_variable: get_variable_name(arg.which_arg, arg.rawness),
                         format: arg.formatting,
                     }),
                 })
@@ -209,9 +241,24 @@ impl FormatArgs {
         res.take()?;
 
         Ok(FormatArgs {
+            condition: None,
             args,
             expanded_into,
         })
+    }
+}
+
+////////////////////////////////////////////////
+
+impl MyParse for FormatIfArgs {
+    fn parse(input: ParseStream) -> Result<Self, crate::Error> {
+        let condition = ExprArg::parse(input)?;
+        input.parse_punct(',')?;
+
+        let mut inner = FormatArgs::parse(input)?;
+        inner.condition = Some(condition);
+
+        Ok(Self { inner })
     }
 }
 

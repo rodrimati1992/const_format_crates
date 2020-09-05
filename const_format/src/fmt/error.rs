@@ -60,3 +60,8 @@ impl Error {
         loop {}
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// The return type of most formatting functions
+pub type Result<T = (), E = Error> = core::result::Result<T, E>;

@@ -1,7 +1,7 @@
 use crate::{
-    concat_macro_parsing::{ConcatArg, ConcatArgs},
-    format_args::{ExpandInto, FormatArgs, WriteArgs},
+    format_args::{ExpandInto, FormatArgs, FormatIfArgs, WriteArgs},
     parse_utils::{TokenStream2Ext, WithProcMacroArgs},
+    shared_arg_parsing::{ExprArg, ExprArgs},
     Error,
 };
 
@@ -15,13 +15,13 @@ mod tests;
 ////////////////////////////////////////////////////////////////////////////////
 
 pub(crate) fn concatcp_impl(
-    args: WithProcMacroArgs<ConcatArgs>,
+    args: WithProcMacroArgs<ExprArgs>,
 ) -> Result<TokenStream2, crate::Error> {
     let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
 
     let fmt_var = Ident::new("fmt", Span::mixed_site());
 
-    let concat_args = args.value.args.iter().map(|ConcatArg { expr, span }| {
+    let concat_args = args.value.args.iter().map(|ExprArg { expr, span }| {
         quote_spanned!(*span=>
             __cf_osRcTFl4A::pmr::PConvWrapper(#expr).to_pargument_display(#fmt_var)
         )
@@ -114,6 +114,17 @@ pub(crate) fn formatcp_impl(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+pub(crate) fn formatc_if_macro_impl(
+    WithProcMacroArgs { crate_path, value }: WithProcMacroArgs<FormatIfArgs>,
+) -> Result<TokenStream2, crate::Error> {
+    formatc_macro_impl(WithProcMacroArgs {
+        crate_path,
+        value: value.inner,
+    })
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 pub(crate) fn formatc_macro_impl(
     args: WithProcMacroArgs<FormatArgs>,
 ) -> Result<TokenStream2, crate::Error> {
@@ -121,49 +132,66 @@ pub(crate) fn formatc_macro_impl(
 
     let fmt_args = args.value;
 
-    let locals_a = fmt_args.args.iter().map(|arg| &arg.local_variable);
-    let locals_b = locals_a.clone();
-    let expr_a = fmt_args.args.iter().map(|arg| &arg.expr);
-    let expr_b = expr_a.clone();
+    let locals = fmt_args.args.iter().map(|arg| &arg.local_variable);
+    let expr = fmt_args.args.iter().map(|arg| &arg.expr);
 
-    let strlen = Ident::new("strlen", Span::mixed_site());
     let strwriter = Ident::new("strwriter", Span::mixed_site());
-
-    let length_computation = fmt_args.expanded_into.iter().map(|ei| ei.len_call(&strlen));
 
     let writing_formatted = fmt_args
         .expanded_into
         .iter()
         .map(|ei| ei.fmt_call(&strwriter));
 
+    let cond_a = fmt_args.condition.iter();
+    let cond_b = fmt_args.condition.iter();
+
     Ok(quote!(({
         use #cratep as __cf_osRcTFl4A;
 
-        const fn len_NHPMWYD3NJA() ->  usize {
-            let mut #strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
-            match (#(&(#expr_a),)*) {
-                (#((#locals_a),)*) => {
-                    #(#length_computation)*
-                }
-            };
-            #strlen.len()
+        #[allow(non_snake_case)]
+        const fn fmt_NHPMWYD3NJA(
+            mut #strwriter: __cf_osRcTFl4A::fmt::Formatter<'_>,
+        ) -> __cf_osRcTFl4A::pmr::Option<__cf_osRcTFl4A::Error> {
+            match (#(&(#expr),)*) {
+                (#(#locals,)*) => loop {
+                    #(
+                        __cf_osRcTFl4A::unwrap_or_else!(
+                            #writing_formatted,
+                            |e| break __cf_osRcTFl4A::pmr::Some(e)
+                        );
+                    )*
+                    break __cf_osRcTFl4A::pmr::None;
+                },
+            }
         }
-        const LEN_NHPMWYD3NJA: usize = len_NHPMWYD3NJA();
+
+        const fn len_nhpmwyd3nj() -> usize {
+            if  #((#cond_a) || )* true  {
+                let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
+                let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
+                match fmt_NHPMWYD3NJA(fmt) {
+                    __cf_osRcTFl4A::pmr::None => strlen.len(),
+                    __cf_osRcTFl4A::pmr::Some(_) => 0,
+                }
+            } else {
+                0
+            }
+        }
+
+        const LEN_NHPMWYD3NJA: usize = len_nhpmwyd3nj();
 
         const fn str_writer_NHPMWYD3NJA(
         )-> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
             let mut #strwriter = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
-            let mut error = match (#(&(#expr_b),)*) {
-                (#(#locals_b,)*) => loop {
-                    let mut #strwriter = __cf_osRcTFl4A::pmr::StrWriterMut::new(&mut #strwriter);
-                    #(
-                        __cf_osRcTFl4A::unwrap_or_else!(
-                            #writing_formatted,
-                            |e| break Some(e)
-                        );
-                    )*
-                    break __cf_osRcTFl4A::pmr::None::<__cf_osRcTFl4A::pmr::Error>;
-                },
+            let mut error = if #((#cond_b) || )* true {
+                fmt_NHPMWYD3NJA(
+                    __cf_osRcTFl4A::pmr::Formatter::from_sw(
+                        &mut #strwriter,
+                        __cf_osRcTFl4A::FormattingFlags::NEW,
+                    )
+                )
+            } else {
+                __cf_osRcTFl4A::pmr::None
             };
 
             __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter{
@@ -200,6 +228,7 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
 
     let writer_expr = args.value.writer_expr;
     let FormatArgs {
+        condition: _,
         expanded_into,
         args,
     } = args.value.format_args;

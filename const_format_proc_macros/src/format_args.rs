@@ -1,8 +1,11 @@
-use crate::{format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness};
+use crate::{
+    format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness,
+    shared_arg_parsing::ExprArg,
+};
 
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 
-use quote::{quote, quote_spanned};
+use quote::quote_spanned;
 
 ////////////////////////////////////////////////
 
@@ -11,7 +14,6 @@ mod parsing;
 ////////////////////////////////////////////////
 
 struct UncheckedFormatArgs {
-    format_str_span: Span,
     literal: FormatStr,
     args: Vec<UncheckedFormatArg>,
 }
@@ -25,8 +27,13 @@ struct UncheckedFormatArg {
 }
 
 pub(crate) struct FormatArgs {
+    pub(crate) condition: Option<ExprArg>,
     pub(crate) args: Vec<FormatArg>,
     pub(crate) expanded_into: Vec<ExpandInto>,
+}
+
+pub(crate) struct FormatIfArgs {
+    pub(crate) inner: FormatArgs,
 }
 
 /// The arguments of `writec`
@@ -62,25 +69,6 @@ impl ExpandInto {
         match self {
             Self::Str { .. } => FormattingFlags::NEW,
             Self::Formatted(fmted) => fmted.format,
-        }
-    }
-    pub(crate) fn len_call(&self, strlen: &Ident) -> TokenStream2 {
-        let flags = self.formatting_flags();
-        match self {
-            ExpandInto::Str(str, _) => {
-                let len = str.len();
-                quote!( #strlen.add_len(#len); )
-            }
-            ExpandInto::Formatted(fmted) => {
-                let len_method = fmted.format.len_method_name();
-                let local_variable = &fmted.local_variable;
-                let span = local_variable.span();
-
-                quote_spanned!(span=>
-                    let _ = __cf_osRcTFl4A::coerce_to_fmt!(#local_variable)
-                        .#len_method(&mut #strlen.make_formatter(#flags));
-                )
-            }
         }
     }
     pub(crate) fn fmt_call(&self, formatter: &Ident) -> TokenStream2 {

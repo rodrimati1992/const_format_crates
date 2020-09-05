@@ -245,7 +245,7 @@ mod str_writer_mut;
 pub use crate::formatting::{FormattingFlags, NumberFormatting};
 
 pub use self::{
-    error::Error,
+    error::{Error, Result},
     formatter::{ComputeStrLength, DebugList, DebugSet, DebugStruct, DebugTuple, Formatter},
     str_writer::StrWriter,
     str_writer_mut::{NoEncoding, StrWriterMut, Utf8Encoding},

@@ -1,22 +1,35 @@
+//! Types for parsing arguments, shared by many of the macros
+
 use crate::parse_utils::{MyParse, ParseBuffer, ParseStream};
 
 use proc_macro2::{Span, TokenStream as TokenStream2};
 
+use quote::ToTokens;
+
 ////////////////////////////////////////////////
 
-pub(crate) struct ConcatArg {
+// An expression inside `(...)`
+pub(crate) struct ExprArg {
     pub(crate) span: Span,
     /// Using a TokenStream2 because it is validated to be a valid expression in
     /// the macro_rules! macros that call these proc macros.
     pub(crate) expr: TokenStream2,
 }
-pub(crate) struct ConcatArgs {
-    pub(crate) args: Vec<ConcatArg>,
+
+impl ToTokens for ExprArg {
+    fn to_tokens(&self, ts: &mut TokenStream2) {
+        self.expr.to_tokens(ts);
+    }
+}
+
+/// A sequence of comma separated expressions wrapped in parentheses (with a trailing comma)
+pub(crate) struct ExprArgs {
+    pub(crate) args: Vec<ExprArg>,
 }
 
 ////////////////////////////////////////////////
 
-impl MyParse for ConcatArg {
+impl MyParse for ExprArg {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
         let paren = input.parse_paren()?;
 
@@ -32,7 +45,7 @@ impl MyParse for ConcatArg {
 
 ////////////////////////////////////////////////
 
-impl MyParse for ConcatArgs {
+impl MyParse for ExprArgs {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
         let mut args = Vec::new();
 
@@ -41,7 +54,7 @@ impl MyParse for ConcatArgs {
         }
 
         while !input.is_empty() {
-            args.push(ConcatArg::parse(input)?);
+            args.push(ExprArg::parse(input)?);
 
             if !input.is_empty() {
                 input.parse_punct(',')?;

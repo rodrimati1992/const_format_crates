@@ -31,6 +31,11 @@ macro_rules! type_level_error {
         }
 
         impl ErrorTuple {
+            pub const EMPTY: ErrorTuple = ErrorTuple{
+                error_variant: ErrorKind::Ok as usize,
+                capacity: 0,
+            };
+
             pub const fn new(opt: Option<Error>, writer: &StrWriter) -> Self{
                 let variant = match opt {
                     $($matched => ErrorKind::$error as usize,)*

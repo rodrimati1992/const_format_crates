@@ -205,7 +205,8 @@
 //!
 //! - The formatting macros that expand to
 //! `&'static str`s can only use constants of concrete types,
-//! so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
+//! so while a `Type::<u8>::FOO` argument would be fine,
+//! `Type::<T>::FOO` would not be (`T` being a type parameter).
 //!
 //! - Integer arguments must have a type inferrable from context,
 //! [more details in the Integer arguments section](#integer-args).
@@ -243,10 +244,17 @@
 //! provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
+//! - "assert": implies the "fmt" feature,
+//! enables the assertion macros.
+//! This requires users to use the
+//! [`#[feature(const_panic)]`](https://github.com/rust-lang/rust/issues/51999)
+//! nightly feature.
+//!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
 //! allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
 //! in constant time, rather than linear time proportional to the truncated part of the slice.
+//!
 //!
 //! # No-std support
 //!
@@ -293,7 +301,7 @@
     feature(
         const_slice_from_raw_parts,
         const_str_from_utf8_unchecked,
-        const_fn_union
+        const_fn_union,
     )
 )]
 #![deny(rust_2018_idioms)]
@@ -344,7 +352,7 @@ pub mod wrapper_types;
 
 #[cfg(feature = "fmt")]
 #[doc(no_inline)]
-pub use crate::fmt::{Error, Formatter, FormattingFlags, StrWriter, StrWriterMut};
+pub use crate::fmt::{Error, Formatter, FormattingFlags, Result, StrWriter, StrWriterMut};
 
 #[cfg(feature = "fmt")]
 pub use crate::wrapper_types::ascii_str::AsciiStr;
@@ -360,7 +368,7 @@ pub mod pmr {
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl};
 
     #[cfg(feature = "fmt")]
-    pub use const_format_proc_macros::{__formatc_impl, __writec_impl};
+    pub use const_format_proc_macros::{__formatc_if_impl, __formatc_impl, __writec_impl};
 
     pub use core::{
         cmp::Reverse,
@@ -368,7 +376,7 @@ pub mod pmr {
         mem::transmute,
         num::Wrapping,
         ops::Range,
-        option::Option::{None, Some},
+        option::Option::{self, None, Some},
         result::Result::{self, Err, Ok},
     };
 

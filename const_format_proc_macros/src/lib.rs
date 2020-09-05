@@ -6,8 +6,6 @@ use proc_macro2::TokenStream as TokenStream2;
 #[macro_use]
 mod macros;
 
-mod concat_macro_parsing;
-
 #[cfg(feature = "derive")]
 mod datastructure;
 
@@ -25,6 +23,8 @@ mod format_macro;
 mod formatting;
 
 mod parse_utils;
+
+mod shared_arg_parsing;
 
 mod utils;
 
@@ -72,6 +72,15 @@ pub fn __formatcp_impl(input: TokenStream1) -> TokenStream1 {
 pub fn __formatc_impl(input: TokenStream1) -> TokenStream1 {
     MyParse::parse_token_stream_1(input)
         .and_then(format_macro::formatc_macro_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
+
+#[doc(hidden)]
+#[proc_macro]
+pub fn __formatc_if_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::formatc_if_macro_impl)
         .unwrap_or_else(compile_err_empty_str)
         .into()
 }

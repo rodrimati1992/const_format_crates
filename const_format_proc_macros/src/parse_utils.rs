@@ -44,13 +44,12 @@ impl ParseBuffer {
             )),
         }
     }
-
-    pub fn parse_litstr(&mut self) -> Result<LitStr, crate::Error> {
-        self.parse_unwrap_tt(|input| match input.next() {
-            Some(TokenTree2::Literal(x)) => LitStr::parse_from_literal(&x),
-            Some(x) => Err(Error::new(x.span(), "Expected a string literal")),
-            None => Err(Error::new(Span::mixed_site(), "Expected a string literal")),
-        })
+    pub fn parse_opt_punct(&mut self, c: char) -> Result<Option<Punct>, crate::Error> {
+        match self.next() {
+            Some(TokenTree2::Punct(x)) if x.as_char() == c => Ok(Some(x)),
+            Some(x) => Err(Error::new(x.span(), &format!("Expected a '{}' token", c))),
+            None => Ok(None),
+        }
     }
 
     pub fn parse_ident(&mut self) -> Result<Ident, crate::Error> {
@@ -71,11 +70,11 @@ impl ParseBuffer {
             }
             Some(x) => Err(Error::new(
                 x.span(),
-                &format!("Expected an argument: found {}", x),
+                &format!("Expected parentheses: found {}", x),
             )),
             None => Err(Error::new(
                 Span::mixed_site(),
-                "Expected an argument, found nothing",
+                "Expected parentheses, found nothing",
             )),
         }
     }
@@ -139,7 +138,7 @@ impl LitStr {
     pub fn value(&self) -> &str {
         &self.value[self.inside_lit.clone()]
     }
-    fn parse_from_literal(literal: &proc_macro2::Literal) -> Result<Self, Error> {
+    pub(crate) fn parse_from_literal(literal: &proc_macro2::Literal) -> Result<Self, Error> {
         let mut value = literal.to_string();
         // Ignoring the quote characters
         let mut range = 1..value.len() - 1;
@@ -263,6 +262,16 @@ pub trait TokenTreeExt {
 
     fn is_punct(&self, c: char) -> bool {
         matches!(self.as_token_tree(), TokenTree2::Punct(p)  if p.as_char() == c)
+    }
+
+    fn is_paren(&self) -> bool {
+        matches!(
+            self.as_token_tree(),
+            TokenTree2::Group(g) if g.delimiter() == Delimiter::Parenthesis
+        )
+    }
+    fn is_ident(&self, ident: &str) -> bool {
+        matches!(self.as_token_tree(), TokenTree2::Ident(x)  if x == ident)
     }
 }
 
