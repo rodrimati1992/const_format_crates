@@ -233,6 +233,8 @@
 //! need to be explicitly enabled with cargo features.
 //!
 //!
+//! [`assertc`]: ./macro.assertc.html
+//!
 //! [`concatcp`]: ./macro.concatcp.html
 //!
 //! [`formatcp`]: ./macro.formatcp.html
