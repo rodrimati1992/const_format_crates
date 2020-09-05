@@ -112,89 +112,54 @@
 //!
 //! ### Formatted const panics
 //!
-//! This example demonstrates how you can use a [`StrWriter`] to format
-//! a compile-time panic message.
+//! This example demonstrates how you can use the [`assertc`] macro to
+//! do compile-time assertions with formatted error messages.
 //!
-//! As of writing these docs (2020-08-29), panicking at compile-time requires a
-//! nightly feature, and only supports passing a `&'static str` argument,
-//! so this only works in the initialization block of `const` items.
+//! This requires the "assert" feature,because as of writing these docs (2020-09-XX),
+//! panicking at compile-time requires a nightly feature.
 //!
-#![cfg_attr(feature = "fmt", doc = "```compile_fail")]
-#![cfg_attr(not(feature = "fmt"), doc = "```ignore")]
+#![cfg_attr(feature = "assert", doc = "```compile_fail")]
+#![cfg_attr(not(feature = "assert"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //! #![feature(const_panic)]
 //!
-//! use const_format::{StrWriter, strwriter_as_str, writec};
+//! use const_format::{StrWriter, assertc, strwriter_as_str, writec};
 //! use const_format::utils::str_eq;
 //!
-//! struct PizzaError;
-//!
-//! const fn write_message(
-//!     buffer: &mut StrWriter,
-//!     bought_by: &str,
-//!     topping: &str,
-//! ) -> Result<(), PizzaError> {
-//!     buffer.clear();
-//!     let mut writer = buffer.as_mut();
-//!     if str_eq(topping, "pineapple") {
-//!         let _ = writec!(
-//!             writer,
-//!             "\n{SEP}\n\nYou can't put pineapple on pizza, {}.\n\n{SEP}\n",
-//!             bought_by,
-//!             SEP = "----------------------------------------------------------------"
+//! macro_rules! check_valid_pizza{
+//!     ($user:expr, $topping:expr) => {
+//!         assertc!(
+//!             !str_eq($topping, "pineapple"),
+//!             "You can't put pineapple on pizza, {}",
+//!             $user,
 //!         );
-//!         return Err(PizzaError);
 //!     }
-//!     Ok(())
 //! }
 //!
-//! const CAP: usize = 256;
-//! // Defined a `const fn` as a workaround for mutable references not
-//! // being allowed in `const`ants.
-//! const fn message_and_result(
-//!     bought_by: &str,
-//!     topping: &str,
-//! ) -> (StrWriter<[u8; CAP]>, Result<(), PizzaError>) {
-//!     let mut buffer = StrWriter::new([0; CAP]);
-//!     let res = write_message(&mut buffer, bought_by, topping);
-//!     (buffer, res)
-//! }
+//! check_valid_pizza!("John", "salami");
+//! check_valid_pizza!("Dave", "sausage");
+//! check_valid_pizza!("Bob", "pineapple");
 //!
-//! const _: () = {
-//!     if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
-//!         let promoted: &'static StrWriter = &{buffer};
-//!         let message = strwriter_as_str!(promoted);
-//!         panic!(message);
-//!     }
-//! };
-//!
+//! # fn main(){}
 //! ```
 //!
 //! This is what it prints in rust nightly :
 //!
 //! ```text
 //! error: any use of this value will cause an error
-//!   --> src/lib.rs:166:9
+//!   --> src/lib.rs:140:1
 //!    |
-//! 43 | / const _: () = {
-//! 44 | |     if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
-//! 45 | |         let promoted: &'static StrWriter = &{buffer};
-//! 46 | |         let message = strwriter_as_str!(promoted);
-//! 47 | |         panic!(message);
-//!    | |         ^^^^^^^^^^^^^^^^ the evaluated program panicked at '
-//! ----------------------------------------------------------------
+//! 22 | check_valid_pizza!("Bob", "pineapple");
+//!    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
 //!
-//! You can't put pineapple on pizza, Bob.
+//! assertion failed: !str_eq("pineapple", "pineapple")
 //!
-//! ----------------------------------------------------------------
-//! ', src/lib.rs:47:9
-//! 48 | |     }
-//! 49 | | };
-//!    | |__-
+//! You can't put pineapple on pizza, Bob
+//!
+//! ', src/lib.rs:22:1
 //!    |
 //!    = note: `#[deny(const_err)]` on by default
 //!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-//!
 //! ```
 //!
 //! <div id="macro-limitations"></div>
