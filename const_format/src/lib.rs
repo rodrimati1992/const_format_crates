@@ -349,7 +349,7 @@ pub mod pmr {
 
     #[cfg(feature = "fmt")]
     pub use crate::{
-        fmt::{ComputeStrLength, Error, Formatter, StrWriter, StrWriterMut},
+        fmt::{ComputeStrLength, Error, Formatter, StrWriter, StrWriterMut, ToResult},
         marker_traits::{
             FormatMarker, IsAFormatMarker, IsAWriteMarker, IsNotStdKind, IsStdKind, WriteMarker,
         },

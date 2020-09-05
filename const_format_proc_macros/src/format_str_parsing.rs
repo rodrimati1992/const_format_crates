@@ -21,6 +21,7 @@ pub(crate) enum FmtStrComponent {
     Arg(FmtArg),
 }
 
+/// An argument in the format string eg: `"{foo:?}"`
 #[derive(Debug, PartialEq)]
 pub(crate) struct FmtArg {
     pub(crate) which_arg: WhichArg,

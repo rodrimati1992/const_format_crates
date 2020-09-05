@@ -1,5 +1,5 @@
 use crate::{
-    format_args::{ExpandInto, FormatArgs, FormatIfArgs, WriteArgs},
+    format_args::{ExpandInto, FormatArgs, FormatIfArgs, LocalVariable, WriteArgs},
     parse_utils::{TokenStream2Ext, WithProcMacroArgs},
     shared_arg_parsing::{ExprArg, ExprArgs},
     Error,
@@ -58,12 +58,22 @@ pub(crate) fn formatcp_impl(
     let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
     let fmt_args = args.value;
 
-    let locals = fmt_args.args.iter().map(|arg| {
-        let local_variable = &arg.local_variable;
-        let expr = &arg.expr;
-        let span = local_variable.span();
-        quote_spanned!(span=> let #local_variable = #expr;)
-    });
+    let locals = fmt_args
+        .local_variables
+        .iter()
+        .map(|LocalVariable { ident, expr }| {
+            let span = ident.span();
+            quote_spanned!(span=> let #ident = #expr;)
+        });
+
+    for ei in fmt_args.expanded_into.iter() {
+        if let ExpandInto::WithFormatter(wf) = ei {
+            return Err(crate::Error::new(
+                wf.fmt_ident.span(),
+                "Cannot access the core_format::fmt::Formatter in the `formatcp` macro",
+            ));
+        }
+    }
 
     let parg_constructor = fmt_args.expanded_into.iter().map(|ei| match ei {
         ExpandInto::Str(str, rawness) => {
@@ -85,6 +95,7 @@ pub(crate) fn formatcp_impl(
             )
             .set_span_recursive(span)
         }
+        ExpandInto::WithFormatter { .. } => unreachable!(),
     });
 
     Ok(quote!(({
@@ -132,8 +143,8 @@ pub(crate) fn formatc_macro_impl(
 
     let fmt_args = args.value;
 
-    let locals = fmt_args.args.iter().map(|arg| &arg.local_variable);
-    let expr = fmt_args.args.iter().map(|arg| &arg.expr);
+    let locals = fmt_args.local_variables.iter().map(|arg| &arg.ident);
+    let expr = fmt_args.local_variables.iter().map(|arg| &arg.expr);
 
     let strwriter = Ident::new("strwriter", Span::mixed_site());
 
@@ -151,18 +162,15 @@ pub(crate) fn formatc_macro_impl(
         #[allow(non_snake_case)]
         const fn fmt_NHPMWYD3NJA(
             mut #strwriter: __cf_osRcTFl4A::fmt::Formatter<'_>,
-        ) -> __cf_osRcTFl4A::pmr::Option<__cf_osRcTFl4A::Error> {
+        ) -> __cf_osRcTFl4A::Result {
             match (#(&(#expr),)*) {
-                (#(#locals,)*) => loop {
+                (#(#locals,)*) => {
                     #(
-                        __cf_osRcTFl4A::unwrap_or_else!(
-                            #writing_formatted,
-                            |e| break __cf_osRcTFl4A::pmr::Some(e)
-                        );
+                        __cf_osRcTFl4A::try_!(#writing_formatted);
                     )*
-                    break __cf_osRcTFl4A::pmr::None;
                 },
             }
+            __cf_osRcTFl4A::pmr::Ok(())
         }
 
         const fn len_nhpmwyd3nj() -> usize {
@@ -170,8 +178,8 @@ pub(crate) fn formatc_macro_impl(
                 let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
                 let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
                 match fmt_NHPMWYD3NJA(fmt) {
-                    __cf_osRcTFl4A::pmr::None => strlen.len(),
-                    __cf_osRcTFl4A::pmr::Some(_) => 0,
+                    __cf_osRcTFl4A::pmr::Ok(()) => strlen.len(),
+                    __cf_osRcTFl4A::pmr::Err(_) => 0,
                 }
             } else {
                 0
@@ -191,7 +199,7 @@ pub(crate) fn formatc_macro_impl(
                     )
                 )
             } else {
-                __cf_osRcTFl4A::pmr::None
+                __cf_osRcTFl4A::pmr::Ok(())
             };
 
             __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter{
@@ -230,11 +238,11 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
     let FormatArgs {
         condition: _,
         expanded_into,
-        args,
+        local_variables,
     } = args.value.format_args;
 
-    let locals = args.iter().map(|arg| &arg.local_variable);
-    let expr = args.iter().map(|arg| &arg.expr);
+    let locals = local_variables.iter().map(|arg| &arg.ident);
+    let expr = local_variables.iter().map(|arg| &arg.expr);
 
     let strwriter = Ident::new("strwriter", Span::mixed_site());
 
@@ -258,10 +266,10 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
                     #(
                         __cf_osRcTFl4A::unwrap_or_else!(
                             #writing_formatted,
-                            |e| break Err(e)
+                            |e| break __cf_osRcTFl4A::pmr::Err(e)
                         );
                     )*
-                    break Ok(());
+                    break __cf_osRcTFl4A::pmr::Ok(());
                 }
             }
         }

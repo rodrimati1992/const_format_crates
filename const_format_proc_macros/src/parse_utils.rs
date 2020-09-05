@@ -79,6 +79,22 @@ impl ParseBuffer {
         }
     }
 
+    pub fn parse_unwrap_paren<F, T>(&mut self, f: F) -> Result<T, crate::Error>
+    where
+        F: FnOnce(ParseStream<'_>) -> Result<T, crate::Error>,
+    {
+        if matches!(self.peek(), Some(TokenTree2::Group(x)) if x.delimiter() == Delimiter::Parenthesis )
+        {
+            if let Some(TokenTree2::Group(group)) = self.next() {
+                ParseBuffer::new(group.stream()).parse_unwrap_tt(f)
+            } else {
+                unreachable!("But I peeked for a Parenthesis delimited TokenTree::Group!!")
+            }
+        } else {
+            f(self)
+        }
+    }
+
     pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Span) {
         let mut span = match self.peek() {
             Some(x) => x.span(),

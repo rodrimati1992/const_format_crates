@@ -86,6 +86,18 @@
 //! - The binary formater (eg: `formatc!("{:#b}", FOO)`):
 //! prefixes numbers with `0b`.
 //!
+//! <span id="custom-formatting-section"></span>
+//! ### Custom formatting
+//!
+//! Arguments can access a [`Formatter`] for custom formatting with an
+//! `|identifier|` before the expression.
+//!
+//! The expression will be evaluated every time it is used in the formatting string,
+//! and it can evaluate to either a `()` or a `Result<(), const_format::Error>`.
+//!
+//! Note: this doesn't distinguish between debug and display formatting.
+//!
+//! [Link to full example of custom formatting](#custom-formatting-example)
 //!
 //! # Examples
 //!
@@ -228,6 +240,49 @@
 //!
 //! ```
 //!
+//! <span id="custom-formatting-example"></span>
+//! ### Custom formatting
+//!
+//! This example demonstrates how you can do [custom formatting](#custom-formatting-section),
+//! by using a `Formatter` directly.
+//!
+//! ```rust
+//! #![feature(const_mut_refs)]
+//!
+//! use const_format::{call_debug_fmt, formatc};
+//!
+//! // Positional argument
+//! assert_eq!(formatc!("{}", |fmt| fmt.write_ascii_repeated(b'a', 4) ), "aaaa");
+//!
+//! // Named argument
+//! assert_eq!(formatc!("{foo}", foo = |fmt| fmt.write_ascii_repeated(b'0', 10) ), "0000000000");
+//!
+//! // Repeating a positional argument multiple times
+//! assert_eq!(formatc!("{0}{0}{0}", |fmt| fmt.write_str("hi") ), "hihihi");
+//!
+//! // Using debug formatting is no different to display formatting:
+//! assert_eq!(formatc!("{0:?}{0:?}{0:?}", |fmt| fmt.write_str("hi") ), "hihihi");
+//!
+//! // But binary/hex formatting, and the alternate flag, do have an effect:
+//! assert_eq!(
+//!     formatc!(
+//!         "{0}\n{0:x}\n{0:b}\n{0:#x}\n{0:#b}",
+//!         |fmt| call_debug_fmt!(array, [3u8, 13], fmt),
+//!     ),
+//!     "\
+//!         [3, 13]\n\
+//!         [3, D]\n\
+//!         [11, 1101]\n\
+//!         [\n    0x3,\n    0xD,\n]\n\
+//!         [\n    0b11,\n    0b1101,\n]\
+//!     ",
+//! );
+//!
+//! ```
+//!
+//!
+//!
+//! [`Formatter`]: ./struct.Formatter.html
 //! [`FormatMarker`]: ../marker_traits/trait.FormatMarker.html
 //! [`ConstDebug`]: ../derive.ConstDebug.html
 //!
@@ -245,7 +300,7 @@ mod str_writer_mut;
 pub use crate::formatting::{FormattingFlags, NumberFormatting};
 
 pub use self::{
-    error::{Error, Result},
+    error::{Error, Result, ToResult},
     formatter::{ComputeStrLength, DebugList, DebugSet, DebugStruct, DebugTuple, Formatter},
     str_writer::StrWriter,
     str_writer_mut::{NoEncoding, StrWriterMut, Utf8Encoding},

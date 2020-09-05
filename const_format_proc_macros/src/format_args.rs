@@ -19,16 +19,19 @@ struct UncheckedFormatArgs {
 }
 
 struct UncheckedFormatArg {
-    span: Span,
-    ident: Option<Ident>,
+    pub(crate) span: Span,
+    pub(crate) ident: Option<Ident>,
+    // The identifier for the Formatter passed to format the argument.
+    // If this is Some, then `expr` is expanded directly,
+    pub(crate) fmt_ident: Option<Ident>,
     /// Using a TokenStream2 because it is validated to be a valid expression in
     /// the macro_rules! macros that call these proc macros.
-    expr: TokenStream2,
+    pub(crate) expr: TokenStream2,
 }
 
 pub(crate) struct FormatArgs {
     pub(crate) condition: Option<ExprArg>,
-    pub(crate) args: Vec<FormatArg>,
+    pub(crate) local_variables: Vec<LocalVariable>,
     pub(crate) expanded_into: Vec<ExpandInto>,
 }
 
@@ -45,6 +48,7 @@ pub(crate) struct WriteArgs {
 pub(crate) enum ExpandInto {
     Str(String, StrRawness),
     Formatted(ExpandFormatted),
+    WithFormatter(ExpandWithFormatter),
 }
 
 pub(crate) struct ExpandFormatted {
@@ -52,27 +56,38 @@ pub(crate) struct ExpandFormatted {
     pub(crate) local_variable: Ident,
 }
 
-pub(crate) struct FormatArg {
+pub(crate) struct ExpandWithFormatter {
+    pub(crate) format: FormattingFlags,
+    pub(crate) fmt_ident: Ident,
+    pub(crate) expr: TokenStream2,
+}
+
+pub(crate) struct LocalVariable {
     // The local variable that the macro will output for this argument,
     // so that it is not evaluated multiple times when it's used multiple times
     // in the format string..
-    pub(crate) local_variable: Ident,
+    pub(crate) ident: Ident,
     /// Using a TokenStream2 because it is validated to be a valid expression in
     /// the macro_rules! macros that call these proc macros.
     pub(crate) expr: TokenStream2,
 }
 
+pub(crate) enum FormatArg {
+    WithFormatter {
+        // The identifier for the Formatter passed to format the argument.
+        // If this is Some, then `expr` is expanded directly,
+        fmt_ident: Ident,
+        /// Using a TokenStream2 because it is validated to be a valid expression in
+        /// the macro_rules! macros that call these proc macros.
+        expr: TokenStream2,
+    },
+    WithLocal(Ident),
+}
+
 ////////////////////////////////////////////////
 
 impl ExpandInto {
-    pub(crate) fn formatting_flags(&self) -> FormattingFlags {
-        match self {
-            Self::Str { .. } => FormattingFlags::NEW,
-            Self::Formatted(fmted) => fmted.format,
-        }
-    }
     pub(crate) fn fmt_call(&self, formatter: &Ident) -> TokenStream2 {
-        let flags = self.formatting_flags();
         match self {
             ExpandInto::Str(str, rawness) => {
                 let str_tokens = rawness.tokenize_sub(str);
@@ -80,6 +95,7 @@ impl ExpandInto {
                 quote_spanned!(rawness.span()=> #formatter.write_str(#str_tokens) )
             }
             ExpandInto::Formatted(fmted) => {
+                let flags = fmted.format;
                 let fmt_method = fmted.format.fmt_method_name();
                 let local_variable = &fmted.local_variable;
                 let span = local_variable.span();
@@ -89,6 +105,14 @@ impl ExpandInto {
                         .#fmt_method(&mut #formatter.make_formatter(#flags))
                 )
             }
+            ExpandInto::WithFormatter(ExpandWithFormatter {
+                format,
+                fmt_ident,
+                expr,
+            }) => quote::quote!({
+                let #fmt_ident = &mut #formatter.make_formatter(#format);
+                __cf_osRcTFl4A::pmr::ToResult( #expr ).to_result()
+            }),
         }
     }
 }

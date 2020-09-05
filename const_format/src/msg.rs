@@ -14,9 +14,9 @@ macro_rules! type_level_error {
             @inner
             arguments($($args)*)
 
-            None, Ok => Ok<>,
+            Result::Ok(()), Ok => Ok<>,
             $(
-                Some(Error::$error), $error => $error_ty<$($error_param),*>,
+                Result::Err(Error::$error), $error => $error_ty<$($error_param),*>,
             )*
         }
     };
@@ -36,7 +36,7 @@ macro_rules! type_level_error {
                 capacity: 0,
             };
 
-            pub const fn new(opt: Option<Error>, writer: &StrWriter) -> Self{
+            pub const fn new(opt: Result<(), Error>, writer: &StrWriter) -> Self{
                 let variant = match opt {
                     $($matched => ErrorKind::$error as usize,)*
                 };
