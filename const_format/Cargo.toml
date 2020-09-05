@@ -24,13 +24,14 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 default = []
 fmt = []
 derive = ["fmt", "const_format_proc_macros/derive"]
+assert = ["fmt"]
 constant_time_as_str = ["fmt"]
 
 # "private" features
 debug = ["const_format_proc_macros/debug"]
 testing = []
 only_new_tests = ["testing"]
-all = ["fmt", "derive", "constant_time_as_str"]
+all = ["fmt", "derive", "constant_time_as_str", "assert"]
 
 [dependencies.const_format_proc_macros]
 version = "=0.2.0"

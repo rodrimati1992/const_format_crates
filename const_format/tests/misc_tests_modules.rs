@@ -1,6 +1,10 @@
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
+#![cfg_attr(feature = "assert", feature(const_panic))]
 
 mod misc_tests {
+    #[cfg(feature = "assert")]
+    mod asserts;
+
     #[cfg(feature = "fmt")]
     #[cfg(not(feature = "only_new_tests"))]
     mod call_debug_fmt_macro;

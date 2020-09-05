@@ -209,9 +209,10 @@ You can't put pineapple on pizza, Bob.
 
 All of the macros from `const_format` have these limitations:
 
-- The formatting macros that expand to 
+- The formatting macros that expand to
 `&'static str`s can only use constants of concrete types,
-so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
+so while a `Type::<u8>::FOO` argument would be fine,
+`Type::<T>::FOO` would not be (`T` being a type parameter).
 
 - Integer arguments must have a type inferrable from context,
 [more details in the Integer arguments section](#integer-args).

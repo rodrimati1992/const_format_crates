@@ -221,7 +221,7 @@ macro_rules! formatcp {
         $crate::formatcp!(
             @inner
             (($crate))
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );
@@ -276,7 +276,7 @@ macro_rules! formatc {
         $crate::formatc!(
             @inner
             (($crate))
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );
@@ -424,7 +424,7 @@ macro_rules! writec {
             @inner
             (($crate))
             ($writer)
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );

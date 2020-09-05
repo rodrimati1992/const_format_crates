@@ -97,3 +97,22 @@ pub struct ConstDebugWhereClause;
 /// ```
 ///
 pub struct AsStr_For_StrWriterMut_NoEncoding;
+
+/// ```rust
+/// #![feature(const_mut_refs)]
+/// #![feature(const_panic)]
+///
+/// const_format::assertc!(true, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+/// #![feature(const_panic)]
+///
+/// const_format::assertc!(false, "foo");
+///
+/// ```
+///
+#[cfg(feature = "assert")]
+pub struct Assert;

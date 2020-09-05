@@ -8,6 +8,46 @@ use arrayvec::{ArrayString, ArrayVec};
 
 use core::fmt::Write;
 
+macro_rules! fmt_assert {
+    ( ($($arg:tt)*), $expected:expr $(,)? ) => ({
+        let expected = $expected;
+
+        assert_eq!(formatcp!($($arg)*), expected);
+
+        #[cfg(feature = "fmt")]
+        assert_eq!(formatc!($($arg)*), expected);
+    })
+}
+
+#[test]
+fn concat_fmt_strings() {
+    fmt_assert!((concat!()), "");
+
+    fmt_assert!((concat!("foo{}baz"), "bar"), "foobarbaz");
+
+    fmt_assert!((concat!(r#"foo{}"#, "{:?}"), "bar", "baz"), "foobar\"baz\"");
+
+    fmt_assert!((concat!(concat!())), "");
+    fmt_assert!((concat!("foo", concat!())), "foo");
+    fmt_assert!((concat!(concat!(), "foo")), "foo");
+    fmt_assert!((concat!(concat!("foo"), "bar")), "foobar");
+    fmt_assert!((concat!(concat!("foo"), concat!("bar"))), "foobar");
+    fmt_assert!(
+        (
+            concat!(concat!("foo{}", "bar{}"), concat!(r#"baz{}"#, "qux{}")),
+            3u8,
+            5u8,
+            13u8,
+            21u8
+        ),
+        "foo3bar5baz13qux21",
+    );
+
+    fmt_assert!((concat!("foo{}baz"), "bar"), "foobarbaz");
+
+    fmt_assert!((concat!(r#"foo{}"#, "{:?}"), "bar", "baz"), "foobar\"baz\"");
+}
+
 #[test]
 fn positional_and_named_arguments() {
     // Positional,implicit
