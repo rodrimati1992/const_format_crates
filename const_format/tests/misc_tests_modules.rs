@@ -12,6 +12,9 @@ mod misc_tests {
     #[cfg(feature = "derive")]
     mod derive_tests;
 
+    #[cfg(feature = "assert")]
+    mod equality_tests;
+
     #[cfg(not(feature = "only_new_tests"))]
     mod formatc_macros;
 

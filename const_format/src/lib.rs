@@ -288,6 +288,9 @@ mod macros;
 
 mod formatting;
 
+#[cfg(feature = "assert")]
+mod equality;
+
 mod pargument;
 
 #[cfg(feature = "fmt")]
