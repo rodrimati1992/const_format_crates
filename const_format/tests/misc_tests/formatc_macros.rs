@@ -258,3 +258,38 @@ fn raw_literals() {
     assert_eq!(formatcp!(r##"r#"-{}_"#"##, "hello"), r##"r#"-hello_"#"##);
     assert_eq!(formatcp!(r##"r#"-{{}}_"#"##), r##"r#"-{}_"#"##);
 }
+
+#[test]
+#[cfg(feature = "fmt")]
+fn access_formatter() {
+    use const_format::call_debug_fmt;
+
+    struct FmtConst;
+
+    assert_eq!(
+        formatc!("{0}", |fmt| {
+            impl FmtConst {
+                const A: u32 = 3;
+            }
+            call_debug_fmt!(array, [(), ()], fmt)
+        }),
+        "[(), ()]"
+    );
+
+    assert_eq!(FmtConst::A, 3);
+
+    assert_eq!(
+        formatc!("{0} ; {0}", |fmt| { call_debug_fmt!(array, [(), ()], fmt) }),
+        "[(), ()] ; [(), ()]"
+    );
+
+    assert_eq!(
+        formatc!("{0}", |fmt| call_debug_fmt!(array, [(), ()], fmt)),
+        "[(), ()]"
+    );
+
+    assert_eq!(
+        formatc!("{0} ; {0}", |fmt| call_debug_fmt!(array, [(), ()], fmt)),
+        "[(), ()] ; [(), ()]"
+    );
+}

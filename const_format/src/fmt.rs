@@ -92,8 +92,9 @@
 //! Arguments can access a [`Formatter`] for custom formatting with an
 //! `|identifier|` before the expression.
 //!
-//! The expression will be evaluated every time it is used in the formatting string,
-//! and it can evaluate to either a `()` or a `Result<(), const_format::Error>`.
+//! The expression will be evaluated every time it is used in the formatting string.
+//!
+//! The expression can evaluate to either a `()` or a `Result<(), const_format::Error>`.
 //!
 //! Note: this doesn't distinguish between debug and display formatting.
 //!

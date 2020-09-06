@@ -24,6 +24,8 @@
 ///
 /// # Example
 ///
+/// ### Printing all of them
+///
 /// Printing all of the kinds of types this supports.
 ///
 /// ```rust
@@ -77,8 +79,51 @@
 ///
 /// assert_eq!(TEXT, EXPECTED);
 ///
-///
 /// ```
+///
+/// ### Used as `formatc` argument
+///
+/// This macro can be used in the formatting macros by using the Formatter in the argument,<br>
+/// with the `|formatter_ident| expression_that_uses_formatter ` syntax.
+///
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{
+///     for_examples::{Point3, Unit},
+///     Error, Formatter, FormattingFlags, StrWriter,
+///     call_debug_fmt, formatc, try_, unwrap,
+/// };
+///
+/// use std::num::Wrapping;
+///
+/// const POINT: Point3 = Point3{ x: 5, y: 8, z: 13 };
+///
+/// const TEXT: &str = formatc!(
+///     "a: {},b: {},c: {},d: {},e: {},f: {},",
+///     |fmt| call_debug_fmt!(array, [Unit, Unit], fmt ),
+///     |fmt| call_debug_fmt!(slice, [0u8, 1], fmt ),
+///     |fmt| call_debug_fmt!(Option, Some(POINT), fmt ),
+///     |fmt| call_debug_fmt!(newtype NumWrapping, Wrapping(255u16), fmt ),
+///     |fmt| call_debug_fmt!(std, false, fmt ),
+///     |fmt| call_debug_fmt!(other, POINT, fmt ),
+/// );
+///
+/// const EXPECTED: &str = "\
+///     a: [Unit, Unit],\
+///     b: [0, 1],\
+///     c: Some(Point3 { x: 5, y: 8, z: 13 }),\
+///     d: NumWrapping(255),\
+///     e: false,\
+///     f: Point3 { x: 5, y: 8, z: 13 },\
+/// ";
+///
+/// assert_eq!(TEXT, EXPECTED);
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
 #[macro_export]
 macro_rules! call_debug_fmt {
     (array, $expr:expr, $formatter:expr $(,)* ) => {{

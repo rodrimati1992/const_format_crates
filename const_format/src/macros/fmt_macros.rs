@@ -269,6 +269,35 @@ macro_rules! formatcp {
 /// assert_eq!(ARRAY, "[9, 25],[9, 19],[1001, 11001]");
 ///
 /// ```
+///
+/// ### Custom formatting.
+///
+/// This example demonstrates how you can access the [`Formatter`] in arguments
+/// to do custom formatting.
+///
+/// For more details on this you can look
+/// [in the fmt module](./fmt/index.html#custom-formatting-section).
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::for_examples::Point3;
+/// use const_format::{formatc, try_};
+///
+/// const P: Point3 = Point3{x: 5, y: 13, z: 21};
+///
+/// const STR: &str = formatc!("{0};{0:#x};{0:#b}", |fmt|{
+///     try_!(fmt.write_u32_debug(P.x));
+///     try_!(fmt.write_str(" "));
+///     try_!(fmt.write_u32_debug(P.y));
+/// });
+///
+/// assert_eq!(STR, "5 13;0x5 0xD;0b101 0b1101");
+///
+/// ```
+/// [`Formatter`]: ./fmt/struct.Formatter.html
+///
+///
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
@@ -409,8 +438,39 @@ macro_rules! formatc {
 /// # Ok::<(), const_format::Error>(())
 /// ```
 ///
+/// ### Custom formatting.
 ///
+/// This example demonstrates how you can access the [`Formatter`] in arguments
+/// to do custom formatting.
 ///
+/// Note that `return` inside arguments returns from the function around the `writec`.
+///
+/// For more details on this you can look
+/// [in the fmt module](./fmt/index.html#custom-formatting-section).
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::for_examples::Point3;
+/// use const_format::{StrWriter, call_debug_fmt, try_, writec};
+///
+/// const P: Point3 = Point3{x: 5, y: 13, z: 21};
+///
+/// let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+///
+/// writec!(
+///     writer,
+///     "The options are: {}, and {}",
+///     |fmt| call_debug_fmt!(Option, Some(P), fmt),
+///     |fmt| call_debug_fmt!(Option, None::<Point3>, fmt),
+/// )?;
+///
+/// assert_eq!(writer.as_str(), "The options are: Some(Point3 { x: 5, y: 13, z: 21 }), and None");
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+/// [`Formatter`]: ./fmt/struct.Formatter.html
 /// [`WriteMarker`]: ./marker_traits/trait.WriteMarker.html
 ///
 ///

@@ -1,3 +1,6 @@
+//! This module tests for errors that happen in the expanded code,
+//! errors detectable by the macro itself are tested in the proc macro crate.
+
 #![allow(non_camel_case_types)]
 
 ///
@@ -111,6 +114,48 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 /// #![feature(const_panic)]
 ///
 /// const_format::assertc!(false, "foo");
+///
+/// ```
+///
+/// # With a Formatting argument
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+/// #![feature(const_panic)]
+///
+/// const_format::assertc!(
+///     true,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| { const_format::call_debug_fmt!(array, [100u8], fmt ) },
+///     foo = |fmt| { const_format::call_debug_fmt!(array, [(), ()], fmt ) },
+/// );
+///
+/// const_format::assertc!(
+///     true,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| const_format::call_debug_fmt!(array, [100u8], fmt ),
+///     foo = |fmt| const_format::call_debug_fmt!(array, [(), ()], fmt ),
+/// );
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+/// #![feature(const_panic)]
+///
+/// const_format::assertc!(
+///     false,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| { const_format::call_debug_fmt!(array, [100u8], fmt ) },
+///     foo = |fmt| { const_format::call_debug_fmt!(array, [(), ()], fmt ) },
+/// );
+///
+/// const_format::assertc!(
+///     false,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| const_format::call_debug_fmt!(array, [100u8], fmt ),
+///     foo = |fmt| const_format::call_debug_fmt!(array, [(), ()], fmt ),
+/// );
 ///
 /// ```
 ///

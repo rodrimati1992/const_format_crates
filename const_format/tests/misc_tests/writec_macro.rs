@@ -99,3 +99,50 @@ fn named_parameters() {
     inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
     assert_eq!(writer.as_str(), "8,13,21,34,1000,D,55..89");
 }
+
+#[test]
+#[cfg(feature = "fmt")]
+fn access_formatter() {
+    use const_format::call_debug_fmt;
+
+    const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
+        let mut n = 0u64;
+
+        try_!(writec!(f, "{0};;;", |fmt| {
+            n += 1;
+            call_debug_fmt!(array, [(), ()], fmt)
+        }));
+
+        try_!(writec!(f, "{0}; {0}; {0};;;", |fmt| {
+            n += 100;
+            call_debug_fmt!(array, [n, n], fmt)
+        }));
+
+        try_!(writec!(f, "{0};;;", |fmt| call_debug_fmt!(
+            array,
+            [(), ()],
+            fmt
+        )));
+
+        try_!(writec!(f, "{0}; {0};;;", |fmt| call_debug_fmt!(
+            array,
+            [(), ()],
+            fmt
+        )));
+
+        Ok(())
+    }
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 256]);
+    inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
+
+    assert_eq!(
+        writer.as_str(),
+        "\
+            [(), ()];;;\
+            [101, 101]; [201, 201]; [301, 301];;;\
+            [(), ()];;;\
+            [(), ()]; [(), ()];;;\
+        "
+    );
+}
