@@ -174,7 +174,7 @@ pub(crate) fn formatc_macro_impl(
         }
 
         const fn len_nhpmwyd3nj() -> usize {
-            if  #((#cond_a) || )* true  {
+            if  #((#cond_a) && )* true  {
                 let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
                 let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
                 match fmt_NHPMWYD3NJA(fmt) {
@@ -191,7 +191,7 @@ pub(crate) fn formatc_macro_impl(
         const fn str_writer_NHPMWYD3NJA(
         )-> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
             let mut #strwriter = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
-            let mut error = if #((#cond_b) || )* true {
+            let mut error = if #((#cond_b) && )* true {
                 fmt_NHPMWYD3NJA(
                     __cf_osRcTFl4A::pmr::Formatter::from_sw(
                         &mut #strwriter,

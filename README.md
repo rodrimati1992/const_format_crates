@@ -126,7 +126,6 @@ panicking at compile-time requires a nightly feature.
 
 ```rust
 #![feature(const_mut_refs)]
-#![feature(const_panic)]
 
 use const_format::{StrWriter, assertc, strwriter_as_str, writec};
 use const_format::utils::str_eq;
@@ -175,7 +174,7 @@ You can't put pineapple on pizza, Bob
 All of the macros from `const_format` have these limitations:
 
 - The formatting macros that expand to
-`&'static str`s can only use constants of concrete types,
+`&'static str`s can only use constants from concrete types,
 so while a `Type::<u8>::FOO` argument would be fine,
 `Type::<T>::FOO` would not be (`T` being a type parameter).
 
@@ -216,10 +215,12 @@ This feature includes the `formatc`/`writec` formatting macros.
 provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
-- "assert": implies the "fmt" feature,enables the assertion macros.
-This requires users to use the
-[`#[feature(const_panic)]`](https://github.com/rust-lang/rust/issues/51999)
-nightly feature.
+- "assert": implies the "fmt" feature,
+enables the assertion macros.<br>
+This is a separate cargo feature because:
+    - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
+    - It requires the `std` crate, because `core::panic` requires a string literal argument.
+
 
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,

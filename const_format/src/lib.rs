@@ -169,7 +169,7 @@
 //! All of the macros from `const_format` have these limitations:
 //!
 //! - The formatting macros that expand to
-//! `&'static str`s can only use constants of concrete types,
+//! `&'static str`s can only use constants from concrete types,
 //! so while a `Type::<u8>::FOO` argument would be fine,
 //! `Type::<T>::FOO` would not be (`T` being a type parameter).
 //!
@@ -210,10 +210,10 @@
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
 //! - "assert": implies the "fmt" feature,
-//! enables the assertion macros.
-//! This requires users to use the
-//! [`#[feature(const_panic)]`](https://github.com/rust-lang/rust/issues/51999)
-//! nightly feature.
+//! enables the assertion macros.<br>
+//! This is a separate cargo feature because:
+//!     - It uses nightly Rust features  that are less stable than the "fmt" feature does.<br>
+//!     - It requires the `std` crate, because `core::panic` requires a string literal argument.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -263,6 +263,7 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
+#![cfg_attr(feature = "assert", feature(const_panic))]
 #![cfg_attr(
     feature = "constant_time_as_str",
     feature(
@@ -283,6 +284,10 @@
 
 include! {"const_debug_derive.rs"}
 
+// Only used for panicking. Once panicking works without std, I'll remove this.
+#[cfg(feature = "assert")]
+extern crate std;
+
 #[macro_use]
 mod macros;
 
@@ -290,6 +295,11 @@ mod formatting;
 
 #[cfg(feature = "assert")]
 mod equality;
+
+#[doc(hidden)]
+#[cfg(feature = "assert")]
+#[macro_use]
+pub mod panicking;
 
 mod pargument;
 

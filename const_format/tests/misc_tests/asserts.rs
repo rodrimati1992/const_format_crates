@@ -48,3 +48,9 @@ fn assertc_emits_formatting() {
     assert_eq!(Foo::FMT_FOO, 12);
     assert_eq!(Foo::FMT_BAR, 13);
 }
+
+// The formatting code should not run if the assertion is true
+assertc!(true, "{}", {
+    let x: u32 = loop {};
+    x
+});

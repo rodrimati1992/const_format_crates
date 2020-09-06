@@ -103,7 +103,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 
 /// ```rust
 /// #![feature(const_mut_refs)]
-/// #![feature(const_panic)]
 ///
 /// const_format::assertc!(true, "foo");
 ///
@@ -111,7 +110,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 ///
 /// ```compile_fail
 /// #![feature(const_mut_refs)]
-/// #![feature(const_panic)]
 ///
 /// const_format::assertc!(false, "foo");
 ///
@@ -121,7 +119,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]
-/// #![feature(const_panic)]
 ///
 /// const_format::assertc!(
 ///     true,
@@ -141,7 +138,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 ///
 /// ```compile_fail
 /// #![feature(const_mut_refs)]
-/// #![feature(const_panic)]
 ///
 /// const_format::assertc!(
 ///     false,
