@@ -8,7 +8,7 @@ pub trait PanicIf: Message {
     const PANIC: usize;
 }
 
-macro_rules! panic {
+macro_rules! panic_ {
     () => {
         impl<T> crate::panicking::PanicIf for T
         where
@@ -28,7 +28,7 @@ macro_rules! panic {
     };
 }
 
-panic!();
+panic_!();
 
 /// Equivalent to the panic macro, but takes a `&'static str` constant.
 ///

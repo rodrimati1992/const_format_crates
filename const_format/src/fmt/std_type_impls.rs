@@ -48,6 +48,7 @@ macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
 
 slice_of_std_impl! {
     &str,
+    bool,
     u8, i8,
     u16, i16,
     u32, i32,

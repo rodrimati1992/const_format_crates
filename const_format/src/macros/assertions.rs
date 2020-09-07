@@ -288,20 +288,12 @@ assert_eq_docs! {
     #[macro_export]
     macro_rules! assertc_eq {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
-            const _: () = {
-                const LEFT: bool = $crate::coerce_to_fmt!($left).const_eq(&$right);
-                const RIGHT: bool = true;
-                $crate::assertc!{
-                    LEFT == RIGHT,
-                    concat!(
-                        " left: `{left_NHPMWYD3NJA:#?}`\nright: `{right_NHPMWYD3NJA:#?}`",
-                        $("\n", $fmt_literal)?
-                    ),
-                    $($($fmt_arg,)*)?
-                    left_NHPMWYD3NJA = $left,
-                    right_NHPMWYD3NJA = $right,
-                }
-            };
+            $crate::__assertc_equality_inner!{
+                $left,
+                $right,
+                ( == )
+                $(, $fmt_literal $(,$fmt_arg)* )?
+            }
         );
     }
 }
@@ -388,21 +380,64 @@ assert_eq_docs! {
     ///
     #[macro_export]
     macro_rules! assertc_ne {
-        ($left:expr , $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
-            const _: () = {
-                const LEFT: bool = $crate::coerce_to_fmt!($left).const_eq(&$right);
-                const RIGHT: bool = true;
-                $crate::assertc!{
-                    LEFT != RIGHT,
-                    concat!(
-                        " left: `{left_NHPMWYD3NJA:#?}`\nright: `{right_NHPMWYD3NJA:#?}`",
-                        $("\n", $fmt_literal)?
-                    ),
-                    $($($fmt_arg,)*)?
-                    left_NHPMWYD3NJA = $left,
-                    right_NHPMWYD3NJA = $right,
-                }
-            };
+        ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
+            $crate::__assertc_equality_inner!{
+                $left,
+                $right,
+                ( != )
+                $(, $fmt_literal $(,$fmt_arg)* )?
+            }
         );
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertc_equality_inner {
+    ($left:expr, $right:expr, ($($op:tt)*) $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? )=>{
+        const _: () = {
+            const LEFT: bool = {
+                // Have to use `respan_to` to make the `multiple coerce found` error
+                // point at the `$left` argument here.
+                use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
+                $crate::pmr::respan_to!(
+                    ($left)
+                    match [&$left, &$right] {
+                        [left, right] => __cf_coerce_to_fmt!(left).const_eq(right),
+                    }
+                )
+            };
+            const RIGHT: bool = true;
+            $crate::assertc!{
+                LEFT $($op)* RIGHT,
+                concat!(
+                    "{fmt_NHPMWYD3NJA}",
+                    $("\n\n", $fmt_literal)?
+                ),
+                $($($fmt_arg,)*)?
+                fmt_NHPMWYD3NJA = |__cf_fmt| {
+                    use $crate::try_ as __cf_try;
+                    use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
+
+
+                    $crate::pmr::respan_to!{
+                        ($left)
+
+                        let [__cf_left, __cf_right] = &[$left, $right];
+
+                        let __cf_fmt = &mut __cf_fmt
+                            .make_formatter($crate::FormattingFlags::__A_REG);
+
+                        __cf_try!(__cf_fmt.write_str(" left: `"));
+                        __cf_try!(__cf_coerce_to_fmt!(__cf_left).const_debug_fmt(__cf_fmt));
+                        __cf_try!(__cf_fmt.write_str("`"));
+
+                        __cf_try!(__cf_fmt.write_str("\nright: `"));
+                        __cf_try!(__cf_coerce_to_fmt!(__cf_right).const_debug_fmt(__cf_fmt));
+                        __cf_try!(__cf_fmt.write_str("`"));
+                    }
+                },
+            }
+        };
     }
 }

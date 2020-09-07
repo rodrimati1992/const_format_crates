@@ -19,10 +19,6 @@ impl ParseBuffer {
         Self { iter }
     }
 
-    pub fn next(&mut self) -> Option<TokenTree2> {
-        self.iter.next()
-    }
-
     pub fn is_empty(&mut self) -> bool {
         self.iter.is_empty()
     }
@@ -130,6 +126,18 @@ impl ParseBuffer {
         } else {
             f(self)
         }
+    }
+}
+
+impl Iterator for ParseBuffer {
+    type Item = TokenTree2;
+
+    fn next(&mut self) -> Option<TokenTree2> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
     }
 }
 
@@ -273,8 +281,9 @@ impl StrRawness {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-pub trait TokenTreeExt {
+pub trait TokenTreeExt: Sized {
     fn as_token_tree(&self) -> &TokenTree2;
+    fn into_token_tree(self) -> TokenTree2;
 
     fn is_punct(&self, c: char) -> bool {
         matches!(self.as_token_tree(), TokenTree2::Punct(p)  if p.as_char() == c)
@@ -289,10 +298,27 @@ pub trait TokenTreeExt {
     fn is_ident(&self, ident: &str) -> bool {
         matches!(self.as_token_tree(), TokenTree2::Ident(x)  if x == ident)
     }
+
+    fn set_span_recursive(self, span: Span) -> TokenTree2 {
+        let mut tt = self.into_token_tree();
+
+        tt.set_span(span);
+        if let TokenTree2::Group(group) = tt {
+            let delim = group.delimiter();
+            let stream = group.stream().set_span_recursive(span);
+            tt = TokenTree2::Group(Group::new(delim, stream));
+        }
+        tt.set_span(span);
+        tt
+    }
 }
 
 impl TokenTreeExt for TokenTree2 {
     fn as_token_tree(&self) -> &TokenTree2 {
+        self
+    }
+
+    fn into_token_tree(self) -> TokenTree2 {
         self
     }
 }
@@ -305,16 +331,7 @@ pub trait TokenStream2Ext: Sized {
     fn set_span_recursive(self, span: Span) -> TokenStream2 {
         self.into_token_stream()
             .into_iter()
-            .map(|mut tt| {
-                tt.set_span(span);
-                if let TokenTree2::Group(group) = tt {
-                    let delim = group.delimiter();
-                    let stream = group.stream().set_span_recursive(span);
-                    tt = TokenTree2::Group(Group::new(delim, stream));
-                }
-                tt.set_span(span);
-                tt
-            })
+            .map(|tt| tt.set_span_recursive(span))
             .collect()
     }
 }

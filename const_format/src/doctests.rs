@@ -157,3 +157,37 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 ///
 #[cfg(feature = "assert")]
 pub struct Assert;
+
+/// # assert_eq
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_eq!(0u8, 0, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_eq!(0u8, 10, "foo");
+///
+/// ```
+///
+/// # assert_ne
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_ne!(0u8, 10, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_ne!(0u8, 0, "foo");
+///
+/// ```
+///
+pub struct AssertCmp;

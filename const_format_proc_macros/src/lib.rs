@@ -24,6 +24,8 @@ mod formatting;
 
 mod parse_utils;
 
+mod respan_to_macro;
+
 mod shared_arg_parsing;
 
 mod utils;
@@ -103,3 +105,36 @@ pub fn derive_const_debug(input: TokenStream1) -> TokenStream1 {
         .unwrap_or_else(|e| e.to_compile_error())
         .into()
 }
+
+/// `__respan_to!(( foo tokens )  bar tokens )`
+/// Respan all the bar tokens to the span of the foo tokens
+#[proc_macro]
+pub fn respan_to(input: TokenStream1) -> TokenStream1 {
+    crate::respan_to_macro::implementation(input.into()).into()
+}
+
+/*
+#[proc_macro]
+pub fn respan_to(input: TokenStream1) -> TokenStream1 {
+    fn inner(input: TokenStream2) -> Result<TokenStream2, crate::Error> {
+        use crate::{
+            parse_utils::{ParseBuffer, TokenTreeExt},
+            shared_arg_parsing::ExprArg,
+        };
+
+        let mut input = ParseBuffer::new(input);
+        let input = &mut input;
+
+        let span = ExprArg::parse(input)?.span;
+
+        input.parse_punct(';')?;
+
+        let ts = input.map(|tt| tt.set_span_recursive(span) ).collect();
+        Ok(ts)
+    }
+
+    inner(input.into())
+        .unwrap_or_else(|e| e.to_compile_error())
+        .into()
+}
+*/

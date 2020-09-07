@@ -1,5 +1,7 @@
+#![allow(unreachable_code)]
+
 use const_format::for_examples::Unit;
-use const_format::{assertc, call_debug_fmt};
+use const_format::{assertc, assertc_eq, assertc_ne, call_debug_fmt};
 
 struct Foo;
 
@@ -51,6 +53,37 @@ fn assertc_emits_formatting() {
 
 // The formatting code should not run if the assertion is true
 assertc!(true, "{}", {
-    let x: u32 = loop {};
-    x
+    let _x: u32 = loop {};
+    _x
 });
+
+#[allow(unused_variables)]
+const _: () = {
+    ////////////////////////////////////////////////////////////////////////////////
+    ////        assertc_eq
+
+    assertc_eq!(0u8, 0u8);
+    assertc_eq!("foo", "foo", "hello");
+    assertc_eq!(Some("foo"), Some("foo"), "hello {}", {
+        let x: u32 = loop {};
+        x
+    });
+    assertc_eq!([false], [false], "{}", |f| {
+        loop {}
+        f.write_str("hello")
+    });
+
+    ////////////////////////////////////////////////////////////////////////////////
+    ////        assertc_ne
+
+    assertc_ne!(0u8, 3u8);
+    assertc_ne!("foo", "bar", "hello");
+    assertc_ne!(Some("foo"), Some("bar"), "hello {}", {
+        let x: u32 = loop {};
+        x
+    });
+    assertc_ne!([false], [true], "{}", |f| {
+        loop {}
+        f.write_str("hello")
+    });
+};
