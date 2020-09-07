@@ -112,8 +112,8 @@
 //!
 //! ### Formatted const panics
 //!
-//! This example demonstrates how you can use the [`assertc`] macro to
-//! do compile-time assertions with formatted error messages.
+//! This example demonstrates how you can use the [`assertc_ne`] macro to
+//! do compile-time inequality assertions with formatted error messages.
 //!
 //! This requires the "assert" feature,because as of writing these docs (2020-09-XX),
 //! panicking at compile-time requires a nightly feature.
@@ -121,15 +121,15 @@
 #![cfg_attr(feature = "assert", doc = "```compile_fail")]
 #![cfg_attr(not(feature = "assert"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
-//! #![feature(const_panic)]
 //!
-//! use const_format::{StrWriter, assertc, strwriter_as_str, writec};
+//! use const_format::{StrWriter, assertc_ne, strwriter_as_str, writec};
 //! use const_format::utils::str_eq;
 //!
 //! macro_rules! check_valid_pizza{
 //!     ($user:expr, $topping:expr) => {
-//!         assertc!(
-//!             !str_eq($topping, "pineapple"),
+//!         assertc_ne!(
+//!             $topping,
+//!             "pineapple",
 //!             "You can't put pineapple on pizza, {}",
 //!             $user,
 //!         );
@@ -143,23 +143,42 @@
 //! # fn main(){}
 //! ```
 //!
-//! This is what it prints in rust nightly :
+//! This is the compiler output,
+//! the first compilation error is there to have an indicator of what assertion failed,
+//! and the second is the assertion failure:
 //!
 //! ```text
 //! error: any use of this value will cause an error
 //!   --> src/lib.rs:140:1
 //!    |
 //! 22 | check_valid_pizza!("Bob", "pineapple");
-//!    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
-//!
-//! assertion failed: !str_eq("pineapple", "pineapple")
-//!
-//! You can't put pineapple on pizza, Bob
-//!
-//! ', src/lib.rs:22:1
+//!    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
 //!    |
 //!    = note: `#[deny(const_err)]` on by default
 //!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+//!
+//! error[E0080]: could not evaluate constant
+//!   --> /const_format/src/panicking.rs:31:1
+//!    |
+//! 31 | panic!();
+//!    | ^^^^^^^^^ the evaluated program panicked at '
+//! --------------------------------------------------------------------------------
+//! module_path: rust_out
+//! line: 22
+//!
+//! assertion failed: LEFT != RIGHT
+//!
+//!  left: "pineapple"
+//! right: "pineapple"
+//!
+//! You can't put pineapple on pizza, Bob
+//! --------------------------------------------------------------------------------
+//! ', /const_format/src/panicking.rs:31:1
+//!    |
+//!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+//!
+//! error: aborting due to 2 previous errors
+//!
 //! ```
 //!
 //! <div id="macro-limitations"></div>
@@ -233,7 +252,7 @@
 //! need to be explicitly enabled with cargo features.
 //!
 //!
-//! [`assertc`]: ./macro.assertc.html
+//! [`assertc_ne`]: ./macro.assertc_ne.html
 //!
 //! [`concatcp`]: ./macro.concatcp.html
 //!

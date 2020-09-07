@@ -1,5 +1,4 @@
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-#![cfg_attr(feature = "assert", feature(const_panic))]
 
 mod misc_tests {
     #[cfg(feature = "assert")]
