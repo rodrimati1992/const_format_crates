@@ -331,13 +331,14 @@ impl MyParse for WriteArgs {
 
         let mut content = ParseBuffer::new(paren.contents);
 
-        let (writer_expr, _span) =
+        let (writer_expr, span) =
             content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?;
 
         let format_args = FormatArgs::parse_with(input, prefix)?;
 
         Ok(Self {
             writer_expr,
+            writer_span: span,
             format_args,
         })
     }

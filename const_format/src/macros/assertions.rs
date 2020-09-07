@@ -396,16 +396,15 @@ assert_eq_docs! {
 macro_rules! __assertc_equality_inner {
     ($left:expr, $right:expr, ($($op:tt)*) $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? )=>{
         const _: () = {
+            use $crate::pmr::respan_to as __cf_respan_to;
             const LEFT: bool = {
                 // Have to use `respan_to` to make the `multiple coerce found` error
                 // point at the `$left` argument here.
                 use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
-                $crate::pmr::respan_to!(
-                    ($left)
-                    match [&$left, &$right] {
-                        [left, right] => __cf_coerce_to_fmt!(left).const_eq(right),
-                    }
-                )
+                match [&$left, &$right] {
+                    __cf_respan_to!(($left) [left, right]) =>
+                        __cf_respan_to!(($left) __cf_coerce_to_fmt!(left).const_eq(right)),
+                }
             };
             const RIGHT: bool = true;
             $crate::assertc!{
@@ -419,12 +418,11 @@ macro_rules! __assertc_equality_inner {
                     use $crate::try_ as __cf_try;
                     use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
 
-
-                    $crate::pmr::respan_to!{
+                    #[allow(irrefutable_let_patterns)]
+                    if let __cf_respan_to!(($left) [ref __cf_left, ref __cf_right]) =
+                        [$left, $right]
+                    {__cf_respan_to!{
                         ($left)
-
-                        let [__cf_left, __cf_right] = &[$left, $right];
-
                         let __cf_fmt = &mut __cf_fmt
                             .make_formatter($crate::FormattingFlags::__A_REG);
 
@@ -435,7 +433,7 @@ macro_rules! __assertc_equality_inner {
                         __cf_try!(__cf_fmt.write_str("\nright: `"));
                         __cf_try!(__cf_coerce_to_fmt!(__cf_right).const_debug_fmt(__cf_fmt));
                         __cf_try!(__cf_fmt.write_str("`"));
-                    }
+                    }}
                 },
             }
         };

@@ -1,0 +1,8 @@
+[package]
+name = "print_errors"
+version = "0.1.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+const_format = {path = "../const_format/", features = ["fmt", "assert"]}

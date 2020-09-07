@@ -42,6 +42,7 @@ pub(crate) struct FormatIfArgs {
 /// The arguments of `writec`
 pub(crate) struct WriteArgs {
     pub(crate) writer_expr: TokenStream2,
+    pub(crate) writer_span: Span,
     pub(crate) format_args: FormatArgs,
 }
 

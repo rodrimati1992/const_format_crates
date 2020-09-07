@@ -235,6 +235,7 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
     let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
 
     let writer_expr = args.value.writer_expr;
+    let writer_span = args.value.writer_span;
     let FormatArgs {
         condition: _,
         expanded_into,
@@ -248,19 +249,25 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
 
     let writing_formatted = expanded_into.iter().map(|ei| ei.fmt_call(&strwriter));
 
+    let borrow_mutably = quote_spanned!(writer_span=> ((#writer_expr).borrow_mutably()));
+
+    let make_formatter = quote_spanned!(writer_span =>
+        let mut marker = __cf_osRcTFl4A::pmr::IsAWriteMarker::NEW;
+        if false {
+            marker = marker.infer_type(&#strwriter);
+        }
+        let mut #strwriter = marker.coerce(#strwriter);
+        let mut #strwriter =
+            #strwriter.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
+    );
+
     Ok(quote! {({
         use #cratep as __cf_osRcTFl4A;
 
         #[allow(non_snake_case)]
-        match ((#writer_expr).borrow_mutably(), #(&(#expr),)*) {
+        match (#borrow_mutably, #(&(#expr),)*) {
             (#strwriter, #(#locals,)*) => {
-                let mut marker = __cf_osRcTFl4A::pmr::IsAWriteMarker::NEW;
-                if false {
-                    marker = marker.infer_type(&#strwriter);
-                }
-                let mut #strwriter = marker.coerce(#strwriter);
-                let mut #strwriter =
-                    #strwriter.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
+                #make_formatter
 
                 loop {
                     #(
