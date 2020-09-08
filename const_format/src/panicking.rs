@@ -9,7 +9,7 @@ pub trait PanicIf: Message {
 }
 
 macro_rules! panic_ {
-    () => {
+    ($($span:tt)*)=> {crate::pmr::respan_to!{($($span)*)
         impl<T> crate::panicking::PanicIf for T
         where
             T: ?Sized + crate::panicking::Message,
@@ -25,10 +25,12 @@ macro_rules! panic_ {
                 }
             };
         }
-    };
+    }};
 }
 
-panic_!();
+panic_! {
+    .
+}
 
 /// Equivalent to the panic macro, but takes a `&'static str` constant.
 ///

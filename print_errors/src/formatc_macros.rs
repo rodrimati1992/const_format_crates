@@ -5,9 +5,13 @@ use const_format::formatc;
 
 const _: &str = formatcp!("{}");
 
-const _: &str = formatcp!("{}", foo = "", 100u8);
+const _: &str = formatcp!("{}", foo = "", 100u8 + 0);
 
 const _: &str = formatcp!("{}", 0 + 0);
+
+const _: &str = formatcp!("{}", 0u8, 0u8 + 1);
+
+const _: &str = formatcp!("{}", |fmt| 0 + 0);
 
 #[cfg(feature = "nightly")]
 const _: () = {

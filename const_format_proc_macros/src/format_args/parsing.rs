@@ -7,6 +7,7 @@ use crate::{
     format_str_parsing::{FmtArg, FmtStrComponent, FormatStr, WhichArg},
     parse_utils::{LitStr, MyParse, ParseBuffer, ParseStream, TokenTreeExt},
     shared_arg_parsing::ExprArg,
+    spanned::Spans,
     utils::{dummy_ident, LinearResult},
 };
 
@@ -43,10 +44,10 @@ impl MyParse for UncheckedFormatArg {
                     content.parse_punct('|')?;
                 }
 
-                let (expr, span) = content.parse_token_stream_and_span();
+                let (expr, spans) = content.parse_token_stream_and_span();
 
                 Ok(Self {
-                    span,
+                    spans,
                     ident,
                     fmt_ident,
                     expr,
@@ -142,18 +143,18 @@ impl FormatArgs {
         let mut args = Vec::<FormatArg>::with_capacity(unchecked_fargs.args.len());
         let mut local_variables = Vec::<LocalVariable>::with_capacity(unchecked_fargs.args.len());
 
-        let arg_span_idents: Vec<(Span, Option<Ident>)> = unchecked_fargs
+        let arg_span_idents: Vec<(Spans, Option<Ident>)> = unchecked_fargs
             .args
             .iter()
-            .map(|x| (x.span, x.ident.clone()))
+            .map(|x| (x.spans, x.ident.clone()))
             .collect();
 
         {
             let mut prev_is_named_arg = false;
             for (i, arg) in unchecked_fargs.args.into_iter().enumerate() {
-                let expr_span = arg.span;
+                let expr_span = arg.spans;
 
-                let make_ident = |s: String| Ident::new(&s, expr_span);
+                let make_ident = |s: String| Ident::new(&s, expr_span.start);
 
                 let is_named_arg = arg.ident.is_some();
 
@@ -167,8 +168,8 @@ impl FormatArgs {
                     name
                 } else {
                     if prev_is_named_arg {
-                        return Err(crate::Error::new(
-                            expr_span,
+                        return Err(crate::Error::spanned(
+                            arg.spans,
                             "expected a named argument, \
                              named arguments cannot be followed by positional arguments.",
                         ));
@@ -177,15 +178,15 @@ impl FormatArgs {
                     make_ident(format!("{}{}", prefix, i))
                 };
 
-                let format_arg = if let Some(fmt_ident) = arg.fmt_ident {
+                let format_arg = if let Some(fmt_ident) = &arg.fmt_ident {
                     FormatArg::WithFormatter {
-                        fmt_ident,
-                        expr: arg.expr,
+                        fmt_ident: fmt_ident.clone(),
+                        expr: arg.expr.clone(),
                     }
                 } else {
                     local_variables.push(LocalVariable {
                         ident: var_name.clone(),
-                        expr: arg.expr,
+                        expr: arg.expr.clone(),
                     });
 
                     FormatArg::WithLocal(var_name)
@@ -285,7 +286,7 @@ impl FormatArgs {
                 .collect()
         };
 
-        for (i, (is_it_unused, (span, ident))) in
+        for (i, (is_it_unused, (spans, ident))) in
             unused_args.iter().zip(&arg_span_idents).enumerate()
         {
             if *is_it_unused {
@@ -294,7 +295,7 @@ impl FormatArgs {
                 } else {
                     format!("argument number {} is unused", i)
                 };
-                res.push_err(crate::Error::new(*span, msg));
+                res.push_err(crate::Error::spanned(*spans, msg));
             }
         }
         res.take()?;
@@ -331,14 +332,14 @@ impl MyParse for WriteArgs {
 
         let mut content = ParseBuffer::new(paren.contents);
 
-        let (writer_expr, span) =
+        let (writer_expr, spans) =
             content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?;
 
         let format_args = FormatArgs::parse_with(input, prefix)?;
 
         Ok(Self {
             writer_expr,
-            writer_span: span,
+            writer_span: spans.joined(),
             format_args,
         })
     }

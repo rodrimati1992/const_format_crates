@@ -1,6 +1,6 @@
 use crate::{
     format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness,
-    shared_arg_parsing::ExprArg,
+    shared_arg_parsing::ExprArg, spanned::Spans,
 };
 
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
@@ -19,7 +19,7 @@ struct UncheckedFormatArgs {
 }
 
 struct UncheckedFormatArg {
-    pub(crate) span: Span,
+    pub(crate) spans: Spans,
     pub(crate) ident: Option<Ident>,
     // The identifier for the Formatter passed to format the argument.
     // If this is Some, then `expr` is expanded directly,

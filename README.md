@@ -164,10 +164,10 @@ error: any use of this value will cause an error
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0080]: could not evaluate constant
-  --> /const_format/src/panicking.rs:31:1
+  --> /const_format/src/panicking.rs:32:5
    |
-31 | panic!();
-   | ^^^^^^^^^ the evaluated program panicked at '
+32 |     .
+   |     ^ the evaluated program panicked at '
 --------------------------------------------------------------------------------
 module_path: rust_out
 line: 22

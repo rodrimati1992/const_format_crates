@@ -110,16 +110,16 @@ with_shared_docs! {
     ///   --> src/macros/assertions.rs:59:1
     ///    |
     /// 13 | assertc!(L + R == 5, "{} plus {} isn't 5 buddy", L,  R);
-    ///    /// | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
+    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
     ///    |
     ///    = note: `#[deny(const_err)]` on by default
     ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
     ///
     /// error[E0080]: could not evaluate constant
-    ///   --> const_format/src/panicking.rs:31:1
+    ///   --> /const_format/src/panicking.rs:32:5
     ///    |
-    /// 31 | panic!();
-    ///    | ^^^^^^^^^ the evaluated program panicked at '
+    /// 32 |     .
+    ///    |     ^ the evaluated program panicked at '
     /// --------------------------------------------------------------------------------
     /// module_path: rust_out
     /// line: 13
@@ -264,10 +264,10 @@ assert_eq_docs! {
     ///   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
     ///
     /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:31:1
+    ///   --> /const_format/src/panicking.rs:32:5
     ///    |
-    /// 31 | panic!();
-    ///    | ^^^^^^^^^ the evaluated program panicked at '
+    /// 32 |     .
+    ///    |     ^ the evaluated program panicked at '
     /// --------------------------------------------------------------------------------
     /// module_path: rust_out
     /// line: 9
@@ -357,10 +357,10 @@ assert_eq_docs! {
     ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
     ///
     /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:31:1
+    ///   --> /const_format/src/panicking.rs:32:5
     ///    |
-    /// 31 | panic!();
-    ///    | ^^^^^^^^^ the evaluated program panicked at '
+    /// 32 |     .
+    ///    |     ^ the evaluated program panicked at '
     /// --------------------------------------------------------------------------------
     /// module_path: rust_out
     /// line: 11

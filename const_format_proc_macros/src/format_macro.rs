@@ -22,7 +22,7 @@ pub(crate) fn concatcp_impl(
     let fmt_var = Ident::new("fmt", Span::mixed_site());
 
     let concat_args = args.value.args.iter().map(|ExprArg { expr, span }| {
-        quote_spanned!(*span=>
+        quote_spanned!(span.start=>
             __cf_osRcTFl4A::pmr::PConvWrapper(#expr).to_pargument_display(#fmt_var)
         )
     });
@@ -70,7 +70,7 @@ pub(crate) fn formatcp_impl(
         if let ExpandInto::WithFormatter(wf) = ei {
             return Err(crate::Error::new(
                 wf.fmt_ident.span(),
-                "Cannot access the core_format::fmt::Formatter in the `formatcp` macro",
+                "Can't do custom formatting in the `formatcp` macro",
             ));
         }
     }

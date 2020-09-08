@@ -1,4 +1,4 @@
-use crate::{utils::Peekable2, Error};
+use crate::{spanned::Spans, utils::Peekable2, Error};
 
 use proc_macro2::{
     token_stream::IntoIter, Delimiter, Group, Ident, Punct, Span, TokenStream as TokenStream2,
@@ -91,21 +91,24 @@ impl ParseBuffer {
         }
     }
 
-    pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Span) {
-        let mut span = match self.peek() {
+    pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Spans) {
+        let mut start = match self.peek() {
             Some(x) => x.span(),
             None => Span::call_site(),
         };
-        let ts = std::iter::from_fn(|| {
-            let tt = self.next()?;
 
-            span = span.join(tt.span()).unwrap_or(span);
+        let mut end = start;
 
-            Some(tt)
-        })
-        .collect::<TokenStream2>();
+        let ts = self
+            .inspect(|tt| {
+                end = tt.span();
+                if let Some(next) = start.join(end) {
+                    start = next;
+                }
+            })
+            .collect::<TokenStream2>();
 
-        (ts, span)
+        (ts, Spans { start, end })
     }
 
     /// Unwraps a none-delimited token tree to parse a type,

@@ -1,8 +1,11 @@
 //! Types for parsing arguments, shared by many of the macros
 
-use crate::parse_utils::{MyParse, ParseBuffer, ParseStream};
+use crate::{
+    parse_utils::{MyParse, ParseBuffer, ParseStream},
+    spanned::Spans,
+};
 
-use proc_macro2::{Span, TokenStream as TokenStream2};
+use proc_macro2::TokenStream as TokenStream2;
 
 use quote::ToTokens;
 
@@ -10,7 +13,7 @@ use quote::ToTokens;
 
 // An expression inside `(...)`
 pub(crate) struct ExprArg {
-    pub(crate) span: Span,
+    pub(crate) span: Spans,
     /// Using a TokenStream2 because it is validated to be a valid expression in
     /// the macro_rules! macros that call these proc macros.
     pub(crate) expr: TokenStream2,

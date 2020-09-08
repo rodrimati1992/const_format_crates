@@ -28,6 +28,8 @@ mod respan_to_macro;
 
 mod shared_arg_parsing;
 
+mod spanned;
+
 mod utils;
 
 #[cfg(test)]
