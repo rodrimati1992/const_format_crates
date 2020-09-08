@@ -121,6 +121,11 @@ macro_rules! non_zero_impls {
                 pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                     PWrapper(self.0.get()).const_debug_fmt(f)
                 }
+
+                #[inline(always)]
+                pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+                    PWrapper(self.0.get()).const_display_fmt(f)
+                }
             }
         )*
     )

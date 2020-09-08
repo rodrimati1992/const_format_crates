@@ -8,6 +8,9 @@ mod misc_tests {
     #[cfg(not(feature = "only_new_tests"))]
     mod call_debug_fmt_macro;
 
+    #[cfg(feature = "fmt")]
+    mod concatc_macro_tests;
+
     #[cfg(feature = "derive")]
     mod derive_tests;
 

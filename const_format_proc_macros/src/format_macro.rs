@@ -154,7 +154,6 @@ pub(crate) fn formatc_macro_impl(
         .map(|ei| ei.fmt_call(&strwriter));
 
     let cond_a = fmt_args.condition.iter();
-    let cond_b = fmt_args.condition.iter();
 
     Ok(quote!(({
         use #cratep as __cf_osRcTFl4A;
@@ -173,61 +172,11 @@ pub(crate) fn formatc_macro_impl(
             __cf_osRcTFl4A::pmr::Ok(())
         }
 
-        const fn len_nhpmwyd3nj() -> usize {
-            if  #((#cond_a) && )* true  {
-                let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
-                let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
-                match fmt_NHPMWYD3NJA(fmt) {
-                    __cf_osRcTFl4A::pmr::Ok(()) => strlen.len(),
-                    __cf_osRcTFl4A::pmr::Err(_) => 0,
-                }
-            } else {
-                0
-            }
-        }
-
-        const LEN_NHPMWYD3NJA: usize = len_nhpmwyd3nj();
-
-        const fn str_writer_NHPMWYD3NJA(
-        )-> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
-            let mut #strwriter = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
-            let mut error = if #((#cond_b) && )* true {
-                fmt_NHPMWYD3NJA(
-                    __cf_osRcTFl4A::pmr::Formatter::from_sw(
-                        &mut #strwriter,
-                        __cf_osRcTFl4A::FormattingFlags::NEW,
-                    )
-                )
-            } else {
-                __cf_osRcTFl4A::pmr::Ok(())
-            };
-
-            __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter{
-                error: __cf_osRcTFl4A::msg::ErrorTuple::new(error, &#strwriter),
-                writer: #strwriter,
-            }
-        }
-
-        const STR_WRITER_NHPMWYD3NJA:
-            &__cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]>=
-            &str_writer_NHPMWYD3NJA();
-
-        const _: __cf_osRcTFl4A::msg::Ok = {
-            <
-                <
-                    __cf_osRcTFl4A::msg::ErrorPicker<
-                        [(); STR_WRITER_NHPMWYD3NJA.error.error_variant],
-                        [(); STR_WRITER_NHPMWYD3NJA.error.capacity]
-                    >
-                    as __cf_osRcTFl4A::msg::ErrorAsType
-                >::Type
-            >::NEW
-        };
-
-        const STR_NHPMWYD3NJA: &str =
-            __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
-
-        STR_NHPMWYD3NJA
+        __cf_osRcTFl4A::__concatc_inner!(
+            fmt_NHPMWYD3NJA,
+            #((#cond_a) && )* true,
+            #cratep
+        )
     })))
 }
 

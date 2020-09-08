@@ -22,9 +22,7 @@ fn get_span(ts: TokenStream2) -> Span {
             let mut span = first_tt.span();
 
             for tt in iter {
-                if let Some(joined) = span.join(tt.span()) {
-                    span = joined;
-                }
+                span = span.join(tt.span()).unwrap_or(span);
             }
             span
         }

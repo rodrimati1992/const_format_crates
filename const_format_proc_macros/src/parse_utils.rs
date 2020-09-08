@@ -99,9 +99,7 @@ impl ParseBuffer {
         let ts = std::iter::from_fn(|| {
             let tt = self.next()?;
 
-            if let Some(x) = span.join(tt.span()) {
-                span = x;
-            }
+            span = span.join(tt.span()).unwrap_or(span);
 
             Some(tt)
         })

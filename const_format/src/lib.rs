@@ -363,6 +363,12 @@ pub use crate::wrapper_types::sliced::Sliced;
 pub use crate::wrapper_types::pwrapper::PWrapper;
 
 #[doc(hidden)]
+#[allow(non_snake_case)]
+pub mod __cf_osRcTFl4A {
+    pub use crate::*;
+}
+
+#[doc(hidden)]
 pub mod pmr {
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl, respan_to};
 

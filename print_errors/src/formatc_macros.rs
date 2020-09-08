@@ -1,19 +1,25 @@
-use const_format::{formatc, formatcp};
+use const_format::formatcp;
+
+#[cfg(feature = "nightly")]
+use const_format::formatc;
 
 const _: &str = formatcp!("{}");
 
 const _: &str = formatcp!("{}", foo = "", 100u8);
 
-const _: &str = formatcp!("{}", 0);
+const _: &str = formatcp!("{}", 0 + 0);
 
-const _: &str = formatc!("{}");
+#[cfg(feature = "nightly")]
+const _: () = {
+    const _: &str = formatc!("{}");
 
-const _: &str = formatc!("{}", foo = "", 100u8);
+    const _: &str = formatc!("{}", foo = "", 100u8 + 0);
 
-const _: &str = formatc!("{}", 0);
+    const _: &str = formatc!("{}", 0 + 0);
 
-const _: &str = formatc!("{}", {
-    let a = 0;
-    let b = 0;
-    a + b
-});
+    const _: &str = formatc!("{}", {
+        let a = 0;
+        let b = 0;
+        a + b
+    });
+};
