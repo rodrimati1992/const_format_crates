@@ -24,7 +24,7 @@ mod misc_tests {
     #[cfg(not(feature = "only_new_tests"))]
     mod impl_fmt_macro_tests;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    // #[cfg(not(feature = "only_new_tests"))]
     mod shared_cp_macro_tests;
 
     #[cfg(feature = "fmt")]

@@ -1,5 +1,8 @@
 use const_format::{concatcp, formatcp};
 
+#[cfg(feature = "fmt")]
+use const_format::concatc;
+
 use arrayvec::ArrayString;
 
 use core::fmt::Write;
@@ -23,7 +26,6 @@ macro_rules! tests {
             )*
             assert_eq!(string.as_str(), ALL_TYS);
 
-            #[cfg(feature = "fmt")]
             assert_eq!(string.as_str(), ALL_TYS_F);
 
             #[cfg(feature = "fmt")]

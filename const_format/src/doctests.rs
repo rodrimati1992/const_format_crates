@@ -190,4 +190,5 @@ pub struct Assert;
 ///
 /// ```
 ///
+#[cfg(feature = "assert")]
 pub struct AssertCmp;
