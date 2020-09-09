@@ -126,3 +126,57 @@ fn test_display() {
         );
     }
 }
+
+/*////////////////////////////////////////////////////////////////////////////////
+Testing Display formatting for non-primitive integer or `&str` types,
+because those types are already tested in other tests.
+*/////////////////////////////////////////////////////////////////////////////////
+
+use std::num::{NonZeroI8, NonZeroIsize, NonZeroU8, NonZeroUsize};
+
+macro_rules! unwrap_opt {
+    ($opt:expr) => {
+        match $opt {
+            Some(x) => x,
+            None => loop {},
+        }
+    };
+}
+
+#[test]
+fn display_fmt_other_types() {
+    const fn inner(fmt: &mut Formatter<'_>) -> const_format::Result {
+        const_format::writec!(
+            fmt,
+            concat!("{},{};", "{},{};{},{};{},{};{},{};",),
+            false,
+            true,
+            unwrap_opt!(NonZeroI8::new(-13)),
+            unwrap_opt!(NonZeroI8::new(21)),
+            unwrap_opt!(NonZeroIsize::new(-13)),
+            unwrap_opt!(NonZeroIsize::new(21)),
+            unwrap_opt!(NonZeroU8::new(3)),
+            unwrap_opt!(NonZeroU8::new(13)),
+            unwrap_opt!(NonZeroUsize::new(3)),
+            unwrap_opt!(NonZeroUsize::new(13)),
+        )
+    }
+
+    let flags = [
+        FormattingFlags::NEW.set_alternate(false).set_decimal(),
+        FormattingFlags::NEW.set_alternate(false).set_hexadecimal(),
+        FormattingFlags::NEW.set_alternate(false).set_binary(),
+        FormattingFlags::NEW.set_alternate(true).set_decimal(),
+        FormattingFlags::NEW.set_alternate(true).set_hexadecimal(),
+        FormattingFlags::NEW.set_alternate(true).set_binary(),
+    ];
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
+    for flag in flags.iter().copied() {
+        writer.clear();
+
+        inner(&mut writer.make_formatter(flag)).unwrap();
+
+        assert_eq!(writer.as_str(), "false,true;-13,21;-13,21;3,13;3,13;");
+    }
+}

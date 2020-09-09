@@ -665,7 +665,7 @@ macro_rules! finish_method_impl {
 /// # Example
 ///
 /// This example demonstrates how you can debug format a struct,
-/// and a braced variants.
+/// and a braced variant.
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]

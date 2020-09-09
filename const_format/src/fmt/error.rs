@@ -60,3 +60,31 @@ impl Error {
         loop {}
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// The return type of most formatting functions
+pub type Result<T = (), E = Error> = core::result::Result<T, E>;
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// For converting types to [`const_format::Result`]
+///
+/// [`const_format::Result`]: ./type.Result.html
+pub struct ToResult<T>(pub T);
+
+impl ToResult<()> {
+    ///
+    #[inline(always)]
+    pub const fn to_result(self) -> Result {
+        Ok(())
+    }
+}
+
+impl ToResult<Result> {
+    ///
+    #[inline(always)]
+    pub const fn to_result(self) -> Result {
+        self.0
+    }
+}

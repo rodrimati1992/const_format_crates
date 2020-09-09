@@ -12,20 +12,21 @@ pub(crate) use self::errors::{ParseError, ParseErrorKind};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct FormatStr {
-    pub(crate) rawness: StrRawness,
     pub(crate) list: Vec<FmtStrComponent>,
 }
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum FmtStrComponent {
-    Str(String),
+    Str(String, StrRawness),
     Arg(FmtArg),
 }
 
+/// An argument in the format string eg: `"{foo:?}"`
 #[derive(Debug, PartialEq)]
 pub(crate) struct FmtArg {
     pub(crate) which_arg: WhichArg,
     pub(crate) formatting: FormattingFlags,
+    pub(crate) rawness: StrRawness,
 }
 
 #[derive(Debug, PartialEq)]
@@ -36,25 +37,26 @@ pub(crate) enum WhichArg {
 
 /////////////////////////////////////
 
-#[allow(dead_code)]
+#[cfg(test)]
 impl FmtStrComponent {
     fn str(s: &str) -> Self {
-        Self::Str(s.to_string())
+        Self::Str(s.to_string(), StrRawness::dummy())
     }
     fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
         Self::Arg(FmtArg {
             which_arg,
             formatting,
+            rawness: StrRawness::dummy(),
         })
     }
 }
 
-#[allow(dead_code)]
 impl FmtArg {
-    fn new(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
+    fn new(which_arg: WhichArg, formatting: FormattingFlags, rawness: StrRawness) -> Self {
         Self {
             which_arg,
             formatting,
+            rawness,
         }
     }
 }
@@ -92,18 +94,18 @@ fn parse_format_str(input: &str, rawness: StrRawness) -> Result<FormatStr, Parse
         let open_pos = input.find_from('{', arg_start);
 
         let str = &input[arg_start..open_pos.unwrap_or(input.len())];
-        components.push_arg_str(parse_mid_str(str, arg_start)?);
+        components.push_arg_str(parse_mid_str(str, arg_start)?, rawness);
 
         if let Some(open_pos) = open_pos {
             let after_open = open_pos + 1;
             if input[after_open..].chars().next() == Some('{') {
-                components.push_arg_str("{".to_string());
+                components.push_arg_str("{".to_string(), rawness);
 
                 arg_start = open_pos + 2;
             } else if let Some(close_pos) = input.find_from('}', after_open) {
                 let after_close = close_pos + 1;
 
-                let arg = parse_fmt_arg(&input[after_open..close_pos], after_open)?;
+                let arg = parse_fmt_arg(&input[after_open..close_pos], after_open, rawness)?;
                 components.push(FmtStrComponent::Arg(arg));
 
                 arg_start = after_close;
@@ -118,10 +120,7 @@ fn parse_format_str(input: &str, rawness: StrRawness) -> Result<FormatStr, Parse
         }
     }
 
-    Ok(FormatStr {
-        rawness,
-        list: components,
-    })
+    Ok(FormatStr { list: components })
 }
 
 /// Parses the text between arguments, to unescape `}}` into `}`
@@ -151,7 +150,7 @@ fn parse_mid_str(str: &str, starts_at: usize) -> Result<String, ParseError> {
 /// Parses the format arguments (`{:?}`, `{foo:}`, `{0}`, etc).
 ///
 /// `starts_at` is the offset of `input` in the formatting string.
-fn parse_fmt_arg(input: &str, starts_at: usize) -> Result<FmtArg, ParseError> {
+fn parse_fmt_arg(input: &str, starts_at: usize, rawness: StrRawness) -> Result<FmtArg, ParseError> {
     let colon = input.find(':');
 
     let which_arg_str = &input[..colon.unwrap_or(input.len())];
@@ -161,6 +160,7 @@ fn parse_fmt_arg(input: &str, starts_at: usize) -> Result<FmtArg, ParseError> {
     Ok(FmtArg::new(
         parse_which_arg(which_arg_str, starts_at)?,
         parse_formatting(formatting_str, formatting_starts_at)?,
+        rawness,
     ))
 }
 
@@ -257,13 +257,13 @@ fn is_ident(s: &str) -> bool {
 ////////////////////////////////////////////////////////////////////////////////
 
 trait VecExt {
-    fn push_arg_str(&mut self, str: String);
+    fn push_arg_str(&mut self, str: String, rawness: StrRawness);
 }
 
 impl VecExt for Vec<FmtStrComponent> {
-    fn push_arg_str(&mut self, str: String) {
+    fn push_arg_str(&mut self, str: String, rawness: StrRawness) {
         if !str.is_empty() {
-            self.push(FmtStrComponent::Str(str));
+            self.push(FmtStrComponent::Str(str, rawness));
         }
     }
 }

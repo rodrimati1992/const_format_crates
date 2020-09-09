@@ -19,5 +19,6 @@ mod fmt_tests {
     #[cfg(not(feature = "only_new_tests"))]
     mod str_writer_methods;
 
+    #[cfg(not(feature = "only_new_tests"))]
     mod str_writer_mut;
 }

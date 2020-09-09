@@ -34,18 +34,24 @@ which have not been stabilized as of writing these docs.
 
 All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
 
+- [`concatc`]:
+Concatenates many standard library and user defined types into a `&'static str` constant.
+
 - [`formatc`]:
-[`format`]-like macro that can format many standard library and user defined types.
+[`format`]-like macro that can format many standard library and user defined types into 
+a `&'static str` constant.
 
 - [`writec`]:
 [`write`]-like macro that can format many standard library and user defined types
 into a type that implements [`WriteMarker`].
 
-
 The "derive" feature enables the [`ConstDebug`] macro, and the "fmt" feature.<br>
 [`ConstDebug`] derives the [`FormatMarker`] trait,
 and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 
+The "assert" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+and the "fmt" feature.<br>
+These macros are like the standard library assert macros, but evaluated at compile-time.
 
 # Examples
 
@@ -116,91 +122,78 @@ assert_eq!(
 ```
 
 
+
 ### Formatted const panics
 
-This example demonstrates how you can use a [`StrWriter`] to format
-a compile-time panic message.
+This example demonstrates how you can use the [`assertc_ne`] macro to
+do compile-time inequality assertions with formatted error messages.
 
-As of writing these docs (2020-08-29), panicking at compile-time requires a
-nightly feature, and only supports passing a `&'static str` argument,
-so this only works in the initialization block of `const` items.
+This requires the "assert" feature,because as of writing these docs (2020-09-XX),
+panicking at compile-time requires a nightly feature.
 
 ```rust
-    #![feature(const_mut_refs)]
-    #![feature(const_panic)]
+#![feature(const_mut_refs)]
 
-use const_format::{StrWriter, strwriter_as_str, writec};
+use const_format::{StrWriter, assertc_ne, strwriter_as_str, writec};
 use const_format::utils::str_eq;
 
-struct PizzaError;
-
-const fn write_message(
-    buffer: &mut StrWriter,
-    bought_by: &str,
-    topping: &str,
-) -> Result<(), PizzaError> {
-    buffer.clear();
-    let mut writer = buffer.as_mut();
-    if str_eq(topping, "pineapple") {
-        let _ = writec!(
-            writer,
-            "\n{SEP}\n\nYou can't put pineapple on pizza, {}.\n\n{SEP}\n",
-            bought_by,
-            SEP = "----------------------------------------------------------------"
+macro_rules! check_valid_pizza{
+    ($user:expr, $topping:expr) => {
+        assertc_ne!(
+            $topping,
+            "pineapple",
+            "You can't put pineapple on pizza, {}",
+            $user,
         );
-        return Err(PizzaError);
     }
-    Ok(())
 }
 
-const CAP: usize = 256;
-// Defined a `const fn` as a workaround for mutable references not
-// being allowed in `const`ants.
-const fn message_and_result(
-    bought_by: &str,
-    topping: &str,
-) -> (StrWriter<[u8; CAP]>, Result<(), PizzaError>) {
-    let mut buffer = StrWriter::new([0; CAP]);
-    let res = write_message(&mut buffer, bought_by, topping);
-    (buffer, res)
-}
+check_valid_pizza!("John", "salami");
+check_valid_pizza!("Dave", "sausage");
+check_valid_pizza!("Bob", "pineapple");
 
-const _: () = {
-    if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
-        let promoted: &'static StrWriter = &{buffer};
-        let message = strwriter_as_str!(promoted);
-        panic!(message);
-    }
-};
-
+# fn main(){}
 ```
 
-This is what it prints in rust nightly :
+This is the compiler output,
+the first compilation error is there to have an indicator of what assertion failed,
+and the second is the assertion failure:
 
-```
+```text
 error: any use of this value will cause an error
-  --> src/lib.rs:166:9
+  --> src/lib.rs:140:1
    |
-43 | / const _: () = {
-44 | |     if let (buffer, Err(_)) = message_and_result("Bob", "pineapple") {
-45 | |         let promoted: &'static StrWriter = &{buffer};
-46 | |         let message = strwriter_as_str!(promoted);
-47 | |         panic!(message);
-   | |         ^^^^^^^^^^^^^^^^ the evaluated program panicked at '
-----------------------------------------------------------------
-
-You can't put pineapple on pizza, Bob.
-
-----------------------------------------------------------------
-', src/lib.rs:47:9
-48 | |     }
-49 | | };
-   | |__-
+22 | check_valid_pizza!("Bob", "pineapple");
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
    |
    = note: `#[deny(const_err)]` on by default
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
+error[E0080]: could not evaluate constant
+  --> /const_format/src/panicking.rs:32:5
+   |
+32 |     .
+   |     ^ the evaluated program panicked at '
+--------------------------------------------------------------------------------
+module_path: rust_out
+line: 22
+
+assertion failed: LEFT != RIGHT
+
+ left: "pineapple"
+right: "pineapple"
+
+You can't put pineapple on pizza, Bob
+--------------------------------------------------------------------------------
+', /const_format/src/panicking.rs:31:1
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: aborting due to 2 previous errors
+
 ```
+
+
 
 
 <div id="macro-limitations"></div>
@@ -209,9 +202,10 @@ You can't put pineapple on pizza, Bob.
 
 All of the macros from `const_format` have these limitations:
 
-- The formatting macros that expand to 
-`&'static str`s can only use constants of concrete types,
-so while `Type::<u8>::FOO` is fine,`Type::<T>::FOO` is not (`T` being a type parameter).
+- The formatting macros that expand to
+`&'static str`s can only use constants from concrete types,
+so while a `Type::<u8>::FOO` argument would be fine,
+`Type::<T>::FOO` would not be (`T` being a type parameter).
 
 - Integer arguments must have a type inferrable from context,
 [more details in the Integer arguments section](#integer-args).
@@ -253,14 +247,26 @@ This feature includes the `formatc`/`writec` formatting macros.
 provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
+- "assert": implies the "fmt" feature,
+enables the assertion macros.<br>
+This is a separate cargo feature because:
+    - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
+    - It requires the `std` crate, because `core::panic` requires a string literal argument.
+
+
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,
 allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run 
 in constant time, rather than linear time proportional to the truncated part of the slice.
 
+
+
 # No-std support
 
-`const_format` is unconditionally `#![no_std]`, it can be used anywhere Rust can be used.
+`const_format` is `#![no_std]`, it can be used anywhere Rust can be used.
+
+Caveat: The opt-in "assert" feature uses the `std::panic` macro to panic,
+as of 2020-09-06 `core::panic` requires the argument to be a literal.
 
 # Minimum Supported Rust Version
 
@@ -269,6 +275,12 @@ in constant time, rather than linear time proportional to the truncated part of 
 Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
+
+[`assertc`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc.html
+
+[`assertc_eq`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_eq.html
+
+[`assertc_ne`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_ne.html
 
 [`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
 
@@ -279,6 +291,8 @@ need to be explicitly enabled with cargo features.
 [`std::fmt`]: https://doc.rust-lang.org/std/fmt/index.html
 
 [`const_format::fmt`]: https://docs.rs/const_format/0.2.*/const_format/fmt/index.html
+
+[`concatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatc.html
 
 [`formatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatc.html
 

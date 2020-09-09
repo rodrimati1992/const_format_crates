@@ -48,6 +48,7 @@ macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
 
 slice_of_std_impl! {
     &str,
+    bool,
     u8, i8,
     u16, i16,
     u32, i32,
@@ -119,6 +120,11 @@ macro_rules! non_zero_impls {
                 #[inline(always)]
                 pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
                     PWrapper(self.0.get()).const_debug_fmt(f)
+                }
+
+                #[inline(always)]
+                pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+                    PWrapper(self.0.get()).const_display_fmt(f)
                 }
             }
         )*

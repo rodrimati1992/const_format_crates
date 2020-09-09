@@ -101,6 +101,8 @@ macro_rules! __concatcp_inner {
     }};
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 /// Formats constants of primitive types into a `&'static str`
 ///
 /// [For **examples** look here](#examples)
@@ -221,7 +223,7 @@ macro_rules! formatcp {
         $crate::formatcp!(
             @inner
             (($crate))
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );
@@ -232,6 +234,158 @@ macro_rules! formatcp {
         )
     );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/// Concatenates constants of standard library and/or user-defined types into a `&'static str`.
+///
+/// User defined types must implement the [`FormatMarker`] trait and
+/// and have a `const_display_fmt` method (as described in the trait) to be concatenated.
+///
+/// # Limitations
+///
+/// This macro has [the limitations described in here](./index.html#macro-limitations).
+///
+/// # Examples
+///
+/// ### With standard library types
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::concatc;
+///
+/// assert_eq!(concatc!("There is ", 99u8, " monkeys!"), "There is 99 monkeys!");
+///
+/// ```
+///
+/// ### With user-defined types
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Formatter, Sliced, concatc, impl_fmt};
+///
+/// const STRING: &str = "foo bar baz";
+///
+/// assert_eq!(concatc!(Sliced(STRING, 4..8), Foo), "bar table");
+///
+/// struct Foo;
+///
+/// impl_fmt!{
+///     impl Foo;
+///     const fn const_display_fmt(&self, fmt: &mut Formatter<'_>) -> const_format::Result {
+///         fmt.write_str("table")
+///     }
+/// }
+/// ```
+///
+///
+/// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
+///
+#[cfg(feature = "fmt")]
+#[macro_export]
+macro_rules! concatc {
+    ()=>{""};
+    ($($anything:tt)*)=>(
+        $crate::__concatc_expr!(($($anything)*) ($($anything)*))
+    )
+}
+
+#[doc(hidden)]
+#[cfg(feature = "fmt")]
+#[macro_export]
+macro_rules! __concatc_expr {
+    (($($arg: expr),* $(,)?) ($($span:tt)*) )=>({
+        const fn fmt_NHPMWYD3NJA(
+            mut fmt: $crate::fmt::Formatter<'_>,
+        ) -> $crate::Result {
+            use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
+            use $crate::pmr::respan_to as __cf_respan_to;
+            use $crate::try_ as __cf_try;
+
+            $({
+                let __cf_respan_to!(($arg) fmt) = &mut fmt;
+                __cf_respan_to!(($arg)
+                    __cf_try!(__cf_coerce_to_fmt!($arg).const_display_fmt(fmt))
+                );
+            })*
+
+            $crate::pmr::Ok(())
+        }
+
+        $crate::__concatc_inner!(fmt_NHPMWYD3NJA, true, $($span)*)
+    })
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __concatc_inner{
+    ($debug_fmt_fn:ident, $cond:expr, $($span:tt)*)=>{{
+        use $crate::__cf_osRcTFl4A;
+
+        $crate::pmr::respan_to!{($($span)*) {
+
+
+            const fn len_nhpmwyd3nj() -> usize {
+                if $cond {
+                    let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
+                    let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
+                    match $debug_fmt_fn(fmt) {
+                        __cf_osRcTFl4A::pmr::Ok(()) => strlen.len(),
+                        __cf_osRcTFl4A::pmr::Err(_) => 0,
+                    }
+                } else {
+                    0
+                }
+            }
+
+            const LEN_NHPMWYD3NJA: usize = len_nhpmwyd3nj();
+
+            const fn str_writer_nhpmwyd3nja(
+            )-> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
+                let mut writer = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
+                let error = if $cond {
+                    $debug_fmt_fn(
+                        __cf_osRcTFl4A::pmr::Formatter::from_sw(
+                            &mut writer,
+                            __cf_osRcTFl4A::FormattingFlags::NEW,
+                        )
+                    )
+                } else {
+                    __cf_osRcTFl4A::pmr::Ok(())
+                };
+
+                __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter{
+                    error: __cf_osRcTFl4A::msg::ErrorTuple::new(error, &writer),
+                    writer,
+                }
+            }
+
+            const STR_WRITER_NHPMWYD3NJA:
+                &__cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]>=
+                &str_writer_nhpmwyd3nja();
+
+            const _: __cf_osRcTFl4A::msg::Ok =
+                <
+                    <
+                        __cf_osRcTFl4A::msg::ErrorPicker<
+                            [(); STR_WRITER_NHPMWYD3NJA.error.error_variant],
+                            [(); STR_WRITER_NHPMWYD3NJA.error.capacity]
+                        >
+                        as __cf_osRcTFl4A::msg::ErrorAsType
+                    >::Type
+                >::NEW;
+
+            const STR_NHPMWYD3NJA: &str =
+                __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
+
+            STR_NHPMWYD3NJA
+        }}
+    }};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /// Formats constants of standard library and/or user-defined types into a `&'static str`.
 ///
@@ -269,6 +423,35 @@ macro_rules! formatcp {
 /// assert_eq!(ARRAY, "[9, 25],[9, 19],[1001, 11001]");
 ///
 /// ```
+///
+/// ### Custom formatting.
+///
+/// This example demonstrates how you can access the [`Formatter`] in arguments
+/// to do custom formatting.
+///
+/// For more details on this you can look
+/// [in the fmt module](./fmt/index.html#custom-formatting-section).
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::for_examples::Point3;
+/// use const_format::{formatc, try_};
+///
+/// const P: Point3 = Point3{x: 5, y: 13, z: 21};
+///
+/// const STR: &str = formatc!("{0};{0:#x};{0:#b}", |fmt|{
+///     try_!(fmt.write_u32_debug(P.x));
+///     try_!(fmt.write_str(" "));
+///     try_!(fmt.write_u32_debug(P.y));
+/// });
+///
+/// assert_eq!(STR, "5 13;0x5 0xD;0b101 0b1101");
+///
+/// ```
+/// [`Formatter`]: ./fmt/struct.Formatter.html
+///
+///
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
@@ -276,7 +459,7 @@ macro_rules! formatc {
         $crate::formatc!(
             @inner
             (($crate))
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );
@@ -409,8 +592,39 @@ macro_rules! formatc {
 /// # Ok::<(), const_format::Error>(())
 /// ```
 ///
+/// ### Custom formatting.
 ///
+/// This example demonstrates how you can access the [`Formatter`] in arguments
+/// to do custom formatting.
 ///
+/// Note that `return` inside arguments returns from the function around the `writec`.
+///
+/// For more details on this you can look
+/// [in the fmt module](./fmt/index.html#custom-formatting-section).
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::for_examples::Point3;
+/// use const_format::{StrWriter, call_debug_fmt, try_, writec};
+///
+/// const P: Point3 = Point3{x: 5, y: 13, z: 21};
+///
+/// let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+///
+/// writec!(
+///     writer,
+///     "The options are: {}, and {}",
+///     |fmt| call_debug_fmt!(Option, Some(P), fmt),
+///     |fmt| call_debug_fmt!(Option, None::<Point3>, fmt),
+/// )?;
+///
+/// assert_eq!(writer.as_str(), "The options are: Some(Point3 { x: 5, y: 13, z: 21 }), and None");
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+/// [`Formatter`]: ./fmt/struct.Formatter.html
 /// [`WriteMarker`]: ./marker_traits/trait.WriteMarker.html
 ///
 ///
@@ -424,7 +638,7 @@ macro_rules! writec {
             @inner
             (($crate))
             ($writer)
-            $format_string
+            ($format_string)
             $(, $(($expr),)+)?
         )
     );

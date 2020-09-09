@@ -1,5 +1,8 @@
 use const_format::{concatcp, formatcp};
 
+#[cfg(feature = "fmt")]
+use const_format::concatc;
+
 use arrayvec::ArrayString;
 
 use core::fmt::Write;
@@ -12,6 +15,9 @@ macro_rules! tests {
         const ALL_TYS_F: &'static str = formatcp!( $format_str, $($expr,)* );
         const ALL_TYS: &'static str = concatcp!( $($expr,)* );
 
+        #[cfg(feature = "fmt")]
+        const ALL_TYS_C: &'static str = concatc!( $($expr,)* );
+
         #[test]
         fn all_types() {
             let mut string = ArrayString::<[u8; 1024]>::new();
@@ -19,7 +25,11 @@ macro_rules! tests {
                 write!(string, "{}", $expr).unwrap();
             )*
             assert_eq!(string.as_str(), ALL_TYS);
+
             assert_eq!(string.as_str(), ALL_TYS_F);
+
+            #[cfg(feature = "fmt")]
+            assert_eq!(string.as_str(), ALL_TYS_C);
         }
 
         #[test]
@@ -68,6 +78,14 @@ tests! {
 
 #[test]
 fn other_tests() {
-    const EMPTY: &str = concatcp!();
-    assert_eq!(EMPTY, "");
+    {
+        const EMPTY: &str = concatcp!();
+        assert_eq!(EMPTY, "");
+    }
+
+    #[cfg(feature = "fmt")]
+    {
+        const EMPTY: &str = concatc!();
+        assert_eq!(EMPTY, "");
+    }
 }

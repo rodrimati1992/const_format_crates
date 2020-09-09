@@ -31,6 +31,13 @@ impl_fmt! {
         try_!(PWrapper(self.z).const_debug_fmt(f.field("z")));
         f.finish()
     }
+
+    ///
+    pub const fn const_eq(&self, other: &Self) -> bool {
+        self.x == other.x &&
+        self.y == other.y &&
+        self.z == other.z
+    }
 }
 
 /// An example unit struct which implements const debug formatting.
@@ -43,5 +50,10 @@ impl_fmt! {
     ///
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.debug_struct("Unit").finish()
+    }
+
+    ///
+    pub const fn const_eq(&self, _other: &Self) -> bool {
+        true
     }
 }

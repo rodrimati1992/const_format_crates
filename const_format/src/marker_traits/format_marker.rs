@@ -1,4 +1,4 @@
-//! Marker trait for types that implement the const fnrmatting methods.
+//! Marker trait for types that implement the const formatting methods.
 //!
 //!
 
@@ -8,7 +8,7 @@ use core::marker::PhantomData;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Marker trait for types that implement the const fnrmatting methods.
+/// Marker trait for types that implement the const formatting methods.
 ///
 /// # Implementors
 ///

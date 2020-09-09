@@ -1,3 +1,6 @@
+//! This module tests for errors that happen in the expanded code,
+//! errors detectable by the macro itself are tested in the proc macro crate.
+
 #![allow(non_camel_case_types)]
 
 ///
@@ -97,3 +100,95 @@ pub struct ConstDebugWhereClause;
 /// ```
 ///
 pub struct AsStr_For_StrWriterMut_NoEncoding;
+
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc!(true, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc!(false, "foo");
+///
+/// ```
+///
+/// # With a Formatting argument
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc!(
+///     true,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| { const_format::call_debug_fmt!(array, [100u8], fmt ) },
+///     foo = |fmt| { const_format::call_debug_fmt!(array, [(), ()], fmt ) },
+/// );
+///
+/// const_format::assertc!(
+///     true,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| const_format::call_debug_fmt!(array, [100u8], fmt ),
+///     foo = |fmt| const_format::call_debug_fmt!(array, [(), ()], fmt ),
+/// );
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc!(
+///     false,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| { const_format::call_debug_fmt!(array, [100u8], fmt ) },
+///     foo = |fmt| { const_format::call_debug_fmt!(array, [(), ()], fmt ) },
+/// );
+///
+/// const_format::assertc!(
+///     false,
+///     "{foo}\n{foo:#?}\n{}",
+///     |fmt| const_format::call_debug_fmt!(array, [100u8], fmt ),
+///     foo = |fmt| const_format::call_debug_fmt!(array, [(), ()], fmt ),
+/// );
+///
+/// ```
+///
+#[cfg(feature = "assert")]
+pub struct Assert;
+
+/// # assert_eq
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_eq!(0u8, 0, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_eq!(0u8, 10, "foo");
+///
+/// ```
+///
+/// # assert_ne
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_ne!(0u8, 10, "foo");
+///
+/// ```
+///
+/// ```compile_fail
+/// #![feature(const_mut_refs)]
+///
+/// const_format::assertc_ne!(0u8, 0, "foo");
+///
+/// ```
+///
+#[cfg(feature = "assert")]
+pub struct AssertCmp;

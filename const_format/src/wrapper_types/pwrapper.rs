@@ -80,7 +80,7 @@ pub struct PWrapper<T>(pub T);
 impl<'a, T> PWrapper<&'a [T]> {
     /// For constructing from a reference to an array.
     ///
-    /// With slices you can do `PWrapper(slice)` instead.
+    /// With slices you can do `PWrapper(slice)` as well.
     #[inline(always)]
     pub const fn slice(x: &'a [T]) -> Self {
         Self { 0: x }

@@ -1,4 +1,4 @@
-use crate::{utils::Peekable2, Error};
+use crate::{spanned::Spans, utils::Peekable2, Error};
 
 use proc_macro2::{
     token_stream::IntoIter, Delimiter, Group, Ident, Punct, Span, TokenStream as TokenStream2,
@@ -17,10 +17,6 @@ impl ParseBuffer {
     pub fn new(ts: TokenStream2) -> Self {
         let iter = Peekable2::new(ts);
         Self { iter }
-    }
-
-    pub fn next(&mut self) -> Option<TokenTree2> {
-        self.iter.next()
     }
 
     pub fn is_empty(&mut self) -> bool {
@@ -44,13 +40,12 @@ impl ParseBuffer {
             )),
         }
     }
-
-    pub fn parse_litstr(&mut self) -> Result<LitStr, crate::Error> {
-        self.parse_unwrap_tt(|input| match input.next() {
-            Some(TokenTree2::Literal(x)) => LitStr::parse_from_literal(&x),
-            Some(x) => Err(Error::new(x.span(), "Expected a string literal")),
-            None => Err(Error::new(Span::mixed_site(), "Expected a string literal")),
-        })
+    pub fn parse_opt_punct(&mut self, c: char) -> Result<Option<Punct>, crate::Error> {
+        match self.next() {
+            Some(TokenTree2::Punct(x)) if x.as_char() == c => Ok(Some(x)),
+            Some(x) => Err(Error::new(x.span(), &format!("Expected a '{}' token", c))),
+            None => Ok(None),
+        }
     }
 
     pub fn parse_ident(&mut self) -> Result<Ident, crate::Error> {
@@ -71,32 +66,49 @@ impl ParseBuffer {
             }
             Some(x) => Err(Error::new(
                 x.span(),
-                &format!("Expected an argument: found {}", x),
+                &format!("Expected parentheses: found {}", x),
             )),
             None => Err(Error::new(
                 Span::mixed_site(),
-                "Expected an argument, found nothing",
+                "Expected parentheses, found nothing",
             )),
         }
     }
 
-    pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Span) {
-        let mut span = match self.peek() {
+    pub fn parse_unwrap_paren<F, T>(&mut self, f: F) -> Result<T, crate::Error>
+    where
+        F: FnOnce(ParseStream<'_>) -> Result<T, crate::Error>,
+    {
+        if matches!(self.peek(), Some(TokenTree2::Group(x)) if x.delimiter() == Delimiter::Parenthesis )
+        {
+            if let Some(TokenTree2::Group(group)) = self.next() {
+                ParseBuffer::new(group.stream()).parse_unwrap_tt(f)
+            } else {
+                unreachable!("But I peeked for a Parenthesis delimited TokenTree::Group!!")
+            }
+        } else {
+            f(self)
+        }
+    }
+
+    pub fn parse_token_stream_and_span(&mut self) -> (TokenStream2, Spans) {
+        let mut start = match self.peek() {
             Some(x) => x.span(),
             None => Span::call_site(),
         };
-        let ts = std::iter::from_fn(|| {
-            let tt = self.next()?;
 
-            if let Some(x) = span.join(tt.span()) {
-                span = x;
-            }
+        let mut end = start;
 
-            Some(tt)
-        })
-        .collect::<TokenStream2>();
+        let ts = self
+            .inspect(|tt| {
+                end = tt.span();
+                if let Some(next) = start.join(end) {
+                    start = next;
+                }
+            })
+            .collect::<TokenStream2>();
 
-        (ts, span)
+        (ts, Spans { start, end })
     }
 
     /// Unwraps a none-delimited token tree to parse a type,
@@ -115,6 +127,18 @@ impl ParseBuffer {
         } else {
             f(self)
         }
+    }
+}
+
+impl Iterator for ParseBuffer {
+    type Item = TokenTree2;
+
+    fn next(&mut self) -> Option<TokenTree2> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
     }
 }
 
@@ -139,7 +163,7 @@ impl LitStr {
     pub fn value(&self) -> &str {
         &self.value[self.inside_lit.clone()]
     }
-    fn parse_from_literal(literal: &proc_macro2::Literal) -> Result<Self, Error> {
+    pub(crate) fn parse_from_literal(literal: &proc_macro2::Literal) -> Result<Self, Error> {
         let mut value = literal.to_string();
         // Ignoring the quote characters
         let mut range = 1..value.len() - 1;
@@ -258,16 +282,44 @@ impl StrRawness {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-pub trait TokenTreeExt {
+pub trait TokenTreeExt: Sized {
     fn as_token_tree(&self) -> &TokenTree2;
+    fn into_token_tree(self) -> TokenTree2;
 
     fn is_punct(&self, c: char) -> bool {
         matches!(self.as_token_tree(), TokenTree2::Punct(p)  if p.as_char() == c)
+    }
+
+    fn is_paren(&self) -> bool {
+        matches!(
+            self.as_token_tree(),
+            TokenTree2::Group(g) if g.delimiter() == Delimiter::Parenthesis
+        )
+    }
+    fn is_ident(&self, ident: &str) -> bool {
+        matches!(self.as_token_tree(), TokenTree2::Ident(x)  if x == ident)
+    }
+
+    fn set_span_recursive(self, span: Span) -> TokenTree2 {
+        let mut tt = self.into_token_tree();
+
+        tt.set_span(span);
+        if let TokenTree2::Group(group) = tt {
+            let delim = group.delimiter();
+            let stream = group.stream().set_span_recursive(span);
+            tt = TokenTree2::Group(Group::new(delim, stream));
+        }
+        tt.set_span(span);
+        tt
     }
 }
 
 impl TokenTreeExt for TokenTree2 {
     fn as_token_tree(&self) -> &TokenTree2 {
+        self
+    }
+
+    fn into_token_tree(self) -> TokenTree2 {
         self
     }
 }
@@ -280,16 +332,7 @@ pub trait TokenStream2Ext: Sized {
     fn set_span_recursive(self, span: Span) -> TokenStream2 {
         self.into_token_stream()
             .into_iter()
-            .map(|mut tt| {
-                tt.set_span(span);
-                if let TokenTree2::Group(group) = tt {
-                    let delim = group.delimiter();
-                    let stream = group.stream().set_span_recursive(span);
-                    tt = TokenTree2::Group(Group::new(delim, stream));
-                }
-                tt.set_span(span);
-                tt
-            })
+            .map(|tt| tt.set_span_recursive(span))
             .collect()
     }
 }

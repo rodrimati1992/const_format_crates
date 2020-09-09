@@ -66,8 +66,6 @@ impl FormattingFlags {
 }
 
 impl FormattingFlags {
-    pub(crate) const NEW: Self = Self::display(IsAlternate::No);
-
     pub(crate) fn to_pargument_method_name(self) -> Ident {
         let name = match self.formatting {
             Formatting::Display => "to_pargument_display",

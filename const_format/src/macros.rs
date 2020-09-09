@@ -1,4 +1,8 @@
 #[macro_use]
+#[cfg(feature = "assert")]
+mod assertions;
+
+#[macro_use]
 #[cfg(feature = "fmt")]
 mod call_debug_fmt;
 
