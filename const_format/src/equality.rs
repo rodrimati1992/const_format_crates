@@ -18,6 +18,7 @@ use core::{
 macro_rules! slice_of_const_eq {($($elem:ty),* $(,)?) => (
     $(
         impl PWrapper<&[$elem]> {
+            /// This method is only available with the "assert" feature.
             pub const fn const_eq(&self, other: &[$elem]) -> bool {
                 if self.0.len() != other.len() {
                     return false;
@@ -41,6 +42,7 @@ slice_of_const_eq! {
 macro_rules! slice_of_equal_op_impl {($($elem:ty),* $(,)?) => (
     $(
         impl PWrapper<&[$elem]> {
+            /// This method is only available with the "assert" feature.
             pub const fn const_eq(&self, other: &[$elem]) -> bool {
                 if self.0.len() != other.len() {
                     return false;
@@ -81,6 +83,7 @@ macro_rules! impl_eq_for_option {
 
         $(
             impl<$($impl_)*> PWrapper<$type> {
+                /// This method is only available with the "assert" feature.
                 pub const fn const_eq(&self, $r:&$type) -> bool {
                     let $l = self.0;
                     $comparison
@@ -88,6 +91,7 @@ macro_rules! impl_eq_for_option {
             }
 
             impl<$($impl_)*> PWrapper<Option<$type>> {
+                /// This method is only available with the "assert" feature.
                 pub const fn const_eq(&self, other:&Option<$type>) -> bool {
                     match (self.0, other) {
                         (Some($l), Some($r)) => $comparison,
@@ -139,6 +143,7 @@ macro_rules! impl_equality {
     ) => (
         $(
             impl<$($impl_)*> PWrapper<$type> {
+                /// This method is only available with the "assert" feature.
                 #[inline(always)]
                 pub const fn const_eq(&self, $r: &$type) -> bool {
                     let $l = &self.0;
