@@ -17,8 +17,8 @@ use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInc
 /// use const_format::Sliced;
 /// use const_format::{concatc, formatc};
 ///
-/// const SRC: &str = "foo bar baz";
 /// const NUMS: &str = "0123456789";
+/// const SRC: &str = "foo bar baz";
 ///
 /// assert_eq!(concatc!(Sliced(NUMS, 1..=4)), "1234");
 /// assert_eq!(concatc!(Sliced(SRC, 0..5), "ros."), "foo bros.");

@@ -34,18 +34,24 @@ which have not been stabilized as of writing these docs.
 
 All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
 
+- [`concatc`]:
+Concatenates many standard library and user defined types into a `&'static str` constant.
+
 - [`formatc`]:
-[`format`]-like macro that can format many standard library and user defined types.
+[`format`]-like macro that can format many standard library and user defined types into 
+a `&'static str` constant.
 
 - [`writec`]:
 [`write`]-like macro that can format many standard library and user defined types
 into a type that implements [`WriteMarker`].
 
-
 The "derive" feature enables the [`ConstDebug`] macro, and the "fmt" feature.<br>
 [`ConstDebug`] derives the [`FormatMarker`] trait,
 and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 
+The "assert" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+and the "fmt" feature.<br>
+These macros are like the standard library assert macros, but evaluated at compile-time.
 
 # Examples
 
@@ -267,6 +273,10 @@ Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
 
+[`assertc`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc.html
+
+[`assertc_eq`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_eq.html
+
 [`assertc_ne`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_ne.html
 
 [`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
@@ -278,6 +288,8 @@ need to be explicitly enabled with cargo features.
 [`std::fmt`]: https://doc.rust-lang.org/std/fmt/index.html
 
 [`const_format::fmt`]: https://docs.rs/const_format/0.2.*/const_format/fmt/index.html
+
+[`concatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatc.html
 
 [`formatc`]: https://docs.rs/const_format/0.2.*/const_format/macro.formatc.html
 
