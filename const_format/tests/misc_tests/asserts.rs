@@ -1,6 +1,6 @@
 #![allow(unreachable_code)]
 
-use const_format::for_examples::Unit;
+use const_format::for_examples::{Point3, Unit};
 use const_format::{assertc, assertc_eq, assertc_ne, call_debug_fmt};
 
 struct Foo;
@@ -59,8 +59,20 @@ assertc!(true, "{}", {
 
 #[allow(unused_variables)]
 const _: () = {
+    const POINT: Point3 = Point3 { x: 3, y: 5, z: 8 };
+    const OTHER_POINT: Point3 = Point3 {
+        x: 13,
+        y: 21,
+        z: 34,
+    };
+
     ////////////////////////////////////////////////////////////////////////////////
     ////        assertc_eq
+
+    assertc_eq!(POINT, POINT);
+    assertc_eq!(OTHER_POINT, OTHER_POINT);
+
+    assertc_eq!(Unit, Unit);
 
     assertc_eq!(0u8, 0u8);
     assertc_eq!("foo", "foo", "hello");
@@ -75,6 +87,8 @@ const _: () = {
 
     ////////////////////////////////////////////////////////////////////////////////
     ////        assertc_ne
+    assertc_ne!(POINT, OTHER_POINT);
+    assertc_ne!(OTHER_POINT, POINT);
 
     assertc_ne!(0u8, 3u8);
     assertc_ne!("foo", "bar", "hello");

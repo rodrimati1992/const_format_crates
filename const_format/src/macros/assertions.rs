@@ -285,6 +285,81 @@ assert_eq_docs! {
     ///
     /// ```
     ///
+    /// ### Comparing user-defined types
+    ///
+    /// This example demonstrates how you can assert that two values of a
+    /// user-defined type are equal.
+    ///
+    #[cfg_attr(feature = "derive", doc = "```compile_fail")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, PWrapper};
+    /// use const_format::{ConstDebug, assertc_eq, try_};
+    ///
+    /// const POINT: Point = Point{ x: 5, y: 8, z: 13 };
+    /// const OTHER_POINT: Point = Point{ x: 21, y: 34, z: 55 };
+    ///
+    /// assertc_eq!(POINT, OTHER_POINT);
+    ///
+    /// #[derive(ConstDebug)]
+    /// pub struct Point {
+    ///     pub x: u32,
+    ///     pub y: u32,
+    ///     pub z: u32,
+    /// }
+    ///
+    /// impl Point {
+    ///     pub const fn const_eq(&self, other: &Self) -> bool {
+    ///         self.x == other.x &&
+    ///         self.y == other.y &&
+    ///         self.z == other.z
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// This is the compiler output:
+    ///
+    /// ```text
+    /// error: any use of this value will cause an error
+    ///   --> src/macros/assertions.rs:343:1
+    ///    |
+    /// 12 | assertc_eq!(POINT, OTHER_POINT);
+    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
+    ///    |
+    ///    = note: `#[deny(const_err)]` on by default
+    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    ///
+    /// error[E0080]: could not evaluate constant
+    ///   --> /const_format/src/panicking.rs:32:5
+    ///    |
+    /// 32 |     .
+    ///    |     ^ the evaluated program panicked at '
+    /// --------------------------------------------------------------------------------
+    /// module_path: rust_out
+    /// line: 12
+    ///
+    /// assertion failed: LEFT == RIGHT
+    ///
+    ///  left: `Point {
+    ///     x: 5,
+    ///     y: 8,
+    ///     z: 13,
+    /// }`
+    /// right: `Point {
+    ///     x: 21,
+    ///     y: 34,
+    ///     z: 55,
+    /// }`
+    /// --------------------------------------------------------------------------------
+    /// ', /const_format/src/panicking.rs:32:5
+    ///    |
+    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    ///
+    /// error: aborting due to 2 previous errors
+    ///
+    /// ```
+    ///
     #[macro_export]
     macro_rules! assertc_eq {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -375,6 +450,87 @@ assert_eq_docs! {
     ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
     ///
     /// error: aborting due to 2 previous errors
+    ///
+    /// ```
+    ///
+    /// ### Comparing user-defined types
+    ///
+    /// This example demonstrates how you can assert that two values of a
+    /// user-defined type are unequal.
+    ///
+    #[cfg_attr(feature = "derive", doc = "```compile_fail")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{Formatter, PWrapper};
+    /// use const_format::{ConstDebug, assertc_ne, try_};
+    ///
+    /// const POINT: Point = Point{ x: 5, y: 8, z: 13 };
+    ///
+    /// assertc_ne!(POINT, POINT);
+    ///
+    /// #[derive(ConstDebug)]
+    /// pub struct Point {
+    ///     pub x: u32,
+    ///     pub y: u32,
+    ///     pub z: u32,
+    /// }
+    ///
+    /// impl Point {
+    ///     pub const fn const_eq(&self, other: &Self) -> bool {
+    ///         self.x == other.x &&
+    ///         self.y == other.y &&
+    ///         self.z == other.z
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// This is the compiler output:
+    ///
+    /// ```text
+    /// error: any use of this value will cause an error
+    ///   --> src/macros/assertions.rs:522:1
+    ///    |
+    /// 11 | assertc_ne!(POINT, POINT);
+    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
+    ///    |
+    ///    = note: `#[deny(const_err)]` on by default
+    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    ///
+    /// error[E0080]: could not evaluate constant
+    ///   --> /const_format/src/panicking.rs:32:5
+    ///    |
+    /// 32 |     .
+    ///    |     ^ the evaluated program panicked at '
+    /// --------------------------------------------------------------------------------
+    /// module_path: rust_out
+    /// line: 11
+    ///
+    /// assertion failed: LEFT != RIGHT
+    ///
+    ///  left: `Point {
+    ///     x: 5,
+    ///     y: 8,
+    ///     z: 13,
+    /// }`
+    /// right: `Point {
+    ///     x: 5,
+    ///     y: 8,
+    ///     z: 13,
+    /// }`
+    /// --------------------------------------------------------------------------------
+    /// ', /const_format/src/panicking.rs:32:5
+    ///    |
+    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    ///
+    /// error: aborting due to 2 previous errors
+    ///
+    /// For more information about this error, try `rustc --explain E0080`.
+    /// Couldn't compile the test.
+    ///
+    /// failures:
+    ///     src/macros/assertions.rs - assertc_ne (line 514)
+    ///
     ///
     /// ```
     ///
