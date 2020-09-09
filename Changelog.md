@@ -2,6 +2,32 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.5
+
+Added the "assert" cargo feature,
+defining the `assertc`/`assertc_eq`/`assertc_ne` macros for 
+compile-time assertions with formatting.
+
+Added custom formatting support in the `const_format::fmt`-based formatting macros,
+by prefixing any argument with `|identifier|`,
+accessing the `Formatter` (the type used for debug/display formatting).
+
+Added `concatc` macro for concatenating std/user-defined types into a `&'static str` constant.
+
+Added `const_format::Result` alias for `std::result::Result<(), const_format::Error>`.
+
+Added `const_format::fmt::ToResult` type for converting  
+`()` and `const_format::Result` to `const_format::Result`.
+
+Added `Pwrapper::cnost_eq` methods for comparing many std types in 
+the `assertc_eq`/`assertc_ne` macros.
+
+Added `Pwrapper::const_display_fmt` methods for `NonZero*` types.
+
+Added support for passing `concat!(....)` as the format string.
+
+### 0.2.0
+
 Every single new item added requires Rust nightly to use, with at least the "fmt" cargo feature enabled.
 
 Defined a `core::fmt`-like API with these these types:
