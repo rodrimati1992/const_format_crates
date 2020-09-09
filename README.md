@@ -235,7 +235,7 @@ assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 ```
 # Plans
 
-- Add assertion macros.
+None right now.
 
 # Cargo features
 
