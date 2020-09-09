@@ -10,7 +10,7 @@ compile-time assertions with formatting.
 
 Added custom formatting support in the `const_format::fmt`-based formatting macros,
 by prefixing any argument with `|identifier|`,
-accessing the `Formatter` (the type used for debug/display formatting).
+accessing a `Formatter` to format that argument however one wants.
 
 Added `concatc` macro for concatenating std/user-defined types into a `&'static str` constant.
 
@@ -19,7 +19,7 @@ Added `const_format::Result` alias for `std::result::Result<(), const_format::Er
 Added `const_format::fmt::ToResult` type for converting  
 `()` and `const_format::Result` to `const_format::Result`.
 
-Added `Pwrapper::cnost_eq` methods for comparing many std types in 
+Added `Pwrapper::const_eq` methods for comparing many std types in 
 the `assertc_eq`/`assertc_ne` macros.
 
 Added `Pwrapper::const_display_fmt` methods for `NonZero*` types.
