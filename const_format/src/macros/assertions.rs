@@ -12,14 +12,16 @@ macro_rules! with_shared_docs {(
     $(#[$before_clarification])*
     ///
     /// This macro requires the "assert" feature to be exported,
-    /// and uses `std::panic` for panicking due to an unforseen limitation
+    /// because it uses some nightly Rust features.<br>
+    /// It uses `std::panic` for panicking due to an unforseen limitation
     /// in `core::panic`, which doesn't allow passing non-literal strings at compile-time.
     ///
     $(#[$before_syntax])*
     /// # Syntax
     ///
-    /// This macro uses the same syntax for the format string and formatting arguments as the
-    /// `formatcp` and `formatc` macros.
+    /// This macro uses [the same syntax](./fmt/index.html#fmtsyntax)
+    /// for the format string and formatting arguments as the
+    /// [`formatc`] macro.
     ///
     $(#[$after_syntax])*
     /// # Error message
@@ -45,6 +47,7 @@ macro_rules! with_shared_docs {(
     /// ](./index.html#integer-args).
     ///
     /// [`PWrapper`]: ./struct.PWrapper.html
+    /// [`formatc`]: ./macro.formatc.html
     /// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
     ///
     $item
@@ -84,7 +87,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-06.
+    /// and how the compiler error looks like as of 2020-09-XX.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -193,8 +196,8 @@ macro_rules! assert_eq_docs {
             /// This macro accepts these types for comparison and debug printing:
             ///
             /// - Standard library types for which  [`PWrapper`] wrapping that type
-            /// has a `const_eq` method,
-            /// this includes all integer types, `&str`, slices/arrays of integers/`&str`,
+            /// has a `const_eq` method.
+            /// This includes all integer types, `&str`, slices/arrays of integers/`&str`,
             /// Options of integers/`&str`, etc.
             ///
             /// - non-standard-library types that implement [`FormatMarker`] with debug formatting<br>
@@ -235,7 +238,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-06.
+    /// and how the compiler error looks like as of 2020-09-XX.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -401,7 +404,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-06.
+    /// and how the compiler error looks like as of 2020-09-XX.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]

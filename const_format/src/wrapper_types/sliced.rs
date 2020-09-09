@@ -6,6 +6,27 @@ use crate::{
 use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
 
 /// Wrapper for writing a range of a string slice.
+///
+/// This is a workaround for not being able to do `&string[start..end]` at compile-time.
+///
+/// # Example
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::Sliced;
+/// use const_format::{concatc, formatc};
+///
+/// const SRC: &str = "foo bar baz";
+/// const NUMS: &str = "0123456789";
+///
+/// assert_eq!(concatc!(Sliced(NUMS, 1..=4)), "1234");
+/// assert_eq!(concatc!(Sliced(SRC, 0..5), "ros."), "foo bros.");
+///
+/// assert_eq!(formatc!("{}", Sliced(NUMS, 4..)), "456789");
+/// assert_eq!(formatc!("{}t", Sliced(SRC, 4..7)), "bart");
+///
+/// ```
 pub struct Sliced<T, R>(pub T, pub R);
 
 impl_fmt! {

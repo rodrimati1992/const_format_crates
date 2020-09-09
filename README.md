@@ -267,7 +267,7 @@ Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
 
 
-[`assertc`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc.html
+[`assertc_ne`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_ne.html
 
 [`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
 
