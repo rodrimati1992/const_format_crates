@@ -36,7 +36,7 @@ fn access_formatter_error() {
 
     for case in cases.iter().copied() {
         assert_ret!(process_str(case), |s| {
-            s.unwrap_err().consecutive_in_self(&["Formatter"])
+            s.unwrap_err().consecutive_in_self(&["custom formatting"])
         });
     }
 }

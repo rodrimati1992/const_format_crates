@@ -62,8 +62,6 @@ impl Error {
                     end_span,
                     msg,
                 } => {
-                    dbg!(start_span, end_span);
-
                     let ts = tokenstream![
                         Ident::new("compile_error", *start_span),
                         {
