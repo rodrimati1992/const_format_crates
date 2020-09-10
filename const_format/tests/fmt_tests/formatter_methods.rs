@@ -1,4 +1,4 @@
-use const_format::{
+use cfmt_a::{
     ascii_str,
     fmt::{ComputeStrLength, Formatter, FormattingFlags},
     AsciiStr,

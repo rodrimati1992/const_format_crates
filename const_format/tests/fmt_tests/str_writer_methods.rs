@@ -1,6 +1,6 @@
 use crate::RngExt;
 
-use const_format::{
+use cfmt_a::{
     fmt::{Error, FormattingFlags, StrWriter, StrWriterMut},
     formatcp,
     test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED},
@@ -164,7 +164,7 @@ struct WriteArgs<'sw, 's> {
 fn test_unescaped_str_fn(
     formatting: Formatting,
     rng: &mut dyn FnMut() -> char,
-    write: &mut dyn FnMut(WriteArgs<'_, '_>) -> Result<(), const_format::fmt::Error>,
+    write: &mut dyn FnMut(WriteArgs<'_, '_>) -> Result<(), cfmt_a::fmt::Error>,
 ) {
     #[cfg(not(miri))]
     let tries = 64;

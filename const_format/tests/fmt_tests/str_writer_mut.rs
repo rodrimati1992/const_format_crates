@@ -1,12 +1,4 @@
-use const_format::fmt::{Error, StrWriterMut};
-
-pub trait Foo {
-    fn as_str() -> u64 {
-        0xDEAD
-    }
-}
-
-impl<'w, E> Foo for StrWriterMut<'w, E> {}
+use cfmt_a::fmt::{Error, StrWriterMut};
 
 #[test]
 fn from_custom() -> Result<(), Error> {

@@ -1,5 +1,5 @@
-use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
-use const_format::{call_debug_fmt, impl_fmt, try_};
+use cfmt_b::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use cfmt_b::{call_debug_fmt, impl_fmt, try_};
 
 use core::{cmp::Reverse, num::Wrapping};
 
@@ -69,7 +69,7 @@ impl_fmt! {
     impl TupleStruct;
 
     const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        use const_format::PWrapper;
+        use cfmt_b::PWrapper;
 
         let mut f = f.debug_tuple("TupleStruct");
         try_!(PWrapper(self.0).const_debug_fmt(f.field()));

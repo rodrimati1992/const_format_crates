@@ -1,4 +1,4 @@
-use const_format::{
+use cfmt_a::{
     coerce_to_fmt,
     fmt::{ComputeStrLength, Error, FormattingFlags, StrWriter},
     try_,

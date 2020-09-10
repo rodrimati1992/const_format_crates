@@ -1,8 +1,8 @@
-use const_format::formatcp;
-use const_format::test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED};
+use cfmt_b::formatcp;
+use cfmt_b::test_utils::{ALL_ASCII, ALL_ASCII_ESCAPED};
 
 #[cfg(feature = "fmt")]
-use const_format::formatc;
+use cfmt_b::formatc;
 
 use arrayvec::{ArrayString, ArrayVec};
 
@@ -262,7 +262,7 @@ fn raw_literals() {
 #[test]
 #[cfg(feature = "fmt")]
 fn access_formatter() {
-    use const_format::call_debug_fmt;
+    use cfmt_b::call_debug_fmt;
 
     struct FmtConst;
 

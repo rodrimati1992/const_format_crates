@@ -54,14 +54,11 @@
 macro_rules! concatcp {
     ()=>{""};
     ($($arg: expr),* $(,)?)=>({
-        $crate::concatcp!(@inner (($crate)), $( ( $arg ), )* )
-    });
-    (@inner (($path:path)) $($everything:tt)*  ) => (
+        use $crate::__cf_osRcTFl4A;
         $crate::pmr::__concatcp_impl!{
-            (($path))
-            $($everything)*
+            $( ( $arg ), )*
         }
-    );
+    });
 }
 
 #[doc(hidden)]
@@ -219,20 +216,14 @@ macro_rules! __concatcp_inner {
 ///
 #[macro_export]
 macro_rules! formatcp {
-    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::formatcp!(
-            @inner
-            (($crate))
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
+        use $crate::__cf_osRcTFl4A;
+
+        $crate::pmr::__formatcp_impl!(
             ($format_string)
             $(, $(($expr),)+)?
         )
-    );
-    (@inner (($path:path)) $($everything:tt)*  ) => (
-        $crate::pmr::__formatcp_impl!(
-            (($path))
-            $($everything)*
-        )
-    );
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,9 +278,11 @@ macro_rules! formatcp {
 #[macro_export]
 macro_rules! concatc {
     ()=>{""};
-    ($($anything:tt)*)=>(
+    ($($anything:tt)*)=>({
+        use $crate::__cf_osRcTFl4A;
+
         $crate::__concatc_expr!(($($anything)*) ($($anything)*))
-    )
+    })
 }
 
 #[doc(hidden)]
@@ -322,11 +315,7 @@ macro_rules! __concatc_expr {
 #[macro_export]
 macro_rules! __concatc_inner{
     ($debug_fmt_fn:ident, $cond:expr, $($span:tt)*)=>{{
-        use $crate::__cf_osRcTFl4A;
-
         $crate::pmr::respan_to!{($($span)*) {
-
-
             const fn len_nhpmwyd3nj() -> usize {
                 if $cond {
                     let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
@@ -455,18 +444,12 @@ macro_rules! __concatc_inner{
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
-    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::formatc!(
-            @inner
-            (($crate))
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
+        use $crate::__cf_osRcTFl4A;
+
+        $crate::pmr::__formatc_impl!{
             ($format_string)
             $(, $(($expr),)+)?
-        )
-    );
-    (@inner (($path:path)) $($everything:tt)*  ) => ({
-        $crate::pmr::__formatc_impl!{
-            (($path))
-            $($everything)*
         }
     });
 }
@@ -633,19 +616,13 @@ macro_rules! formatc {
 #[macro_export]
 #[cfg(feature = "fmt")]
 macro_rules! writec {
-    ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::writec!(
-            @inner
-            (($crate))
+    ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
+        use $crate::__cf_osRcTFl4A;
+
+        $crate::pmr::__writec_impl!{
             ($writer)
             ($format_string)
             $(, $(($expr),)+)?
-        )
-    );
-    (@inner (($path:path)) $($everything:tt)*  ) => ({
-        $crate::pmr::__writec_impl!{
-            (($path))
-            $($everything)*
         }
     });
 }

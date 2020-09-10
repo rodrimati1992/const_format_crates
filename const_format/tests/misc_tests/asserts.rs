@@ -1,7 +1,7 @@
 #![allow(unreachable_code)]
 
-use const_format::for_examples::{Point3, Unit};
-use const_format::{assertc, assertc_eq, assertc_ne, call_debug_fmt};
+use cfmt_b::for_examples::{Point3, Unit};
+use cfmt_b::{assertc, assertc_eq, assertc_ne, call_debug_fmt};
 
 struct Foo;
 

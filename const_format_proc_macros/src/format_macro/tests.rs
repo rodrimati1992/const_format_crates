@@ -17,7 +17,7 @@ macro_rules! assert_ret {
 
 #[test]
 fn named_argument_followed_by_positional() {
-    assert_ret!(process_str(r#"(()) (""), (a=()), () "#), |s| {
+    assert_ret!(process_str(r#"(""), (a=()), () "#), |s| {
         s.unwrap_err()
             .consecutive_in_self(&["named arguments", "cannot", "positional arguments"])
     });
@@ -26,12 +26,12 @@ fn named_argument_followed_by_positional() {
 #[test]
 fn access_formatter_error() {
     let cases = [
-        r#"(()) ("{}"), (|f| 100u8) "#,
-        r#"(()) ("{}"), (|_| 100u8) "#,
-        r#"(()) ("{foo}"), (foo = |f| 100u8) "#,
-        r#"(()) ("{foo}"), (foo = |_| 100u8) "#,
-        r#"(()) ("{foo}"), (foo = (|f| 100u8)) "#,
-        r#"(()) ("{foo}"), (foo = (|_| 100u8)) "#,
+        r#"("{}"), (|f| 100u8) "#,
+        r#"("{}"), (|_| 100u8) "#,
+        r#"("{foo}"), (foo = |f| 100u8) "#,
+        r#"("{foo}"), (foo = |_| 100u8) "#,
+        r#"("{foo}"), (foo = (|f| 100u8)) "#,
+        r#"("{foo}"), (foo = (|_| 100u8)) "#,
     ];
 
     for case in cases.iter().copied() {
@@ -43,37 +43,37 @@ fn access_formatter_error() {
 
 #[test]
 fn nonexistent_argument() {
-    assert_ret!(process_str(r#"(()) ("{1}"), () "#), |s| {
+    assert_ret!(process_str(r#"("{1}"), () "#), |s| {
         s.unwrap_err()
             .consecutive_in_self(&["positional argument", "1"])
     });
 
-    assert_ret!(process_str(r#"(()) ("{}{}"), () "#), |s| {
+    assert_ret!(process_str(r#"("{}{}"), () "#), |s| {
         s.unwrap_err()
             .consecutive_in_self(&["positional argument", "1"])
     });
-    process_str(r#"(()) ("{}"), () "#).unwrap();
+    process_str(r#"("{}"), () "#).unwrap();
 }
 
 #[test]
 fn unused_arguments() {
-    assert_ret!(process_str(r#"(()) ("{}"), (), () "#), |s| {
+    assert_ret!(process_str(r#"("{}"), (), () "#), |s| {
         let e = s.unwrap_err();
         e.consecutive_in_self(&["argument", "1", "unused"])
     });
-    assert_ret!(process_str(r#"(()) ("{}"), (), () , () "#), |s| {
+    assert_ret!(process_str(r#"("{}"), (), () , () "#), |s| {
         let e = s.unwrap_err();
         e.consecutive_in_self(&["argument", "1", "unused"])
             && e.consecutive_in_self(&["argument", "2", "unused"])
     });
 
-    assert_ret!(process_str(r#"(()) ("{}"), (), (foooo = "") "#), |s| {
+    assert_ret!(process_str(r#"("{}"), (), (foooo = "") "#), |s| {
         s.unwrap_err()
             .consecutive_in_self(&["foooo", "argument", "unused"])
     });
 
     assert_ret!(
-        process_str(r#"(()) ("{}"), (), (), (foooo = ""), (bar = "") "#),
+        process_str(r#"("{}"), (), (), (foooo = ""), (bar = "") "#),
         |s| {
             let e = s.unwrap_err();
             e.consecutive_in_self(&["argument", "1", "unused"])

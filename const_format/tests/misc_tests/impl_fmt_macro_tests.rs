@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use const_format::{
+use cfmt_b::{
     fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter, StrWriterMut},
     impl_fmt, try_,
     wrapper_types::PWrapper,

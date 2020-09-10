@@ -1,8 +1,8 @@
 // Don't need the tests for this macro to be thorough,
 // since this uses a lot of the same machinery as `formatcp` and `formatc`
 
-use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
-use const_format::{try_, writec};
+use cfmt_b::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use cfmt_b::{try_, writec};
 
 struct Foo {
     x: u32,
@@ -103,7 +103,7 @@ fn named_parameters() {
 #[test]
 #[cfg(feature = "fmt")]
 fn access_formatter() {
-    use const_format::call_debug_fmt;
+    use cfmt_b::call_debug_fmt;
 
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
         let mut n = 0u64;

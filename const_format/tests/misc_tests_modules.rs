@@ -1,5 +1,12 @@
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 
+extern crate const_format as cfmt_b;
+extern crate self as const_format;
+
+// Making sure that `const_format` points at this test crate.
+pub const NOT_CF: usize = 13;
+pub const _ASSERT_NOT_CF: [(); 13] = [(); const_format::NOT_CF];
+
 mod misc_tests {
     #[cfg(feature = "assert")]
     mod asserts;

@@ -1,4 +1,4 @@
-use const_format::{
+use cfmt_a::{
     fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter},
     try_,
     wrapper_types::PWrapper,
@@ -145,8 +145,8 @@ macro_rules! unwrap_opt {
 
 #[test]
 fn display_fmt_other_types() {
-    const fn inner(fmt: &mut Formatter<'_>) -> const_format::Result {
-        const_format::writec!(
+    const fn inner(fmt: &mut Formatter<'_>) -> cfmt_a::Result {
+        cfmt_a::writec!(
             fmt,
             concat!("{},{};", "{},{};{},{};{},{};{},{};",),
             false,

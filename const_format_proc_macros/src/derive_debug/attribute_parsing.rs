@@ -13,6 +13,7 @@ use std::marker::PhantomData;
 
 pub(crate) struct ConstDebugConfig<'a> {
     pub(crate) debug_print: bool,
+    pub(crate) crate_path: Option<syn::Path>,
     pub(crate) impls: Vec<ImplHeader>,
     pub(crate) field_map: FieldMap<FieldConfig<'a>>,
     _marker: PhantomData<&'a ()>,
@@ -22,6 +23,7 @@ impl<'a> ConstDebugConfig<'a> {
     fn new(roa: ConstDebugAttrs<'a>) -> Result<Self, crate::Error> {
         let ConstDebugAttrs {
             debug_print,
+            crate_path,
             impls,
             field_map,
             errors: _,
@@ -30,6 +32,7 @@ impl<'a> ConstDebugConfig<'a> {
 
         Ok(Self {
             debug_print,
+            crate_path,
             impls,
             field_map,
             _marker: PhantomData,
@@ -39,6 +42,7 @@ impl<'a> ConstDebugConfig<'a> {
 
 struct ConstDebugAttrs<'a> {
     debug_print: bool,
+    crate_path: Option<syn::Path>,
     impls: Vec<ImplHeader>,
     field_map: FieldMap<FieldConfig<'a>>,
     errors: LinearResult,
@@ -86,6 +90,7 @@ pub(crate) fn parse_attrs_for_derive<'a>(
 ) -> Result<ConstDebugConfig<'a>, crate::Error> {
     let mut this = ConstDebugAttrs {
         debug_print: false,
+        crate_path: None,
         impls: Vec::new(),
         field_map: FieldMap::with(ds, |f| FieldConfig {
             how_to_fmt: type_detection::detect_type_formatting(f.ty),
@@ -209,6 +214,13 @@ fn parse_sabi_attr<'a>(
                 return Err(make_err(&path));
             }
         }
+        (ParseContext::TypeAttr { .. }, Meta::NameValue(nv)) => {
+            if nv.path.is_ident("crate") {
+                this.crate_path = Some(parse_lit(&nv.lit)?);
+            } else {
+                return Err(make_err(&nv));
+            }
+        }
         (ParseContext::TypeAttr { .. }, Meta::List(list)) => {
             if list.path.is_ident("impls") {
                 for x in list.nested {
@@ -222,6 +234,7 @@ fn parse_sabi_attr<'a>(
                 return Err(make_err(&list));
             }
         }
+        #[allow(unreachable_patterns)]
         (_, x) => return Err(make_err(&x)),
     }
     Ok(())

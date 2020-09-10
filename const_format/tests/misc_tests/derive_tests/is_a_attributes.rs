@@ -1,4 +1,4 @@
-use const_format::{
+use cfmt_b::{
     coerce_to_fmt,
     fmt::{Error, Formatter, FormattingFlags, StrWriter},
     impl_fmt, try_,
@@ -64,6 +64,7 @@ mod type_named_option {
 
     // This type tests that ``
     #[derive(ConstDebug)]
+    #[cdeb(crate = "::cfmt_b")]
     pub(super) struct WrapsNamedOption {
         pub(super) opt_a: self::Option<NotDebug>,
 
@@ -99,6 +100,7 @@ pub mod std {
 }
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 struct Automatic {
     slice_a: &'static [Bar],
     slice_b: &'static &'static [Bar],
@@ -116,6 +118,7 @@ type BarArray = [Bar; 2];
 type BarOption = Option<Bar>;
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 struct Manual {
     #[cdeb(is_a(slice))]
     slice_a: &'static BarSlice,

@@ -1,7 +1,7 @@
-use const_format::{concatcp, formatcp};
+use cfmt_b::{concatcp, formatcp};
 
 #[cfg(feature = "fmt")]
-use const_format::concatc;
+use cfmt_b::concatc;
 
 use arrayvec::ArrayString;
 
@@ -12,8 +12,8 @@ macro_rules! tests {
         format_str = $format_str:literal,
         $($expr:expr,)*
     ) => (
-        const ALL_TYS_F: &'static str = formatcp!( $format_str, $($expr,)* );
-        const ALL_TYS: &'static str = concatcp!( $($expr,)* );
+        // const ALL_TYS_F: &'static str = formatcp!( $format_str, $($expr,)* );
+        // const ALL_TYS: &'static str = concatcp!( $($expr,)* );
 
         #[cfg(feature = "fmt")]
         const ALL_TYS_C: &'static str = concatc!( $($expr,)* );
@@ -24,9 +24,9 @@ macro_rules! tests {
             $(
                 write!(string, "{}", $expr).unwrap();
             )*
-            assert_eq!(string.as_str(), ALL_TYS);
+            // assert_eq!(string.as_str(), ALL_TYS);
 
-            assert_eq!(string.as_str(), ALL_TYS_F);
+            // assert_eq!(string.as_str(), ALL_TYS_F);
 
             #[cfg(feature = "fmt")]
             assert_eq!(string.as_str(), ALL_TYS_C);
@@ -35,14 +35,14 @@ macro_rules! tests {
         #[test]
         fn each_type(){
             $({
-                const VALUE_F: &'static str = formatcp!("{}", $expr);
+                // const VALUE_F: &'static str = formatcp!("{}", $expr);
                 const VALUE: &'static str = concatcp!($expr);
 
                 let mut string = ArrayString::<[u8; 64]>::new();
                 write!(string, "{}", $expr).unwrap();
 
-                assert_eq!(string.as_str(), VALUE);
-                assert_eq!(string.as_str(), VALUE_F);
+                // assert_eq!(string.as_str(), VALUE);
+                // assert_eq!(string.as_str(), VALUE_F);
             })*
         }
     )

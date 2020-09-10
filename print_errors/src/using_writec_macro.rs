@@ -1,6 +1,6 @@
-use const_format::{writec, StrWriter};
+use cfmt::{writec, StrWriter};
 
-fn using_writec(writer: &mut StrWriter) -> const_format::Result {
+fn using_writec(writer: &mut StrWriter) -> cfmt::Result {
     // Trying to write to a non-writer
     writec!((), "")?;
 

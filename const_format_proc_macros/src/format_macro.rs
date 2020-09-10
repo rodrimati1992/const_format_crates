@@ -1,6 +1,6 @@
 use crate::{
     format_args::{ExpandInto, FormatArgs, FormatIfArgs, LocalVariable, WriteArgs},
-    parse_utils::{TokenStream2Ext, WithProcMacroArgs},
+    parse_utils::TokenStream2Ext,
     shared_arg_parsing::{ExprArg, ExprArgs},
     Error,
 };
@@ -14,22 +14,16 @@ mod tests;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) fn concatcp_impl(
-    args: WithProcMacroArgs<ExprArgs>,
-) -> Result<TokenStream2, crate::Error> {
-    let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
-
+pub(crate) fn concatcp_impl(value: ExprArgs) -> Result<TokenStream2, crate::Error> {
     let fmt_var = Ident::new("fmt", Span::mixed_site());
 
-    let concat_args = args.value.args.iter().map(|ExprArg { expr, span }| {
+    let concat_args = value.args.iter().map(|ExprArg { expr, span }| {
         quote_spanned!(span.start=>
             __cf_osRcTFl4A::pmr::PConvWrapper(#expr).to_pargument_display(#fmt_var)
         )
     });
 
     Ok(quote!(({
-        use #cratep as __cf_osRcTFl4A;
-
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
         const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
@@ -52,12 +46,7 @@ pub(crate) fn concatcp_impl(
     })))
 }
 
-pub(crate) fn formatcp_impl(
-    args: WithProcMacroArgs<FormatArgs>,
-) -> Result<TokenStream2, crate::Error> {
-    let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
-    let fmt_args = args.value;
-
+pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate::Error> {
     let locals = fmt_args
         .local_variables
         .iter()
@@ -99,8 +88,6 @@ pub(crate) fn formatcp_impl(
     });
 
     Ok(quote!(({
-        use #cratep as __cf_osRcTFl4A;
-
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
         const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
@@ -125,24 +112,13 @@ pub(crate) fn formatcp_impl(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) fn formatc_if_macro_impl(
-    WithProcMacroArgs { crate_path, value }: WithProcMacroArgs<FormatIfArgs>,
-) -> Result<TokenStream2, crate::Error> {
-    formatc_macro_impl(WithProcMacroArgs {
-        crate_path,
-        value: value.inner,
-    })
+pub(crate) fn formatc_if_macro_impl(value: FormatIfArgs) -> Result<TokenStream2, crate::Error> {
+    formatc_macro_impl(value.inner)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) fn formatc_macro_impl(
-    args: WithProcMacroArgs<FormatArgs>,
-) -> Result<TokenStream2, crate::Error> {
-    let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
-
-    let fmt_args = args.value;
-
+pub(crate) fn formatc_macro_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate::Error> {
     let locals = fmt_args.local_variables.iter().map(|arg| &arg.ident);
     let expr = fmt_args.local_variables.iter().map(|arg| &arg.expr);
 
@@ -156,8 +132,6 @@ pub(crate) fn formatc_macro_impl(
     let cond_a = fmt_args.condition.iter();
 
     Ok(quote!(({
-        use #cratep as __cf_osRcTFl4A;
-
         #[allow(non_snake_case)]
         const fn fmt_NHPMWYD3NJA(
             mut #strwriter: __cf_osRcTFl4A::fmt::Formatter<'_>,
@@ -175,21 +149,19 @@ pub(crate) fn formatc_macro_impl(
         __cf_osRcTFl4A::__concatc_inner!(
             fmt_NHPMWYD3NJA,
             #((#cond_a) && )* true,
-            #cratep
+            ____
         )
     })))
 }
 
-pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<TokenStream2, Error> {
-    let cratep = args.crate_path.to_string().parse::<TokenStream2>().unwrap();
-
-    let writer_expr = args.value.writer_expr;
-    let writer_span = args.value.writer_span;
+pub(crate) fn writec_macro_impl(value: WriteArgs) -> Result<TokenStream2, Error> {
+    let writer_expr = value.writer_expr;
+    let writer_span = value.writer_span;
     let FormatArgs {
         condition: _,
         expanded_into,
         local_variables,
-    } = args.value.format_args;
+    } = value.format_args;
 
     let locals = local_variables.iter().map(|arg| &arg.ident);
     let expr = local_variables.iter().map(|arg| &arg.expr);
@@ -211,7 +183,6 @@ pub(crate) fn writec_macro_impl(args: WithProcMacroArgs<WriteArgs>) -> Result<To
     );
 
     Ok(quote! {({
-        use #cratep as __cf_osRcTFl4A;
 
         #[allow(non_snake_case)]
         match (#borrow_mutably, #(&(#expr),)*) {

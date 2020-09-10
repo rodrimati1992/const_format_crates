@@ -1,4 +1,4 @@
-use const_format::{assertc, assertc_eq, assertc_ne};
+use cfmt::{assertc, assertc_eq, assertc_ne};
 
 // uninferred argument
 assertc!(false, "{}", 0);
