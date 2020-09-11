@@ -474,7 +474,7 @@ macro_rules! formatc {
 /// ```
 ///
 /// The syntax is otherwise the same as described in
-/// [the const_format::fmt module](./fmt/index.html#fmtsyntax).
+/// [the `const_format::fmt` module](./fmt/index.html#fmtsyntax).
 ///
 /// # Writers
 ///
@@ -603,6 +603,31 @@ macro_rules! formatc {
 /// )?;
 ///
 /// assert_eq!(writer.as_str(), "The options are: Some(Point3 { x: 5, y: 13, z: 21 }), and None");
+///
+/// # Ok::<(), const_format::Error>(())
+/// ```
+///
+/// ### Locals in the format string
+///
+/// This example demonstrates how you can format local variables,
+/// by using their identifiers in the format string.
+///
+/// ```rust
+/// #![feature(const_mut_refs)]
+///
+/// use const_format::{Formatter, FormattingFlags, StrWriter, try_, writec};
+///
+/// const fn writeit(mut fmt: Formatter<'_>, foo: u32, bar: &str) -> const_format::Result {
+///     try_!(writec!(fmt, "{foo},{foo:?},{foo:#x},{foo:#b};"));
+///     try_!(writec!(fmt, "{bar},{bar:?}"));
+///     Ok(())
+/// }
+///
+/// let writer: &mut StrWriter = &mut StrWriter::new([0; 128]);
+///
+/// writeit(writer.make_formatter(FormattingFlags::NEW), 100, "hello")?;
+///
+/// assert_eq!(writer.as_str(), r#"100,100,0x64,0b1100100;hello,"hello""#);
 ///
 /// # Ok::<(), const_format::Error>(())
 /// ```

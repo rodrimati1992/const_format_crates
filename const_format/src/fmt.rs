@@ -53,6 +53,10 @@
 //! - Named, from constant (eg: `formatc!("{FOO}")`):
 //! Uses the `FOO` constant from the enclosing scope.
 //!
+//! - Named, from locals (eg: `formatc!("{foo}")`):
+//! Uses the `foo` local variable from the enclosing scope,
+//! only usable with the [`writec`] macro.
+//!
 //! ### Formatters
 //!
 //! The format arguments can be formatted in these ways:
@@ -282,7 +286,7 @@
 //! ```
 //!
 //!
-//!
+//! [`writec`]: ../macro.writec.html
 //! [`Formatter`]: ./struct.Formatter.html
 //! [`FormatMarker`]: ../marker_traits/trait.FormatMarker.html
 //! [`ConstDebug`]: ../derive.ConstDebug.html

@@ -11,5 +11,11 @@ fn using_writec(writer: &mut StrWriter) -> cfmt::Result {
     // trying to write an uninferred integer type
     writec!(writer, "{}", 0)?;
 
+    let a = 0;
+    writec!(writer, "{}", a)?;
+    writec!(writer, "{b}", b = a)?;
+    writec!(writer, "{a}")?;
+    writec!(writer, "{a:?}")?;
+
     Ok(())
 }
