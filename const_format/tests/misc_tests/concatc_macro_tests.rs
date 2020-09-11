@@ -1,5 +1,5 @@
-use const_format::Formatter;
-use const_format::{ascii_str, concatc, impl_fmt, try_};
+use cfmt_b::Formatter;
+use cfmt_b::{ascii_str, concatc, impl_fmt, try_};
 
 use std::num::NonZeroUsize;
 
@@ -27,7 +27,7 @@ struct Twice(&'static str);
 impl_fmt! {
     impl Twice;
 
-    const fn const_display_fmt(&self, fmt:&mut Formatter<'_>) -> const_format::Result {
+    const fn const_display_fmt(&self, fmt:&mut Formatter<'_>) -> cfmt_b::Result {
         try_!(fmt.write_str(self.0));
         try_!(fmt.write_str(self.0));
         Ok(())

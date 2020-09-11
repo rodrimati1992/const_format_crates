@@ -1,4 +1,4 @@
-use const_format::{
+use cfmt_b::{
     fmt::{Error, Formatter, FormattingFlags, StrWriter},
     try_, writec, ConstDebug,
 };
@@ -12,6 +12,7 @@ mod is_a_attributes;
 struct Dummy;
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 struct Braced {
     x: u32,
     y: Option<&'static str>,
@@ -22,6 +23,7 @@ struct Braced {
 }
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 #[cdeb(impls(
     "<U> Tupled<u32, U>",
     "<U> Tupled<u64, U>",
@@ -30,6 +32,7 @@ struct Braced {
 struct Tupled<T, U>(u32, #[cdeb(ignore)] Option<&'static str>, T, PhantomData<U>);
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 struct Unit;
 
 #[test]
@@ -82,6 +85,7 @@ fn struct_formatting() {
 ///////////////////////////////////////////////////////////////////////////////
 
 #[derive(ConstDebug)]
+#[cdeb(crate = "::cfmt_b")]
 enum Enum {
     Braced {
         x: u32,

@@ -141,11 +141,12 @@ with_shared_docs! {
     macro_rules! assertc {
         ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
             const _: () = {
+                use $crate::__cf_osRcTFl4A;
+
                 const PANIC_IF_TRUE_NHPMWYD3NJA: bool = !($cond);
 
-                const MSG_NHPMWYD3NJA: &str = $crate::assertc!(
-                    @fmt_string
-                    ($crate),
+                const MSG_NHPMWYD3NJA: &str = $crate::pmr::__formatc_if_impl!(
+                    (PANIC_IF_TRUE_NHPMWYD3NJA),
                     (concat!(
                         "{SEP_NHPMWYD3NJA}\
                         module_path: {MODULE_NHPMWYD3NJA}\n\
@@ -168,14 +169,6 @@ with_shared_docs! {
 
                 $crate::assert_with_str!(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA);
             };
-        );
-        (@fmt_string ($path:path), ($fmt_literal:expr) $(,$($eveything:tt)*)? ) => (
-            $crate::pmr::__formatc_if_impl!(
-                (($path))
-                (PANIC_IF_TRUE_NHPMWYD3NJA),
-                ($fmt_literal),
-                $($($eveything)*)?
-            )
         );
     }
 }
@@ -574,8 +567,8 @@ macro_rules! __assertc_equality_inner {
                 ),
                 $($($fmt_arg,)*)?
                 fmt_NHPMWYD3NJA = |__cf_fmt| {
-                    use $crate::try_ as __cf_try;
-                    use $crate::coerce_to_fmt as __cf_coerce_to_fmt;
+                    use __cf_osRcTFl4A::try_ as __cf_try;
+                    use __cf_osRcTFl4A::coerce_to_fmt as __cf_coerce_to_fmt;
 
                     #[allow(irrefutable_let_patterns)]
                     if let __cf_respan_to!(($left) [ref __cf_left, ref __cf_right]) =
@@ -583,7 +576,7 @@ macro_rules! __assertc_equality_inner {
                     {__cf_respan_to!{
                         ($left)
                         let __cf_fmt = &mut __cf_fmt
-                            .make_formatter($crate::FormattingFlags::__A_REG);
+                            .make_formatter(__cf_osRcTFl4A::FormattingFlags::__A_REG);
 
                         __cf_try!(__cf_fmt.write_str(" left: `"));
                         __cf_try!(__cf_coerce_to_fmt!(__cf_left).const_debug_fmt(__cf_fmt));

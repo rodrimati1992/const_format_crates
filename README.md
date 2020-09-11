@@ -237,6 +237,18 @@ assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 
 None right now.
 
+# Renaming crate
+
+All function-like macros from `const_format` can be used when the crate is renamed.
+
+The [`ConstDebug`] derive macro has the `#[cdeb(crate = "foo::bar")]` attribute to 
+tell it where to find the `const_format` crate.
+
+Example of renaming the `const_format` crate in the Cargo.toml file:
+```toml
+cfmt = {version = "0.*", package = "const_format"}
+```
+
 # Cargo features
 
 - "fmt": Enables the [`std::fmt`]-like API,

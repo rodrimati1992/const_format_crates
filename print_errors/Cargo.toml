@@ -5,7 +5,7 @@ authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 
 [features]
-nightly = ["const_format/assert"]
+nightly = ["cfmt/assert"]
 
 [dependencies]
-const_format = {path = "../const_format/"}
+cfmt = {path = "../const_format/", package = "const_format"}

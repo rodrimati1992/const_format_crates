@@ -1,4 +1,4 @@
-use const_format::coerce_to_fmt;
+use cfmt_b::coerce_to_fmt;
 
 use core::{
     cmp::Ordering,

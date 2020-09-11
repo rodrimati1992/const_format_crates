@@ -1,7 +1,7 @@
-use const_format::formatcp;
+use cfmt::formatcp;
 
 #[cfg(feature = "nightly")]
-use const_format::formatc;
+use cfmt::formatc;
 
 const _: &str = formatcp!("{}");
 

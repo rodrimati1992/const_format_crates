@@ -52,10 +52,6 @@ impl MyParse for ExprArgs {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
         let mut args = Vec::new();
 
-        if !input.is_empty() {
-            input.parse_punct(',')?;
-        }
-
         while !input.is_empty() {
             args.push(ExprArg::parse(input)?);
 

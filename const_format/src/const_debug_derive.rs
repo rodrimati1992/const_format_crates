@@ -51,6 +51,16 @@
 /// When this attribute is used it disables the default implementation
 /// that uses the type parameters generically.
 ///
+/// ### `#[cdeb(crate = "foo::bar")]`
+///
+/// The path to the `const_format` crate, useful if you want to reexport the ConstDebug macro,
+/// or rename the const_format crate in the Cargo.toml .
+///
+/// Example of renaming the `const_format` crate in the Cargo.toml file:
+/// ```toml
+/// cfmt = {version = "0.*", package = "const_format"}
+/// ```
+///
 /// Example:
 /// 
 /// ```rust
@@ -297,6 +307,37 @@
 /// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 /// [`impls attribute`]: #cdebimpls
 ///
+///
+///
+/// 
+/// ### Renamed import
+/// 
+/// This example demonstrates that you can use all the macros when the `const_format`
+/// crate is renamed.
+/// 
+/// ```rust
+/// #![feature(const_mut_refs)]
+/// # extern crate self as const_format;
+/// # extern crate const_format as cfmt;
+/// # fn main() {
+/// use cfmt::{
+///     for_examples::Unit,
+///     ConstDebug, formatc,
+/// };
+/// 
+/// #[derive(ConstDebug)]
+/// #[cdeb(crate = "cfmt")]
+/// struct Foo {
+///     bar: &'static str,
+///     baz: Unit
+/// }
+/// 
+/// const TEXT: &str = formatc!("{:?}", Foo{ bar: "hello", baz: Unit });
+/// 
+/// assert_eq!(TEXT, r#"Foo { bar: "hello", baz: Unit }"#);
+/// 
+/// # }
+/// ```
 ///
 #[cfg(feature = "derive")]
 pub use const_format_proc_macros::ConstDebug;

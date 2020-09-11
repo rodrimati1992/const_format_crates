@@ -2,6 +2,16 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.6
+
+Made the macros in `const_format` usable when the crate is renamed.
+
+Added a `#[cdeb(crate = "foo")]` helper attribute to
+pass the path to `const_format` to `ConstDebug`, useful when reexporting the derive macro.
+
+Documented that `writec!(buff, "{foo}")` (where `foo` is a local variable) works,
+and is equivelent to `writec!(buff, "{}", foo)`.
+
 ### 0.2.5
 
 Added the "assert" cargo feature,

@@ -1,6 +1,6 @@
 use super::{remove_margin, write_with_flag};
 
-use const_format::{
+use cfmt_a::{
     fmt::{Error, Formatter, FormattingFlags},
     impl_fmt, try_, PWrapper,
 };

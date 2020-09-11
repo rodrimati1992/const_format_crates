@@ -1,8 +1,8 @@
 // Don't need the tests for this macro to be thorough,
 // since this uses a lot of the same machinery as `formatcp` and `formatc`
 
-use const_format::fmt::{Error, Formatter, FormattingFlags, StrWriter};
-use const_format::{try_, writec};
+use cfmt_b::fmt::{Error, Formatter, FormattingFlags, StrWriter};
+use cfmt_b::{try_, writec};
 
 struct Foo {
     x: u32,
@@ -101,9 +101,33 @@ fn named_parameters() {
 }
 
 #[test]
+fn write_from_locals() {
+    const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
+        let foo = 13u8;
+        let bar = "58";
+
+        innerb(f, foo, bar)
+    }
+    const fn innerb(f: &mut Formatter<'_>, foo: u8, bar: &str) -> Result<(), Error> {
+        writec!(
+            f,
+            "{foo},{bar},{foo:?},{bar:?},{foo:x},{bar:x},{foo:b},{bar:b}"
+        )
+    }
+
+    let writer: &mut StrWriter = &mut StrWriter::new([0; 96]);
+    inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
+    assert_eq!(writer.as_str(), r#"13,58,13,"58",D,"58",1101,"58""#);
+
+    writer.clear();
+    inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
+    assert_eq!(writer.as_str(), r#"13,58,13,"58",D,"58",1101,"58""#);
+}
+
+#[test]
 #[cfg(feature = "fmt")]
 fn access_formatter() {
-    use const_format::call_debug_fmt;
+    use cfmt_b::call_debug_fmt;
 
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
         let mut n = 0u64;

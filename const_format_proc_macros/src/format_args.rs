@@ -1,11 +1,11 @@
 use crate::{
     format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness,
-    shared_arg_parsing::ExprArg, spanned::Spans,
+    parse_utils::TokenStream2Ext, shared_arg_parsing::ExprArg, spanned::Spans,
 };
 
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 
-use quote::quote_spanned;
+use quote::{quote_spanned, TokenStreamExt};
 
 ////////////////////////////////////////////////
 
@@ -101,10 +101,15 @@ impl ExpandInto {
                 let local_variable = &fmted.local_variable;
                 let span = local_variable.span();
 
-                quote_spanned!(span=>
+                let mut tokens = quote::quote!(
                     __cf_osRcTFl4A::coerce_to_fmt!(&#local_variable)
-                        .#fmt_method(&mut #formatter.make_formatter(#flags))
+                        .#fmt_method
                 )
+                .set_span_recursive(span);
+
+                tokens.append_all(quote::quote!( (&mut #formatter.make_formatter(#flags)) ));
+
+                tokens
             }
             ExpandInto::WithFormatter(ExpandWithFormatter {
                 format,

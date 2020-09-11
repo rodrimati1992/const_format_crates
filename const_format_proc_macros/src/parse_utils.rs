@@ -356,33 +356,3 @@ pub trait MyParse: Sized {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-/// Configuration for all function-like proc macros,
-/// parsed from the first tokens of function-like proc macros.
-pub struct WithProcMacroArgs<P> {
-    /// The path to the `const_format` crate
-    pub crate_path: TokenStream2,
-
-    pub value: P,
-}
-
-impl<P> MyParse for WithProcMacroArgs<P>
-where
-    P: MyParse,
-{
-    fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
-        let paren = input.parse_paren()?;
-
-        let mut content = ParseBuffer::new(paren.contents);
-
-        let crate_path = {
-            let paren = content.parse_paren()?;
-            paren.contents
-        };
-
-        Ok(Self {
-            crate_path,
-            value: P::parse(input)?,
-        })
-    }
-}
