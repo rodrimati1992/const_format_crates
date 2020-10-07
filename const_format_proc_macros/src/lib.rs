@@ -16,7 +16,7 @@ mod derive_debug;
 
 mod format_args;
 
-mod format_str_parsing;
+mod format_str;
 
 mod format_macro;
 

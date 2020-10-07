@@ -1,5 +1,5 @@
 use crate::{
-    format_str_parsing::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness,
+    format_str::FormatStr, formatting::FormattingFlags, parse_utils::StrRawness,
     parse_utils::TokenStream2Ext, shared_arg_parsing::ExprArg, spanned::Spans,
 };
 

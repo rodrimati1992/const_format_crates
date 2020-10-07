@@ -4,7 +4,7 @@ use super::{
 };
 
 use crate::{
-    format_str_parsing::{FmtArg, FmtStrComponent, FormatStr, WhichArg},
+    format_str::{FmtArg, FmtStrComponent, FormatStr, WhichArg},
     parse_utils::{LitStr, MyParse, ParseBuffer, ParseStream, TokenTreeExt},
     shared_arg_parsing::ExprArg,
     spanned::Spans,
