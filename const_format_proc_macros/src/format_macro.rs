@@ -31,6 +31,7 @@ pub(crate) fn concatcp_impl(value: ExprArgs) -> Result<TokenStream2, crate::Erro
 
             let #fmt_var = __cf_osRcTFl4A::pmr::FormattingFlags::NEW;
 
+            #[allow(clippy::eval_order_dependence)]
             let array = [
                 #({
                     let arg = #concat_args;
@@ -95,6 +96,7 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
 
             #( #locals )*
 
+            #[allow(clippy::eval_order_dependence)]
             let array = [
                 #({
                     let arg = #parg_constructor;
