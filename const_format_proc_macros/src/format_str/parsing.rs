@@ -7,10 +7,10 @@ use crate::{
 
 #[cfg(test)]
 impl FmtStrComponent {
-    fn str(s: &str) -> Self {
+    pub(super) fn str(s: &str) -> Self {
         Self::Str(s.to_string(), StrRawness::dummy())
     }
-    fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
+    pub(super) fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
         Self::Arg(FmtArg {
             which_arg,
             formatting,
@@ -31,7 +31,7 @@ impl FmtArg {
 
 #[allow(dead_code)]
 impl WhichArg {
-    fn ident(s: &str) -> Self {
+    pub(super) fn ident(s: &str) -> Self {
         Self::Ident(s.to_string())
     }
 }

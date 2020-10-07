@@ -2,7 +2,7 @@ use super::*;
 
 use super::{ParseError as PE, ParseErrorKind as PEK};
 
-use crate::formatting::{FormattingFlags as FF, IsAlternate};
+use crate::formatting::{FormattingFlags as FF, IsAlternate, NumberFormatting};
 
 use fastrand::Rng;
 
