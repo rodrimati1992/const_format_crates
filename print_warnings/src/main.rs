@@ -17,7 +17,7 @@ pub mod nightly {
     assertc_ne!(TWO, TEN);
 
     pub const CONCATC_A: &str = concatc!("hello", "world");
-    pub const CONCATC_B: &str = concatc!(10u8, 20u8);
+    pub const CONCATC_B: &str = concatc!(10u8, TWO);
 
     pub const FORMATC_A: &str = formatc!("{}hello{}{:?}", "foo", 100u8, Unit);
 

@@ -87,6 +87,8 @@ macro_rules! __concatcp_inner {
             }
             &{ out }
         };
+
+        #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
             // This transmute truncates the length of the array to the amound of written bytes.
             let slice =
