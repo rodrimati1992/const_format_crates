@@ -66,7 +66,7 @@ fn parse_format_str(input: &str, rawness: StrRawness) -> Result<FormatStr, Parse
 
         if let Some(open_pos) = open_pos {
             let after_open = open_pos + 1;
-            if input[after_open..].chars().next() == Some('{') {
+            if input[after_open..].starts_with('{') {
                 components.push_arg_str("{".to_string(), rawness);
 
                 arg_start = open_pos + 2;

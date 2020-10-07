@@ -181,6 +181,7 @@ where
 ///
 /// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html
 ///
+#[allow(clippy::type_complexity)]
 pub struct IsAWriteMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
         PhantomData<fn() -> PhantomData<K>>,

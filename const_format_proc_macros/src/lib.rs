@@ -1,3 +1,5 @@
+#![allow(clippy::or_fun_call)]
+
 use proc_macro::TokenStream as TokenStream1;
 
 use proc_macro2::TokenStream as TokenStream2;

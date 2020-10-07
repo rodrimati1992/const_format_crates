@@ -169,8 +169,8 @@ impl LitStr {
         let mut range = 1..value.len() - 1;
         let span = literal.span();
 
-        let is_raw = if value.starts_with("r") {
-            let hashes = value[1..].bytes().take_while(|x| *x == b'#').count();
+        let is_raw = if let Some(suffix) = value.strip_prefix('r') {
+            let hashes = suffix.bytes().take_while(|x| *x == b'#').count();
 
             if value.as_bytes()[1 + hashes] != b'"' {
                 return Err(Error::new(
@@ -263,7 +263,7 @@ impl StrRawness {
                 buffer.push('"');
                 buffer.push_str(str);
                 buffer.push('"');
-                buffer.extend(hashes.clone());
+                buffer.extend(hashes);
             }
             None => {
                 buffer.reserve(2 + str.len());

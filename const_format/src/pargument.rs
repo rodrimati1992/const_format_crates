@@ -1,3 +1,5 @@
+#![allow(clippy::wrong_self_convention)]
+
 use crate::{
     formatting::{Formatting, FormattingFlags},
     wrapper_types::PWrapper,

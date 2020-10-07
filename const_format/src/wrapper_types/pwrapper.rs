@@ -312,7 +312,7 @@ impl PWrapper<Integer> {
             out.start -= 1;
             let digit = (n & 1) as u8;
             out.array[out.start] = b'0' + digit;
-            n = n >> 1;
+            n >>= 1;
             if n == 0 {
                 break;
             }
@@ -352,7 +352,7 @@ impl PWrapper<Integer> {
                 0..=9 => b'0' + digit,
                 _ => b'A' - 10 + digit,
             };
-            n = n >> 4;
+            n >>= 4;
             if n == 0 {
                 break;
             }

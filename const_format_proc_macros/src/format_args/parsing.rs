@@ -70,7 +70,7 @@ fn parse_fmt_lit(this: &mut FormatStr, input: ParseStream<'_>) -> Result<(), cra
     input.parse_unwrap_tt(|input| {
         let tt = input.next();
 
-        let res = match tt {
+        match tt {
             Some(TokenTree::Literal(lit)) => {
                 let mut lit = lit_str_to_fmt_lit(&LitStr::parse_from_literal(&lit)?)?;
 
@@ -89,10 +89,8 @@ fn parse_fmt_lit(this: &mut FormatStr, input: ParseStream<'_>) -> Result<(), cra
                 }
                 Ok(())
             }
-            _ => return Ok(()),
-        };
-
-        res
+            _ => Ok(()),
+        }
     })
 }
 

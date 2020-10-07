@@ -79,6 +79,11 @@ impl ComputeStrLength {
         self.len
     }
 
+    /// Whether the length of the computed string is zero.
+    pub const fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     /// For borrowing this mutably in macros,just takes and returns a `&mut Self`.
     #[inline(always)]
     pub const fn borrow_mutably(&mut self) -> &mut Self {

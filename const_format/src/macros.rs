@@ -257,7 +257,9 @@ macro_rules! strwriter_as_str {
     ($expr:expr) => {
         unsafe {
             let writer: &'static $crate::StrWriter = $expr;
-            $crate::pmr::transmute::<&'static [u8], &'static str>(writer.as_bytes_alt())
+            #[allow(clippy::transmute_bytes_to_str)]
+            let ret = $crate::pmr::transmute::<&'static [u8], &'static str>(writer.as_bytes_alt());
+            ret
         }
     };
 }
