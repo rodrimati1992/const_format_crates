@@ -3,4 +3,5 @@ members=[
     "const_format",
     "const_format_proc_macros",
     "print_errors",
+    "print_warnings",
 ]
