@@ -322,6 +322,8 @@
 #![deny(clippy::missing_safety_doc)]
 #![deny(clippy::shadow_unrelated)]
 #![deny(clippy::wildcard_imports)]
+// All The methods that take self by value are for small Copy types
+#![allow(clippy::wrong_self_convention)]
 #![deny(missing_docs)]
 
 include! {"const_debug_derive.rs"}

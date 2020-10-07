@@ -31,6 +31,7 @@ pub struct Peekable2<I: Iterator> {
 }
 
 impl Peekable2<std::ops::Range<u8>> {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<I: IntoIterator>(iter: I) -> Peekable2<I::IntoIter> {
         Peekable2 {
             iter: iter.into_iter().fuse(),

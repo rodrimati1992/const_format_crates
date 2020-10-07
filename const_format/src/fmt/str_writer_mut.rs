@@ -755,7 +755,7 @@ macro_rules! write_integer_fn {
                     cursor-=1;
                     let digit = (n & 0b1111) as u8;
                     this_buffer[cursor] = hex_as_ascii(digit);
-                    n = n >> 4;
+                    n >>= 4;
                     if n == 0 { break }
                 }
 
@@ -790,7 +790,7 @@ macro_rules! write_integer_fn {
                     cursor-=1;
                     let digit = (n & 1) as u8;
                     this_buffer[cursor] = hex_as_ascii(digit);
-                    n = n >> 1;
+                    n >>= 1;
                     if n == 0 { break }
                 }
 
@@ -989,7 +989,7 @@ impl<'w, E> StrWriterMut<'w, E> {
         borrow_fields!(self, self_len, self_buffer);
 
         // Truncating non-ascii u8s
-        character = character & 0b111_1111;
+        character &= 0b111_1111;
 
         let end = *self_len + repeated;
 

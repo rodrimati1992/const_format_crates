@@ -185,6 +185,7 @@ macro_rules! std_kind_impls {
 ///
 /// [`PWrapper`]: ../struct.PWrapper.html
 ///
+#[allow(clippy::type_complexity)]
 pub struct IsAFormatMarker<K, T: ?Sized, R: ?Sized>(
     PhantomData<(
         PhantomData<fn() -> PhantomData<K>>,

@@ -1,3 +1,6 @@
+// <_< clippy you silly
+#![allow(clippy::enum_variant_names)]
+
 use core::fmt::{self, Display};
 
 /// An error while trying to write into a StrWriter.

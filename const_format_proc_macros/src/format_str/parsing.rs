@@ -1,48 +1,16 @@
+use super::{FmtArg, FmtStrComponent, FormatStr, ParseError, ParseErrorKind, WhichArg};
+
 use crate::{
     formatting::{FormattingFlags, IsAlternate, NumberFormatting},
     parse_utils::StrRawness,
 };
 
-mod errors;
-
-#[cfg(test)]
-mod tests;
-
-pub(crate) use self::errors::{ParseError, ParseErrorKind};
-
-#[derive(Debug, PartialEq)]
-pub(crate) struct FormatStr {
-    pub(crate) list: Vec<FmtStrComponent>,
-}
-
-#[derive(Debug, PartialEq)]
-pub(crate) enum FmtStrComponent {
-    Str(String, StrRawness),
-    Arg(FmtArg),
-}
-
-/// An argument in the format string eg: `"{foo:?}"`
-#[derive(Debug, PartialEq)]
-pub(crate) struct FmtArg {
-    pub(crate) which_arg: WhichArg,
-    pub(crate) formatting: FormattingFlags,
-    pub(crate) rawness: StrRawness,
-}
-
-#[derive(Debug, PartialEq)]
-pub(crate) enum WhichArg {
-    Ident(String),
-    Positional(Option<usize>),
-}
-
-/////////////////////////////////////
-
 #[cfg(test)]
 impl FmtStrComponent {
-    fn str(s: &str) -> Self {
+    pub(super) fn str(s: &str) -> Self {
         Self::Str(s.to_string(), StrRawness::dummy())
     }
-    fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
+    pub(super) fn arg(which_arg: WhichArg, formatting: FormattingFlags) -> Self {
         Self::Arg(FmtArg {
             which_arg,
             formatting,
@@ -63,7 +31,7 @@ impl FmtArg {
 
 #[allow(dead_code)]
 impl WhichArg {
-    fn ident(s: &str) -> Self {
+    pub(super) fn ident(s: &str) -> Self {
         Self::Ident(s.to_string())
     }
 }
@@ -98,7 +66,7 @@ fn parse_format_str(input: &str, rawness: StrRawness) -> Result<FormatStr, Parse
 
         if let Some(open_pos) = open_pos {
             let after_open = open_pos + 1;
-            if input[after_open..].chars().next() == Some('{') {
+            if input[after_open..].starts_with('{') {
                 components.push_arg_str("{".to_string(), rawness);
 
                 arg_start = open_pos + 2;

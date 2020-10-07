@@ -1,3 +1,5 @@
+#![allow(clippy::or_fun_call)]
+
 use proc_macro::TokenStream as TokenStream1;
 
 use proc_macro2::TokenStream as TokenStream2;
@@ -16,7 +18,7 @@ mod derive_debug;
 
 mod format_args;
 
-mod format_str_parsing;
+mod format_str;
 
 mod format_macro;
 

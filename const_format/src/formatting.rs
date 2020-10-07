@@ -230,6 +230,8 @@ pub const fn hex_as_ascii(n: u8) -> u8 {
 }
 
 #[doc(hidden)]
+// Really clippy? Array indexing can panic you know.
+#[allow(clippy::no_effect)]
 pub const FOR_ESCAPING: &ForEscaping = {
     let mut is_backslash_escaped = 0;
 
