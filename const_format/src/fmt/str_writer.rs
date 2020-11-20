@@ -454,6 +454,54 @@ impl StrWriter {
     }
 }
 
+#[cfg(feature = "const_generics")]
+impl<const N: usize> StrWriter<[u8; N]> {
+    /// Casts a `&StrWriter<[u8; N]>` to a `&StrWriter<[u8]>`,
+    /// for calling methods defined on `StrWriter<[u8]>` (most of them).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    ///
+    /// buffer.as_mut().write_str("Hello,");
+    /// buffer.as_mut().write_str(" world!");
+    ///
+    /// assert_eq!(buffer.r().as_str(), "Hello, world!");
+    ///
+    /// ```
+    ///
+    #[inline(always)]
+    pub const fn r(&self) -> &StrWriter<[u8]> {
+        self
+    }
+
+    /// Borrows this `StrWriter<[u8; N]>` into a `StrWriterMut`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    ///
+    /// buffer.as_mut().write_str_range("trust", 1..usize::MAX);
+    ///
+    /// assert_eq!(buffer.r().as_str(), "rust");
+    ///
+    /// ```
+    #[inline(always)]
+    pub const fn as_mut(&mut self) -> StrWriterMut<'_> {
+        StrWriterMut {
+            len: &mut self.len,
+            buffer: &mut self.buffer,
+            _encoding: PhantomData,
+        }
+    }
+}
+
 impl<A: ?Sized> StrWriter<A> {
     /// For borrowing this mutably in macros, without getting nested mutable references.
     #[inline(always)]

@@ -314,6 +314,7 @@
         const_fn_union,
     )
 )]
+#![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
 #![allow(clippy::blacklisted_name)]

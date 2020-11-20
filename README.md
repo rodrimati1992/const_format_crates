@@ -265,12 +265,18 @@ This is a separate cargo feature because:
     - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
     - It requires the `std` crate, because `core::panic` requires a string literal argument.
 
-
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,
 allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run 
 in constant time, rather than linear time proportional to the truncated part of the slice.
 
+"const_generics":
+Enables impls that use const generics, currently only used for ergonomics.
+Use this when const generics are usable in stable Rust.
+
+"nightly_const_generics":
+Enables impls that use const generics, currently only used for ergonomics.
+This requires a nightly Rust compiler.
 
 
 # No-std support

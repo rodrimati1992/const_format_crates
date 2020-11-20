@@ -1,4 +1,4 @@
-#![feature(const_mut_refs)]
+#![cfg_attr(feature = "nightly", feature(const_mut_refs))]
 
 use const_format::{concatcp, formatcp};
 

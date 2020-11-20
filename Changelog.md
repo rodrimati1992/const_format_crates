@@ -2,6 +2,18 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.8
+
+Added minimal const generic support, for use in the added methods.
+
+Added these methods to `StrWriter<[u8; N]>`:
+- `r`: for casting it to a `StrWriter<[u8]>`
+- `as_mut`: for casting it to a `StrWriterMut`.
+
+Added "const_generics" and "nightly_const_generics" features.
+
+Bumped version number to 0.2.8 .
+
 ### 0.2.6
 
 Made the macros in `const_format` usable when the crate is renamed.
