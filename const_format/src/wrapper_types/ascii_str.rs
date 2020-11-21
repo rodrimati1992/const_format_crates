@@ -36,6 +36,7 @@ use core::fmt::{self, Display};
 ///
 /// [`ascii_str`]: ./macro.ascii_str.html
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub struct AsciiStr<'a>(&'a [u8]);
 

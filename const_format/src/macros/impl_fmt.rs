@@ -109,6 +109,7 @@
 ///
 /// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[macro_export]
 macro_rules! impl_fmt {
     (

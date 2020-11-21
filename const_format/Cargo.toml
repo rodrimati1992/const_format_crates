@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.9"
+version = "0.2.10"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -33,7 +33,8 @@ constant_time_as_str = ["fmt"]
 debug = ["const_format_proc_macros/debug"]
 testing = []
 only_new_tests = ["testing"]
-all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "assert"]
+docsrs = []
+all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "assert", "docsrs"]
 
 [dependencies.const_format_proc_macros]
 version = "=0.2.8"

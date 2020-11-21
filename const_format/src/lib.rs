@@ -241,16 +241,16 @@
 //!
 //! - "fmt": Enables the [`std::fmt`]-like API,
 //! requires Rust nightly because it uses mutable references in const fn.<br>
-//! This feature includes the `formatc`/`writec` formatting macros.
+//! This feature includes the [`formatc`]/[`writec`] formatting macros.
 //!
 //! - "derive": implies the "fmt" feature,
-//! provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
+//! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
 //! - "assert": implies the "fmt" feature,
 //! enables the assertion macros.<br>
 //! This is a separate cargo feature because:
-//!     - It uses nightly Rust features  that are less stable than the "fmt" feature does.<br>
+//!     - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
 //!     - It requires the `std` crate, because `core::panic` requires a string literal argument.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
@@ -261,11 +261,12 @@
 //! "const_generics":
 //! Enables impls that use const generics, currently only used for ergonomics.
 //! Use this when const generics are usable in stable Rust.
-//! 
+//!
 //! "nightly_const_generics":
 //! Enables impls that use const generics, currently only used for ergonomics.
 //! This requires a nightly Rust compiler.
-//! 
+//!
+//!
 //!
 //! # No-std support
 //!
@@ -323,6 +324,7 @@
     )
 )]
 #![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
+#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
 #![allow(clippy::blacklisted_name)]
@@ -356,12 +358,15 @@ pub mod panicking;
 
 mod pargument;
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod utils;
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod for_examples;
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod marker_traits;
 
@@ -373,6 +378,7 @@ pub mod test_utils;
 #[allow(missing_docs)]
 pub mod doctests;
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod fmt;
 
@@ -380,6 +386,7 @@ pub mod fmt;
 #[doc(hidden)]
 pub mod msg;
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub mod wrapper_types;
 

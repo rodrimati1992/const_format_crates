@@ -137,6 +137,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc {
         ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -356,6 +357,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_eq {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -530,6 +532,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_ne {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (

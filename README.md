@@ -253,10 +253,10 @@ cfmt = {version = "0.*", package = "const_format"}
 
 - "fmt": Enables the [`std::fmt`]-like API,
 requires Rust nightly because it uses mutable references in const fn.<br>
-This feature includes the `formatc`/`writec` formatting macros.
+This feature includes the [`formatc`]/[`writec`] formatting macros.
 
 - "derive": implies the "fmt" feature,
-provides the `ConstDebug` derive macro to format user-defined types at compile-time.<br>
+provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
 - "assert": implies the "fmt" feature,

@@ -454,6 +454,7 @@ impl StrWriter {
     }
 }
 
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 impl<const N: usize> StrWriter<[u8; N]> {
     /// Casts a `&StrWriter<[u8; N]>` to a `&StrWriter<[u8]>`,
