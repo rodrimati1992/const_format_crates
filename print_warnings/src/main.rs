@@ -1,4 +1,4 @@
-#![feature(const_mut_refs)]
+#![cfg_attr(feature = "nightly", feature(const_mut_refs))]
 
 use const_format::{concatcp, formatcp};
 
@@ -17,7 +17,7 @@ pub mod nightly {
     assertc_ne!(TWO, TEN);
 
     pub const CONCATC_A: &str = concatc!("hello", "world");
-    pub const CONCATC_B: &str = concatc!(10u8, 20u8);
+    pub const CONCATC_B: &str = concatc!(10u8, TWO);
 
     pub const FORMATC_A: &str = formatc!("{}hello{}{:?}", "foo", 100u8, Unit);
 

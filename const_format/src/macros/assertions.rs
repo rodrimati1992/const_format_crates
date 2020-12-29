@@ -137,6 +137,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc {
         ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -356,6 +357,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_eq {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -530,6 +532,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_ne {
         ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
@@ -569,6 +572,8 @@ macro_rules! __assertc_equality_inner {
                 fmt_NHPMWYD3NJA = |__cf_fmt| {
                     use __cf_osRcTFl4A::try_ as __cf_try;
                     use __cf_osRcTFl4A::coerce_to_fmt as __cf_coerce_to_fmt;
+
+                    let __cf_respan_to!(($left) __cf_fmt) = __cf_fmt;
 
                     #[allow(irrefutable_let_patterns)]
                     if let __cf_respan_to!(($left) [ref __cf_left, ref __cf_right]) =

@@ -27,6 +27,7 @@ use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInc
 /// assert_eq!(formatc!("{}t", Sliced(SRC, 4..7)), "bart");
 ///
 /// ```
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 pub struct Sliced<T, R>(pub T, pub R);
 
 impl_fmt! {
