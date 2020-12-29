@@ -2,6 +2,11 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.11
+
+Fixed the documentation in case that the https://github.com/rust-lang/rust/pull/80243 
+rustc pull request is merged.
+
 ### 0.2.8
 
 Added minimal const generic support, for use in the added methods.
@@ -11,6 +16,8 @@ Added these methods to `StrWriter<[u8; N]>`:
 - `as_mut`: for casting it to a `StrWriterMut`.
 
 Added "const_generics" and "nightly_const_generics" features.
+
+Fixed hygiene bug in assertion macros.
 
 Bumped version number to 0.2.8 .
 
