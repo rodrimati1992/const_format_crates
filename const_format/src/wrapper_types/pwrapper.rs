@@ -74,6 +74,7 @@ mod tests;
 /// [`call_debug_fmt`]: ./macro.call_debug_fmt.html
 /// [`writec`]: ./macro.writec.html
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[derive(Copy, Clone)]
 pub struct PWrapper<T>(pub T);
 

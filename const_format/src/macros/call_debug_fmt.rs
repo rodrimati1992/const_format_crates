@@ -124,6 +124,7 @@
 /// # Ok::<(), const_format::Error>(())
 /// ```
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[macro_export]
 macro_rules! call_debug_fmt {
     (array, $expr:expr, $formatter:expr $(,)* ) => {{

@@ -87,6 +87,8 @@ macro_rules! __concatcp_inner {
             }
             &{ out }
         };
+
+        #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
             // This transmute truncates the length of the array to the amound of written bytes.
             let slice =
@@ -233,6 +235,12 @@ macro_rules! formatcp {
 /// User defined types must implement the [`FormatMarker`] trait and
 /// and have a `const_display_fmt` method (as described in the trait) to be concatenated.
 ///
+/// # Stable equivalent
+///
+/// For an equivalent macro which can be used in stable Rust (1.46.0 onwards),
+/// but can only concatenate primitive types,
+/// you can use the [`concatcp`](crate::concatcp) macro.
+///
 /// # Limitations
 ///
 /// This macro has [the limitations described in here](./index.html#macro-limitations).
@@ -274,6 +282,7 @@ macro_rules! formatcp {
 ///
 /// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 ///
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! concatc {
@@ -378,6 +387,12 @@ macro_rules! __concatc_inner{
 
 /// Formats constants of standard library and/or user-defined types into a `&'static str`.
 ///
+/// # Stable equivalent
+///
+/// For an equivalent macro which can be used in stable Rust (1.46.0 onwards),
+/// but can only format primitive types,
+/// you can use the [`formatcp`](crate::formatcp) macro.
+///
 /// # Syntax
 ///
 /// This macro uses the syntax described in
@@ -442,6 +457,7 @@ macro_rules! __concatc_inner{
 ///
 ///
 #[macro_export]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
@@ -639,6 +655,7 @@ macro_rules! formatc {
 ///
 ///
 #[macro_export]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! writec {
     ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
