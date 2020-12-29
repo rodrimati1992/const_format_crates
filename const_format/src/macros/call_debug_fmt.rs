@@ -62,8 +62,8 @@
 /// }
 ///
 /// const TEXT: &str = {
-///     let promoted = &make();
-///     strwriter_as_str!(unwrap!(promoted))
+///     const PROM: &StrWriter<[u8]> = &unwrap!(make());
+///     strwriter_as_str!(PROM)
 /// };
 ///
 /// const EXPECTED: &str = "\

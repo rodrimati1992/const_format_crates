@@ -147,7 +147,10 @@
 //!     writer
 //! }
 //!
-//! const STRING: &str = strwriter_as_str!(&build_string());
+//! const STRING: &str = {
+//!     const STR: &StrWriter<[u8; CAP]> = &build_string();
+//!     strwriter_as_str!(STR)
+//! };
 //!
 //! // The formatter
 //! assert_eq!(
@@ -224,7 +227,10 @@
 //!     writer
 //! }
 //!
-//! const STRING: &str = strwriter_as_str!(&build_string());
+//! const STRING: &str = {
+//!     const S: &StrWriter<[u8; CAP]> = &build_string();
+//!     strwriter_as_str!(S)
+//! };
 //!
 //! assert_eq!(
 //!     STRING,

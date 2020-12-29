@@ -82,7 +82,8 @@ use core::marker::PhantomData;
 /// }
 ///
 /// impl<L: Num, R: Num> Mul<L, R> {
-///     const STR: &'static str = strwriter_as_str!(&compute_str(L::V, R::V));
+///     const __STR: &'static StrWriter<[u8]> = &compute_str(L::V, R::V);
+///     const STR: &'static str = strwriter_as_str!(Self::__STR);
 /// }
 ///
 /// assert_eq!(Mul::<Two,Three>::STR, "2 * 3 == 6");
@@ -315,8 +316,8 @@ impl StrWriter {
     /// }
     ///
     /// const SLICE: &[u8] = {
-    ///     let promoted: &'static StrWriter = &slice();
-    ///     promoted.as_bytes_alt()
+    ///     const PROM: &'static StrWriter = &slice();
+    ///     PROM.as_bytes_alt()
     /// };
     ///
     ///

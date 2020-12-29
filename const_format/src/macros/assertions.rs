@@ -573,11 +573,9 @@ macro_rules! __assertc_equality_inner {
                     use __cf_osRcTFl4A::try_ as __cf_try;
                     use __cf_osRcTFl4A::coerce_to_fmt as __cf_coerce_to_fmt;
 
-                    let __cf_respan_to!(($left) __cf_fmt) = __cf_fmt;
-
                     #[allow(irrefutable_let_patterns)]
-                    if let __cf_respan_to!(($left) [ref __cf_left, ref __cf_right]) =
-                        [$left, $right]
+                    if let __cf_respan_to!(($left) (ref __cf_left, ref __cf_right, __cf_fmt)) =
+                        ($left, $right, __cf_fmt)
                     {__cf_respan_to!{
                         ($left)
                         let __cf_fmt = &mut __cf_fmt
