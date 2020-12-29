@@ -71,7 +71,10 @@ macro_rules! try_ {
 ///     writer
 /// }
 ///
-/// const TEXT: &str = strwriter_as_str!(&foo());
+/// const TEXT: &str = {
+///     const S: &StrWriter = &foo();
+///     strwriter_as_str!(S)
+/// };
 /// assert_eq!(TEXT, "foo bar baz")
 ///
 /// ```
@@ -187,7 +190,10 @@ macro_rules! unwrap_or_else {
 ///     writer
 /// }
 ///
-/// const TEXT: &str = strwriter_as_str!(&make_strwriter());
+/// const TEXT: &str = {
+///     const TEXT_: &StrWriter = &make_strwriter();
+///     strwriter_as_str!(TEXT_)
+/// };
 ///
 /// assert_eq!(TEXT, "[0, 1],[0, 1],100,100,Unit,Unit");
 ///
@@ -244,7 +250,10 @@ macro_rules! coerce_to_fmt {
 ///     writer
 /// }
 ///
-/// const STR: &str = strwriter_as_str!(&formatted());
+/// const STR: &str = {
+///     const S: &StrWriter = &formatted();
+///     strwriter_as_str!(S)
+/// };
 ///
 /// fn main() {
 ///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
