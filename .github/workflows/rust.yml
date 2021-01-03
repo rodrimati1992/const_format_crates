@@ -20,10 +20,10 @@ jobs:
       run: |
         cargo update
           
-        cd "${TRAVIS_BUILD_DIR}/const_format_proc_macros/"
+        cd "${{github.workspace}}/const_format_proc_macros/"
         cargo test
 
-        cd "${TRAVIS_BUILD_DIR}/const_format/"
+        cd "${{github.workspace}}/const_format/"
         cargo test --features "testing"
 
 
@@ -33,10 +33,10 @@ jobs:
       run: |
         cargo update -Z minimal-versions
         
-        cd "${TRAVIS_BUILD_DIR}/const_format_proc_macros/"
+        cd "${{github.workspace}}/const_format_proc_macros/"
         cargo test
 
-        cd "${TRAVIS_BUILD_DIR}/const_format/"
+        cd "${{github.workspace}}/const_format/"
         
         cargo test --features "testing"
         cargo test --features "testing fmt"
