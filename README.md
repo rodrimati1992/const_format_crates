@@ -1,6 +1,6 @@
 
 
-[![Build Status](https://travis-ci.org/rodrimati1992/const_format_crates.svg?branch=master)](https://travis-ci.org/rodrimati1992/const_format_crates)
+[![Build Status](https://github.com/rodrimati1992/core_extensions/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/core_extensions/actions)
 [![crates-io](https://img.shields.io/crates/v/const_format.svg)](https://crates.io/crates/const_format)
 [![api-docs](https://docs.rs/const_format/badge.svg)](https://docs.rs/const_format/*)
 
