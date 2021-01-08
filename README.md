@@ -1,6 +1,6 @@
 
 
-[![Build Status](https://github.com/rodrimati1992/core_extensions/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/core_extensions/actions)
+![Rust](https://github.com/rodrimati1992/const_format_crates/workflows/Rust/badge.svg)
 [![crates-io](https://img.shields.io/crates/v/const_format.svg)](https://crates.io/crates/const_format)
 [![api-docs](https://docs.rs/const_format/badge.svg)](https://docs.rs/const_format/*)
 
