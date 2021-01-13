@@ -13,8 +13,6 @@ macro_rules! with_shared_docs {(
     ///
     /// This macro requires the "assert" feature to be exported,
     /// because it uses some nightly Rust features.<br>
-    /// It uses `std::panic` for panicking due to an unforseen limitation
-    /// in `core::panic`, which doesn't allow passing non-literal strings at compile-time.
     ///
     $(#[$before_syntax])*
     /// # Syntax

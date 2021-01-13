@@ -261,9 +261,8 @@ This implicitly uses the `syn` crate, so clean compiles take a bit longer than w
 
 - "assert": implies the "fmt" feature,
 enables the assertion macros.<br>
-This is a separate cargo feature because:
-    - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
-    - It requires the `std` crate, because `core::panic` requires a string literal argument.
+This is a separate cargo feature because 
+it uses nightly Rust features that are less stable than the "fmt" feature does.
 
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,
@@ -282,9 +281,6 @@ This requires a nightly Rust compiler.
 # No-std support
 
 `const_format` is `#![no_std]`, it can be used anywhere Rust can be used.
-
-Caveat: The opt-in "assert" feature uses the `std::panic` macro to panic,
-as of 2020-09-06 `core::panic` requires the argument to be a literal.
 
 # Minimum Supported Rust Version
 

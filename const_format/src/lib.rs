@@ -249,9 +249,8 @@
 //!
 //! - "assert": implies the "fmt" feature,
 //! enables the assertion macros.<br>
-//! This is a separate cargo feature because:
-//!     - It uses nightly Rust features that are less stable than the "fmt" feature does.<br>
-//!     - It requires the `std` crate, because `core::panic` requires a string literal argument.
+//! This is a separate cargo feature because
+//! it uses nightly Rust features that are less stable than the "fmt" feature does.<br>
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -338,10 +337,6 @@
 #![deny(missing_docs)]
 
 include! {"const_debug_derive.rs"}
-
-// Only used for panicking. Once panicking works without std, I'll remove this.
-#[cfg(feature = "assert")]
-extern crate std;
 
 #[macro_use]
 mod macros;

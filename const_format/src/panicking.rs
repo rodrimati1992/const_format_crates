@@ -15,7 +15,7 @@ macro_rules! panic_ {
             T: ?Sized + crate::panicking::Message,
         {
             const PANIC: usize = {
-                use ::std::panic as do_not_show_this_code_rustc;
+                use ::core::panic as do_not_show_this_code_rustc;
 
                 let secret = T::MSG;
                 if T::COND {
