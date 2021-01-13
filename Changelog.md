@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.13
+
+Fixed the assertion macros not to use `std::panic`, using `core::panic` instead, since `core::panic` changed to allow passing a non-literal `&'static str` argument.
+
 ### 0.2.11
 
 Fixed the documentation in case that the https://github.com/rust-lang/rust/pull/80243 

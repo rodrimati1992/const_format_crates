@@ -1,21 +1,21 @@
-pub trait Message {
-    const COND: bool;
-    const MSG: &'static str;
-    const PANIC: usize = <Self as PanicIf>::PANIC;
-}
-
-pub trait PanicIf: Message {
-    const PANIC: usize;
-}
-
 macro_rules! panic_ {
     ($($span:tt)*)=> {crate::pmr::respan_to!{($($span)*)
+        pub trait Message {
+            const COND: bool;
+            const MSG: &'static str;
+            const PANIC: usize = <Self as PanicIf>::PANIC;
+        }
+
+        pub trait PanicIf: Message {
+            const PANIC: usize;
+        }
+
         impl<T> crate::panicking::PanicIf for T
         where
             T: ?Sized + crate::panicking::Message,
         {
             const PANIC: usize = {
-                use ::std::panic as do_not_show_this_code_rustc;
+                use ::core::panic as do_not_show_this_code_rustc;
 
                 let secret = T::MSG;
                 if T::COND {
@@ -48,10 +48,5 @@ macro_rules! assert_with_str {
         }
 
         const _: usize = <__PanicWithStr as $crate::panicking::Message>::PANIC;
-
-        // Errors about infinite loops show up above the panic.
-        if $cond {
-            loop {}
-        }
     }};
 }
