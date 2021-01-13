@@ -322,64 +322,54 @@ macro_rules! __concatc_expr {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __concatc_inner{
-    ($debug_fmt_fn:ident, $cond:expr, $($span:tt)*)=>{{
-        $crate::pmr::respan_to!{($($span)*) {
-            const fn len_nhpmwyd3nj() -> usize {
-                if $cond {
-                    let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
-                    let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
-                    match $debug_fmt_fn(fmt) {
-                        __cf_osRcTFl4A::pmr::Ok(()) => strlen.len(),
-                        __cf_osRcTFl4A::pmr::Err(_) => 0,
-                    }
-                } else {
-                    0
+macro_rules! __concatc_inner {
+    ($debug_fmt_fn:ident, $cond:expr, $($span:tt)*) => {{
+        const fn len_nhpmwyd3nj() -> usize {
+            if $cond {
+                let mut strlen = __cf_osRcTFl4A::pmr::ComputeStrLength::new();
+                let fmt = strlen.make_formatter(__cf_osRcTFl4A::FormattingFlags::NEW);
+                match $debug_fmt_fn(fmt) {
+                    __cf_osRcTFl4A::pmr::Ok(()) => strlen.len(),
+                    __cf_osRcTFl4A::pmr::Err(_) => 0,
                 }
+            } else {
+                0
             }
+        }
 
-            const LEN_NHPMWYD3NJA: usize = len_nhpmwyd3nj();
+        const LEN_NHPMWYD3NJA: usize = len_nhpmwyd3nj();
 
-            const fn str_writer_nhpmwyd3nja(
-            )-> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
-                let mut writer = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
-                let error = if $cond {
-                    $debug_fmt_fn(
-                        __cf_osRcTFl4A::pmr::Formatter::from_sw(
-                            &mut writer,
-                            __cf_osRcTFl4A::FormattingFlags::NEW,
-                        )
-                    )
-                } else {
-                    __cf_osRcTFl4A::pmr::Ok(())
-                };
+        const fn str_writer_nhpmwyd3nja(
+        ) -> __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]> {
+            let mut writer = __cf_osRcTFl4A::pmr::StrWriter::new([0; LEN_NHPMWYD3NJA]);
+            let error = if $cond {
+                $debug_fmt_fn(__cf_osRcTFl4A::pmr::Formatter::from_sw(
+                    &mut writer,
+                    __cf_osRcTFl4A::FormattingFlags::NEW,
+                ))
+            } else {
+                __cf_osRcTFl4A::pmr::Ok(())
+            };
 
-                __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter{
-                    error: __cf_osRcTFl4A::msg::ErrorTuple::new(error, &writer),
-                    writer,
-                }
+            __cf_osRcTFl4A::msg::ErrorTupleAndStrWriter {
+                error: __cf_osRcTFl4A::msg::ErrorTuple::new(error, &writer),
+                writer,
             }
+        }
 
-            const STR_WRITER_NHPMWYD3NJA:
-                &__cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<[u8; LEN_NHPMWYD3NJA]>=
-                &str_writer_nhpmwyd3nja();
+        const STR_WRITER_NHPMWYD3NJA: &__cf_osRcTFl4A::msg::ErrorTupleAndStrWriter<
+            [u8; LEN_NHPMWYD3NJA],
+        > = &str_writer_nhpmwyd3nja();
 
-            const _: __cf_osRcTFl4A::msg::Ok =
-                <
-                    <
-                        __cf_osRcTFl4A::msg::ErrorPicker<
-                            [(); STR_WRITER_NHPMWYD3NJA.error.error_variant],
-                            [(); STR_WRITER_NHPMWYD3NJA.error.capacity]
-                        >
-                        as __cf_osRcTFl4A::msg::ErrorAsType
-                    >::Type
-                >::NEW;
+        const _: __cf_osRcTFl4A::msg::Ok = <<__cf_osRcTFl4A::msg::ErrorPicker<
+            [(); STR_WRITER_NHPMWYD3NJA.error.error_variant],
+            [(); STR_WRITER_NHPMWYD3NJA.error.capacity],
+        > as __cf_osRcTFl4A::msg::ErrorAsType>::Type>::NEW;
 
-            const STR_NHPMWYD3NJA: &str =
-                __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
+        const STR_NHPMWYD3NJA: &str =
+            __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
 
-            STR_NHPMWYD3NJA
-        }}
+        STR_NHPMWYD3NJA
     }};
 }
 

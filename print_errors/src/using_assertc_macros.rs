@@ -16,3 +16,7 @@ assertc_eq!((), (), "{}");
 assertc_eq!((), (), "{}", foo = "", 100u8);
 
 assertc_eq!(0u8, 1u8, "{}", 0);
+
+assertc_eq!(0u8, 1u8, "{}", 0u8);
+
+assertc!(2 + 2 == 5, "{}", 0u8);
