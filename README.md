@@ -269,14 +269,9 @@ An optimization that requires a few additional nightly features,
 allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run 
 in constant time, rather than linear time proportional to the truncated part of the slice.
 
-- "const_generics":
-Enables impls that use const generics, currently only used for ergonomics.
-Use this when const generics are usable in stable Rust.
-
-- "nightly_const_generics":
-Enables impls that use const generics, currently only used for ergonomics.
-This requires a nightly Rust compiler.
-
+- "const_generics": Requires Rust 1.51.0.
+Uses const generics in the implementation of the [`concatcp`] and [`formatcp`]
+macros to output less code.
 
 # No-std support
 

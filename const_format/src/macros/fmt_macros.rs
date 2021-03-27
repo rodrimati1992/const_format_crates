@@ -63,9 +63,10 @@ macro_rules! concatcp {
 
 #[doc(hidden)]
 #[macro_export]
+#[cfg(not(feature = "const_generics"))]
 macro_rules! __concatcp_inner {
     ($variables:ident) => {{
-        const ARR_LEN: usize = $variables.0;
+        const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
 
         const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
             use $crate::{__write_pvariant, pmr::PVariant};
@@ -75,7 +76,7 @@ macro_rules! __concatcp_inner {
                 array: [0u8; ARR_LEN],
             };
 
-            let input = $variables.1;
+            let input = $variables;
 
             $crate::__for_range! { outer_i in 0..input.len() =>
                 let current = &input[outer_i];
@@ -87,6 +88,28 @@ macro_rules! __concatcp_inner {
             }
             &{ out }
         };
+
+        #[allow(clippy::transmute_ptr_to_ptr)]
+        const CONCAT_STR: &str = unsafe {
+            // This transmute truncates the length of the array to the amound of written bytes.
+            let slice =
+                $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
+
+            $crate::pmr::transmute::<&[u8], &str>(slice)
+        };
+        CONCAT_STR
+    }};
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "const_generics")]
+macro_rules! __concatcp_inner {
+    ($variables:ident) => {{
+        const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
+
+        const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> =
+            &$crate::pmr::__priv_concatenate($variables);
 
         #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
@@ -120,7 +143,7 @@ macro_rules! __concatcp_inner {
 /// - Use constants from scope as arguments: `formatcp!("{FOO}")`,
 /// equivalent to the [`format_args_implicits` RFC]
 ///
-/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" ):
+/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" )`:
 /// Similar to how Debug formatting in the standard library works,
 /// except that it does not escape unicode characters.`
 ///

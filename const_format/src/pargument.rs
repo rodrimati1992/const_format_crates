@@ -14,6 +14,20 @@ pub struct PArgument {
     pub fmt_flags: FormattingFlags,
 }
 
+impl PArgument {
+    /// Calculates the length of the string after adding up all the PArguments
+    pub const fn calc_len(mut args: &[PArgument]) -> usize {
+        let mut sum = 0;
+
+        while let [curr, rem @ ..] = args {
+            args = rem;
+            sum += curr.fmt_len;
+        }
+
+        sum
+    }
+}
+
 #[doc(hidden)]
 pub enum PVariant {
     Str(&'static str),
