@@ -163,6 +163,8 @@ where
 /// `T` is `<R as WriteMarker>::This`:
 /// The `R` type after removing all layers of references.
 ///
+/// `R`: A type that implements `WriteMarker`.
+///
 /// # Coerce Method
 ///
 /// The `coerce` method is what does the conversion from a `&mut T`

@@ -113,7 +113,6 @@ pub trait FormatMarker {
 /// used as the [`Kind`] associated type  in [`FormatMarker`].
 ///
 /// [`Kind`]: ./trait.FormatMarker.html#associatedtype.Kind
-/// [`FormatMarker`]: ./trait.FormatMarker.html
 ///
 pub struct IsArrayKind<T>(PhantomData<T>);
 
@@ -121,7 +120,6 @@ pub struct IsArrayKind<T>(PhantomData<T>);
 /// used as the [`Kind`] associated type  in [`FormatMarker`].
 ///
 /// [`Kind`]: ./trait.FormatMarker.html#associatedtype.Kind
-/// [`FormatMarker`]: ./trait.FormatMarker.html
 ///
 pub struct IsStdKind;
 
@@ -129,7 +127,6 @@ pub struct IsStdKind;
 /// used as the [`Kind`] associated type  in [`FormatMarker`].
 ///
 /// [`Kind`]: ./trait.FormatMarker.html#associatedtype.Kind
-/// [`FormatMarker`]: ./trait.FormatMarker.html
 ///
 pub struct IsNotStdKind;
 
@@ -168,6 +165,8 @@ macro_rules! std_kind_impls {
 /// `T` is `<R as FormatMarker>::This`:
 /// The `R` type after removing all layers of references.
 ///
+/// `R`: a type that implements [`FormatMarker`].
+///
 /// # Coerce Method
 ///
 /// The `coerce` method is what does the conversion from a `&T` depending on
@@ -178,12 +177,6 @@ macro_rules! std_kind_impls {
 /// - [`IsStdKind`]: the referenced value is copied, and wrapped in a [`PWrapper`].
 ///
 /// - [`IsNotStdKind`]: the reference is simply returned as a `&T`.
-///
-/// [`IsArrayKind`]: ./struct.IsArrayKind.html
-/// [`IsStdKind`]: ./struct.IsStdKind.html
-/// [`IsNotStdKind`]: ./struct.IsNotStdKind.html
-///
-/// [`PWrapper`]: ../struct.PWrapper.html
 ///
 #[allow(clippy::type_complexity)]
 pub struct IsAFormatMarker<K, T: ?Sized, R: ?Sized>(
@@ -249,17 +242,6 @@ impl<T: ?Sized, R: ?Sized> IsAFormatMarker<IsNotStdKind, T, R> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-macro_rules! array_impls {
-    ($($len:literal),* $(,)* ) => (
-        $(
-            impl<T> FormatMarker for [T; $len] {
-                type Kind = IsArrayKind<T>;
-                type This = Self;
-            }
-        )*
-    )
-}
-
 std_kind_impls! {
     i8, u8,
     i16, u16,
@@ -283,11 +265,9 @@ impl<R: ?Sized> IsAFormatMarker<IsStdKind, str, R> {
     }
 }
 
-array_impls! {
-    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-    16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
-    32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,
-    48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
+impl<T, const N: usize> FormatMarker for [T; N] {
+    type Kind = IsArrayKind<T>;
+    type This = Self;
 }
 
 impl<T> FormatMarker for [T] {

@@ -120,7 +120,7 @@ macro_rules! __concatcp_inner {
 /// - Use constants from scope as arguments: `formatcp!("{FOO}")`,
 /// equivalent to the [`format_args_implicits` RFC]
 ///
-/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" ):
+/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" )`:
 /// Similar to how Debug formatting in the standard library works,
 /// except that it does not escape unicode characters.`
 ///

@@ -7,7 +7,7 @@ const MSG: &str = "Expected the macro to be called as `respan_to!((tokens) more 
 fn parse_paren(tt: TokenTree2) -> TokenStream2 {
     match tt {
         TokenTree2::Group(group) if group.delimiter() == Delimiter::Parenthesis => group.stream(),
-        _ => panic!(MSG),
+        _ => panic!("{}", MSG),
     }
 }
 
