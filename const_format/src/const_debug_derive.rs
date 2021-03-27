@@ -51,16 +51,6 @@
 /// When this attribute is used it disables the default implementation
 /// that uses the type parameters generically.
 ///
-/// ### `#[cdeb(crate = "foo::bar")]`
-///
-/// The path to the `const_format` crate, useful if you want to reexport the ConstDebug macro,
-/// or rename the const_format crate in the Cargo.toml .
-///
-/// Example of renaming the `const_format` crate in the Cargo.toml file:
-/// ```toml
-/// cfmt = {version = "0.*", package = "const_format"}
-/// ```
-///
 /// Example:
 /// 
 /// ```rust
@@ -77,11 +67,21 @@
 /// In this example, there's exactly three impls of 
 /// the `const_debug_fmt` method and [`FormatMarker`] trait.
 ///
+/// ### `#[cdeb(crate = "foo::bar")]`
+///
+/// The path to the `const_format` crate, useful if you want to reexport the ConstDebug macro,
+/// or rename the `const_format` crate in the Cargo.toml .
+///
+/// Example of renaming the `const_format` crate in the Cargo.toml file:
+/// ```toml
+/// cfmt = {version = "0.*", package = "const_format"}
+/// ```
+///
 /// # Field attributes
 ///
 /// ### `#[cdeb(ignore)]`
 ///
-/// Ignoes the field, pretending that it doesn't exist.
+/// Ignores the field, pretending that it doesn't exist.
 ///
 /// ### `#[cdeb(with = "module::function")]`
 ///
@@ -195,7 +195,7 @@
 /// 
 /// This example demonstrates the `#[cdeb(impls)]` attribute,
 /// a workaround for deriving this trait for generic types,
-/// specifying a list of impls of types that uncnoditionally implement debug formatting
+/// specifying a list of impls of types that unconditionally implement debug formatting
 /// 
 /// ```rust
 /// #![feature(const_mut_refs)]

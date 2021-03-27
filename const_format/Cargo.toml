@@ -24,7 +24,7 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 default = []
 const_generics = []
 nightly_const_generics = ["const_generics"]
-fmt = []
+fmt = ["const_generics"]
 derive = ["fmt", "const_format_proc_macros/derive"]
 assert = ["fmt"]
 constant_time_as_str = ["fmt"]

@@ -2,6 +2,14 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.14
+
+Fixed a few documentation issues.
+
+Made the `const_format::fmt` API that uses const generics unconditional, since const generics were stabilized in late 2020 and the `fmt` API requires the nightly compiler.
+
+Removed mentions of the `"const_generics"` feature from the docs and README.
+
 ### 0.2.13
 
 Fixed the assertion macros not to use `std::panic`, using `core::panic` instead, since `core::panic` changed to allow passing a non-literal `&'static str` argument.
