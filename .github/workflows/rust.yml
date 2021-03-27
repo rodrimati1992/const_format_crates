@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: ci-stable
       # apparently github hadn't updated stable by 2021-03-27?
-      if: ${{ matrix.rust == 'beta' ) }}
+      if: ${{ matrix.rust == 'beta' }}
       run: |
         cargo update
         cd "${{github.workspace}}/const_format/"
