@@ -53,7 +53,7 @@
 //! - Named, from constant (eg: `formatc!("{FOO}")`):
 //! Uses the `FOO` constant from the enclosing scope.
 //!
-//! - Named, from locals (eg: `formatc!("{foo}")`):
+//! - Named, from locals (eg: `writec!(writable, "{foo}")`):
 //! Uses the `foo` local variable from the enclosing scope,
 //! only usable with the [`writec`] macro.
 //!
