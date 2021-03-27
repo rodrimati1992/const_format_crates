@@ -30,6 +30,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: ci-nighly
       if: ${{ matrix.rust != '1.46.0'  }}
+      run: |
         cargo update
         cd "${{github.workspace}}/const_format/"
         cargo test --features "testing const_generics"

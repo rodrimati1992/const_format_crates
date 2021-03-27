@@ -8,7 +8,8 @@ Fixed a few documentation issues.
 
 Made the `const_format::fmt` API that uses const generics unconditional, since const generics were stabilized in late 2020 and the `fmt` API requires the nightly compiler.
 
-Removed mentions of the `"const_generics"` feature from the docs and README.
+Repurposed the "const_generics" feature to generate less code in the `concatcp` and `formatcp` macros,
+by moving some of their implementation to a function that uses const generics.
 
 ### 0.2.13
 
