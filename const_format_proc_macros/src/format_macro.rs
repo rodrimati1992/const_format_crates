@@ -26,21 +26,12 @@ pub(crate) fn concatcp_impl(value: ExprArgs) -> Result<TokenStream2, crate::Erro
     Ok(quote!(({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
-        const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
-            let mut len = 0usize;
-
+        const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = {
             let #fmt_var = __cf_osRcTFl4A::pmr::FormattingFlags::NEW;
 
-            #[allow(clippy::eval_order_dependence)]
-            let array = [
-                #({
-                    let arg = #concat_args;
-                    len += arg.fmt_len;
-                    arg
-                }),*
-            ];
-
-            (len, &{array})
+            &[
+                #( #concat_args ),*
+            ]
         };
 
         __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
@@ -91,21 +82,14 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
     Ok(quote!(({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
         #[allow(unused_mut, non_snake_case)]
-        const CONCATP_NHPMWYD3NJA : (usize, &[__cf_osRcTFl4A::pmr::PArgument]) = {
+        const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = {
             let mut len = 0usize;
 
             #( #locals )*
 
-            #[allow(clippy::eval_order_dependence)]
-            let array = [
-                #({
-                    let arg = #parg_constructor;
-                    len += arg.fmt_len;
-                    arg
-                }),*
-            ];
-
-            (len, &{array})
+            &[
+                #( #parg_constructor ),*
+            ]
         };
 
         __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)

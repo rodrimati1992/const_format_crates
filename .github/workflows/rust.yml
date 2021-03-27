@@ -27,6 +27,13 @@ jobs:
         cd "${{github.workspace}}/const_format/"
         cargo test --features "testing"
 
+    - uses: actions/checkout@v2
+    - name: ci-nighly
+      if: ${{ matrix.rust != '1.46.0'  }}
+        cargo update
+        cd "${{github.workspace}}/const_format/"
+        cargo test --features "testing const_generics"
+
 
     - uses: actions/checkout@v2
     - name: ci-nighly

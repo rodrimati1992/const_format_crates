@@ -257,6 +257,12 @@
 //! allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
 //! in constant time, rather than linear time proportional to the truncated part of the slice.
 //!
+//! - "const_generics": Requires Rust 1.51.0.
+//! Uses const generics in the implementation of the [`concatcp`] and [`formatcp`]
+//! macros to output less code.
+//!
+//!
+//!
 //! # No-std support
 //!
 //! `const_format` is unconditionally `#![no_std]`, it can be used anywhere Rust can be used.
@@ -343,6 +349,9 @@ pub mod panicking;
 
 mod pargument;
 
+#[cfg(feature = "const_generics")]
+mod const_generic_concatcp;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod utils;
@@ -410,6 +419,9 @@ pub mod pmr {
         option::Option::{self, None, Some},
         result::Result::{self, Err, Ok},
     };
+
+    #[cfg(feature = "const_generics")]
+    pub use crate::const_generic_concatcp::__priv_concatenate;
 
     #[cfg(feature = "fmt")]
     pub use crate::{

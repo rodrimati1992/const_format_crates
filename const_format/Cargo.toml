@@ -37,7 +37,7 @@ docsrs = []
 all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "assert", "docsrs"]
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.8"
+version = "=0.2.14"
 path = "../const_format_proc_macros"
 
 [dev-dependencies]

@@ -337,7 +337,7 @@ fn write_str_debug() {
             while let Err(_) = w.write_str_range_debug(ALL_ASCII, gen_range()) {}
             let end = w.len();
             start + 1..end - 1
-        };
+        }
 
         #[cfg(not(miri))]
         const ITERATIONS: usize = 1000;
