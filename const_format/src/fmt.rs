@@ -187,7 +187,7 @@
 //!     impl[U,] Foo<u32, U>;
 //!     impl[U,] Foo<&str, U>;
 //!
-//!     pub const fn const_debug_fmt(&mut self, f: &mut Formatter<'_>) -> Result<(), Error> {
+//!     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
 //!         let mut f = f.debug_struct("Foo");
 //!
 //!         // PWrapper is a wrapper for std types, which defines the formatter methods for them.
