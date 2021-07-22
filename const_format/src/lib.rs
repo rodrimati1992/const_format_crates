@@ -384,6 +384,14 @@ pub mod msg;
 #[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub mod wrapper_types;
 
+#[doc(hidden)]
+#[cfg(feature = "const_generics")]
+pub mod __ascii_case_conv;
+
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg(feature = "const_generics")]
+pub use __ascii_case_conv::Case;
+
 #[cfg(feature = "fmt")]
 #[doc(no_inline)]
 pub use crate::fmt::{Error, Formatter, FormattingFlags, Result, StrWriter, StrWriterMut};
@@ -405,6 +413,8 @@ pub mod __cf_osRcTFl4A {
 
 #[doc(hidden)]
 pub mod pmr {
+    pub use {str, u8, usize};
+
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl, respan_to};
 
     #[cfg(feature = "fmt")]
