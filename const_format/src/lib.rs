@@ -312,11 +312,7 @@
 #![cfg_attr(feature = "assert", feature(const_panic))]
 #![cfg_attr(
     feature = "constant_time_as_str",
-    feature(
-        const_slice_from_raw_parts,
-        const_str_from_utf8_unchecked,
-        const_fn_union,
-    )
+    feature(const_slice_from_raw_parts, const_fn_union,)
 )]
 #![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
