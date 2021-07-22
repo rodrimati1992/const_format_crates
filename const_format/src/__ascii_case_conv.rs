@@ -14,7 +14,7 @@ pub const fn convert_str<const N: usize>(case: Case, s: &str) -> [u8; N] {
             while let [$byte, rem @ ..] = inp {
                 let $byte = *$byte;
                 inp = rem;
-                arr[o] = $e;
+                arr[o] = if $byte < 128 { $e } else { $byte };
                 o += 1;
             }
         };
