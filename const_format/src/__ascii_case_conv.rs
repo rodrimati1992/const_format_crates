@@ -1,3 +1,14 @@
+mod word_iterator;
+
+/// The casing style of a string.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Case {
+    /// Uppercase
+    Upper,
+    /// Lowercase
+    Lower,
+}
+
 pub const fn size_after_conversion(case: Case, s: &str) -> usize {
     match case {
         Case::Upper | Case::Lower => s.len(),
@@ -20,37 +31,28 @@ pub const fn convert_str<const N: usize>(case: Case, s: &str) -> [u8; N] {
         };
     }
 
-    const CASE_DIFF: u8 = b'a' - b'A';
-
     match case {
-        Case::Upper => {
-            map_byte!(b => {
-                if let b'a'..=b'z' = b {
-                    b - CASE_DIFF
-                } else {
-                    b
-                }
-            })
-        }
-        Case::Lower => {
-            map_byte!(b => {
-                if let b'A'..=b'Z' = b {
-                    b + CASE_DIFF
-                } else {
-                    b
-                }
-            })
-        }
+        Case::Upper => map_byte!(b => uppercase_u8(b)),
+        Case::Lower => map_byte!(b => lowercase_u8(b)),
     }
 
     arr
 }
 
-/// The casing style of a string.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum Case {
-    /// Uppercase
-    Upper,
-    /// Lowercase
-    Lower,
+const CASE_DIFF: u8 = b'a' - b'A';
+
+const fn uppercase_u8(b: u8) -> u8 {
+    if let b'a'..=b'z' = b {
+        b - CASE_DIFF
+    } else {
+        b
+    }
+}
+
+const fn lowercase_u8(b: u8) -> u8 {
+    if let b'A'..=b'Z' = b {
+        b + CASE_DIFF
+    } else {
+        b
+    }
 }

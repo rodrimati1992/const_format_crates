@@ -1,11 +1,11 @@
-/// Converts the casing style of `&'static str` constants,
+/// Converts the casing style of a `&'static str` constant,
 /// ignoring non-ascii unicode characters.
 ///
-/// This nacro us equivalent to a function with this signature:
+/// This nacro is equivalent to a function with this signature:
 ///
 /// ```rust
-/// const fn map_ascii_case(_: const_format::Case, _: &'static str) -> &'static str
-/// # { loop{} }
+/// const fn map_ascii_case(case: const_format::Case, input: &'static str) -> &'static str
+/// # {""}
 /// ```
 ///
 /// # Ascii
@@ -21,8 +21,10 @@
 /// const LOW: &str = map_ascii_case!(Case::Lower, "hello WORLD");
 /// assert_eq!(LOW, "hello world");
 ///
-/// const UPPER: &str = map_ascii_case!(Case::Upper, "hello WORLD");
-/// assert_eq!(UPPER, "HELLO WORLD");
+/// const IN: &str = "hello WORLD каждому";
+/// const UPPER: &str = map_ascii_case!(Case::Upper, IN);
+/// // non-ascii characters are ignored by map_ascii_case.
+/// assert_eq!(UPPER, "HELLO WORLD каждому");
 ///
 /// ```
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
