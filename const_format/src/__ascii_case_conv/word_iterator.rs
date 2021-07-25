@@ -41,7 +41,6 @@ impl ByteKind {
     // Assumes that non-ascii chars are mostly alphabetic,
     // this should work out fine most of the time.
     const NonAscii: Self = Self(0b1100);
-    const All: Self = Self(!0);
 }
 
 impl ByteKind {
@@ -165,10 +164,20 @@ mod tests {
         );
 
         assert_eq!(
-            get_words("01934 324  ñmani-ÑNn____FOOOBar")[..],
-            ["01934", "324", "ñmani", "ÑNn", "FOOOBar"],
+            get_words("01934 324  ñmani-嶲Nn____FOOOBar")[..],
+            ["01934", "324", "ñmani", "嶲Nn", "FOOOBar"],
         );
 
         assert_eq!(get_words("    01934 1111 ")[..], ["01934", "1111"],);
+
+        assert_eq!(get_words("    嶲01934 ")[..], ["嶲", "01934"],);
+
+        assert_eq!(get_words("    嶲A01934 ")[..], ["嶲A", "01934"],);
+
+        assert_eq!(get_words("    嶲a01934 ")[..], ["嶲a", "01934"],);
+
+        assert_eq!(get_words("    ñA01934 ")[..], ["ñA", "01934"],);
+
+        assert_eq!(get_words("    ña01934 ")[..], ["ña", "01934"],);
     }
 }
