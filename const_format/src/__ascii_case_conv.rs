@@ -3,24 +3,30 @@ mod word_iterator;
 use word_iterator::WordIterator;
 
 /// The casing style of a string.
+///
+/// You can pass this to [`map_ascii_case`] to determine the casing style of the
+/// returned `&'static str`.
+///
+///
+/// [`map_ascii_case`]: ./macro.map_ascii_case.html
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Case {
-    /// Uppercase
-    Upper,
     /// Lowercase
     Lower,
+    /// Uppercase
+    Upper,
+    /// Pascal case, eg: `FooBarBaz`. The first character is always uppercase.
+    Pascal,
+    /// Camel case, eg: `fooBarBaz`. The first character is always lowercase.
+    Camel,
     /// Snake case, eg: `foo_bar_baz`. Also turns the string lowercase.
     Snake,
-    /// Snake case, eg: `foo_bar_baz`. Also turns the string uppercase.
+    /// Snake case, eg: `FOO_BAR_BAZ`. Also turns the string uppercase.
     UpperSnake,
     /// Kebab case, eg: `foo-bar-baz`. Also turns the string lowercase.
     Kebab,
     /// Kebab case, eg: `FOO-BAR-BAZ`. Also turns the string uppercase.
     UpperKebab,
-    /// Pascal case, eg: `FooBarBaz`. The first character is always uppercase.
-    Pascal,
-    /// Camel case, eg: `fooBarBaz`. The first character is always lowercase.
-    Camel,
 }
 
 macro_rules! if_next_word {

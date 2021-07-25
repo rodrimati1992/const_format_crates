@@ -25,6 +25,14 @@ Concatenates `integers`, `bool`, and `&str` constants into a `&'static str` cons
 [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
 and emits a `&'static str` constant.
 
+### Rust 1.51.0
+
+By enabling the "const_generics" feature, you can use these macros:
+
+- [`map_ascii_case`]:
+Converts a `&'static str` to have a different casing style,
+determined by a [`Case`] argument.
+
 ### Rust nightly
 
 By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
@@ -270,8 +278,9 @@ allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
 in constant time, rather than linear time proportional to the truncated part of the slice.
 
 - "const_generics": Requires Rust 1.51.0.
-Uses const generics in the implementation of the [`concatcp`] and [`formatcp`]
-macros to output less code.
+Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
+Also changes the the implementation of the [`concatcp`] and [`formatcp`]
+macros to use const generics.
 
 # No-std support
 
@@ -319,3 +328,6 @@ need to be explicitly enabled with cargo features.
 
 [`WriteMarker`]: https://docs.rs/const_format/0.2.*/const_format/marker_traits/trait.WriteMarker.html
 
+[`map_ascii_case`]: https://docs.rs/const_format/0.2.*/const_format/macro.map_ascii_case.html
+
+[`Case`]: https://docs.rs/const_format/0.2.*/const_format/enum.Case.html
