@@ -5,8 +5,9 @@
 //! # Rust versions
 //!
 //! There are some features that require Rust 1.46.0,
+//! some that require Rust 1.51.0,
 //! and others that require Rust nightly,
-//! the sections below describe the features that are available.
+//! the sections below describe the features that are available for each version.
 //!
 //! ### Rust 1.46.0
 //!
@@ -18,6 +19,15 @@
 //! - [`formatcp`]:
 //! [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
 //! and emits a `&'static str` constant.
+//!
+//! ### Rust 1.51.0
+//!
+//! By enabling the "const_generics" feature, you can use these macros:
+//!
+//! - [`map_ascii_case`]:
+//! Converts a `&'static str` to have a different casing style,
+//! determined by a [`Case`] argument.
+//!
 //!
 //! ### Rust nightly
 //!
@@ -258,8 +268,9 @@
 //! in constant time, rather than linear time proportional to the truncated part of the slice.
 //!
 //! - "const_generics": Requires Rust 1.51.0.
-//! Uses const generics in the implementation of the [`concatcp`] and [`formatcp`]
-//! macros to output less code.
+//! Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
+//! Also changes the the implementation of the [`concatcp`] and [`formatcp`]
+//! macros to use const generics.
 //!
 //!
 //!
@@ -291,6 +302,8 @@
 //!
 //! [`const_format::fmt`]: ./fmt/index.html
 //!
+//! [`concatc`]: ./macro.concatc.html
+//!
 //! [`formatc`]: ./macro.formatc.html
 //!
 //! [`writec`]: ./macro.writec.html
@@ -307,18 +320,17 @@
 //!
 //! [`WriteMarker`]: ./marker_traits/trait.WriteMarker.html
 //!
+//! [`map_ascii_case`]: ./macro.map_ascii_case.html
+//!
+//! [`Case`]: ./enum.Case.html
+//!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 #![cfg_attr(feature = "assert", feature(const_panic))]
 #![cfg_attr(
     feature = "constant_time_as_str",
-    feature(
-        const_slice_from_raw_parts,
-        const_str_from_utf8_unchecked,
-        const_fn_union,
-    )
+    feature(const_slice_from_raw_parts, const_fn_union,)
 )]
-#![cfg_attr(feature = "nightly_const_generics", feature(min_const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
@@ -384,6 +396,14 @@ pub mod msg;
 #[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub mod wrapper_types;
 
+#[doc(hidden)]
+#[cfg(feature = "const_generics")]
+pub mod __ascii_case_conv;
+
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg(feature = "const_generics")]
+pub use __ascii_case_conv::Case;
+
 #[cfg(feature = "fmt")]
 #[doc(no_inline)]
 pub use crate::fmt::{Error, Formatter, FormattingFlags, Result, StrWriter, StrWriterMut};
@@ -405,6 +425,8 @@ pub mod __cf_osRcTFl4A {
 
 #[doc(hidden)]
 pub mod pmr {
+    pub use {str, u8, usize};
+
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl, respan_to};
 
     #[cfg(feature = "fmt")]

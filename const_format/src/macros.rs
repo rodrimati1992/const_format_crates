@@ -19,6 +19,10 @@ mod fmt_macros;
 #[cfg(feature = "fmt")]
 mod impl_fmt;
 
+#[macro_use]
+#[cfg(feature = "const_generics")]
+mod map_ascii_case;
+
 /// For returning early on an error, otherwise evaluating to `()`.
 ///
 /// # Example

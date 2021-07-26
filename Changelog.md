@@ -2,6 +2,16 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.15
+
+Added `map_ascii_case` macro to convert the casing style of a `&'static str`.
+
+Added the `Case` enum.
+
+Fixed "constant_time_as_str" crate feature in newer nightlies,
+this will break code that uses the feature and hasn't updated the nightly compiler
+to a release post mid-july 2021.
+
 ### 0.2.14
 
 Fixed a few documentation issues.
