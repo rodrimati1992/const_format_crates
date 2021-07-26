@@ -1,3 +1,5 @@
+#![allow(non_fmt_panics)]
+
 macro_rules! panic_ {
     ($($span:tt)*)=> {crate::pmr::respan_to!{($($span)*)
         pub trait Message {

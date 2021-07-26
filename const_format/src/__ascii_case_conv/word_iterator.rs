@@ -44,6 +44,7 @@ impl ByteKind {
 }
 
 impl ByteKind {
+    #[allow(dead_code)]
     #[inline(always)]
     pub const fn eq(self, other: Self) -> bool {
         (self.0 & other.0) != 0

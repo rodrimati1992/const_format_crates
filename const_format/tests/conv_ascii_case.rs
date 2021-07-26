@@ -24,17 +24,17 @@ macro_rules! assert_case {
 fn test_lowercase() {
     assert_case!(
         Case::Lower,
-        "helloazWORLDAZ \u{303}n\u{303}Nñ",
-        "helloazworldaz \u{303}n\u{303}nñ",
+        "helloazWORLDAZ 効率 \u{303}n\u{303}Nñ",
+        "helloazworldaz 効率 \u{303}n\u{303}nñ",
     );
 }
 
 #[test]
-fn test_uppercasecase() {
+fn test_uppercase() {
     assert_case!(
         Case::Upper,
-        "helloazWORLDAZ \u{303}n\u{303}Nñ",
-        "HELLOAZWORLDAZ \u{303}N\u{303}Nñ",
+        "helloazWORLDAZ 効率 \u{303}n\u{303}Nñ",
+        "HELLOAZWORLDAZ 効率 \u{303}N\u{303}Nñ",
     );
 }
 
@@ -47,6 +47,7 @@ fn test_snake_kebab_case() {
         "100_HELLO_NN_WORLD"
     );
 
+    // Kebab case
     assert_case!(Case::Kebab, " __ 100 hello_nnWorld ", "100-hello-nn-world");
     assert_case!(
         Case::UpperKebab,
@@ -62,10 +63,17 @@ fn test_pascal_camel_case() {
         " _foo_ 100 hello_nnñWorld ",
         "Foo100HelloNnñWorld"
     );
+    assert_case!(Case::Pascal, "一门 foo 一门", "一门Foo一门");
 
+    assert_case!(Case::Pascal, "一门foo 一门", "一门foo一门");
+
+    // Camel case
     assert_case!(
         Case::Camel,
-        " _bar_ 100 hello_nnñWorld ",
-        "bar100HelloNnñWorld"
+        " _bar_ 100一门 hello_nnñWorld ",
+        "bar100一门HelloNnñWorld",
     );
+    assert_case!(Case::Camel, "一门 foo 一门", "一门Foo一门");
+
+    assert_case!(Case::Camel, "一门foo 一门", "一门foo一门");
 }
