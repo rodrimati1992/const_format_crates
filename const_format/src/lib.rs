@@ -400,6 +400,10 @@ pub mod wrapper_types;
 #[cfg(feature = "const_generics")]
 pub mod __ascii_case_conv;
 
+#[doc(hidden)]
+#[cfg(feature = "const_generics")]
+pub mod __str_methods;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 pub use __ascii_case_conv::Case;
