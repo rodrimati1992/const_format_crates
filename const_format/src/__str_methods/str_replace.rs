@@ -33,6 +33,9 @@ pub const fn str_replace_length(inp: &str, r: ReplaceInput, replaced_with: &str)
             }
         }
         ReplaceInput::Str(str) => {
+            if str.is_empty() {
+                return inp.len();
+            }
             let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;
@@ -80,12 +83,17 @@ pub const fn str_replace<const L: usize>(
                 if b == byte {
                     write_replaced!{}
                 } else {
-                    out[out_i] = b;
-                    out_i += 1;
+                    write_byte!{b}
                 }
             }
         }
         ReplaceInput::Str(str) => {
+            if str.is_empty() {
+                iter_copy_slice! {b in inp =>
+                    write_byte!(b);
+                }
+                return out;
+            }
             let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;

@@ -1,5 +1,3 @@
-#![cfg(feature = "const_generics")]
-
 use const_format::__ascii_case_conv::{convert_str, size_after_conversion};
 use const_format::{map_ascii_case, Case};
 
