@@ -24,7 +24,6 @@ mod impl_fmt;
 mod map_ascii_case;
 
 #[macro_use]
-#[cfg(feature = "const_generics")]
 mod str_methods;
 
 /// For returning early on an error, otherwise evaluating to `()`.

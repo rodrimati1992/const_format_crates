@@ -55,6 +55,7 @@
 ///
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
+#[cfg(feature = "const_generics")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 macro_rules! str_replace {
     ($string:expr, $replace:expr, $with:expr) => {{
@@ -78,6 +79,68 @@ macro_rules! str_replace {
                 unsafe { $crate::pmr::transmute::<&[$crate::pmr::u8], &$crate::pmr::str>(OB) };
 
             OS
+        }
+    }};
+}
+
+/// Creates a `&'static str` by repeating a `&'static str` some amount of times times.
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::str_repeat;
+///
+/// {
+///     const OUT: &str = str_repeat!("hi ", 4);
+///     assert_eq!(OUT, "hi hi hi hi ")
+/// }
+/// {
+///     const IN: &str = "bye ";
+///     const REPEAT: usize = 5;
+///     const OUT: &str = str_repeat!(IN, REPEAT);
+///     assert_eq!(OUT, "bye bye bye bye bye ")
+/// }
+///
+/// ```
+///
+/// ### Failing
+///
+/// If this macro would produce too large a string,
+/// it causes a compile-time error.
+///
+/// ```compile_fail
+/// const_format::str_repeat!("hello", usize::MAX / 4);
+/// ```
+///
+#[cfg_attr(
+    feature = "testing",
+    doc = r##"
+```rust
+const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
+```
+"##
+)]
+#[macro_export]
+macro_rules! str_repeat {
+    ($string:expr, $times:expr) => {{
+        const STR_OSRCTFL4A: &$crate::pmr::str = $string;
+
+        const TIMES_OSRCTFL4A: $crate::pmr::usize = $times;
+
+        {
+            use $crate::pmr::transmute;
+            use $crate::pmr::{str, u8, usize};
+
+            const STR_LEN: usize = STR_OSRCTFL4A.len();
+            const OUT_LEN: usize = STR_LEN * TIMES_OSRCTFL4A;
+            const OUT_B: &[u8; OUT_LEN] = &unsafe {
+                let ptr = STR_OSRCTFL4A.as_ptr();
+                transmute::<[[u8; STR_LEN]; TIMES_OSRCTFL4A], [u8; OUT_LEN]>(
+                    [*transmute::<*const u8, &[u8; STR_LEN]>(ptr); TIMES_OSRCTFL4A],
+                )
+            };
+            const OUT_S: &str = unsafe { transmute::<&'static [u8], &'static str>(OUT_B) };
+            OUT_S
         }
     }};
 }
