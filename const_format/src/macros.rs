@@ -279,8 +279,7 @@ macro_rules! strwriter_as_str {
         unsafe {
             let writer: &'static $crate::StrWriter = $expr;
             #[allow(clippy::transmute_bytes_to_str)]
-            let ret = $crate::pmr::transmute::<&'static [u8], &'static str>(writer.as_bytes_alt());
-            ret
+            $crate::__priv_transmute_bytes_to_str!(writer.as_bytes_alt())
         }
     };
 }
@@ -332,4 +331,34 @@ macro_rules! std_kind_impl {
             }
         }
     }
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __priv_transmute_bytes_to_str {
+    ($bytes:expr) => {{
+        let bytes: &'static [$crate::pmr::u8] = $bytes;
+        let string: &'static $crate::pmr::str = {
+            $crate::__hidden_utils::PtrToRef {
+                ptr: bytes as *const [$crate::pmr::u8] as *const str,
+            }
+            .reff
+        };
+        string
+    }};
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __priv_transmute_raw_bytes_to_str {
+    ($bytes:expr) => {{
+        let bytes: *const [$crate::pmr::u8] = $bytes;
+        let string: &'static $crate::pmr::str = {
+            $crate::__hidden_utils::PtrToRef {
+                ptr: bytes as *const str,
+            }
+            .reff
+        };
+        string
+    }};
 }

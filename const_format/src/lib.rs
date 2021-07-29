@@ -368,6 +368,9 @@ mod const_generic_concatcp;
 #[cfg(feature = "fmt")]
 pub mod utils;
 
+#[doc(hidden)]
+pub mod __hidden_utils;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod for_examples;
@@ -401,8 +404,9 @@ pub mod wrapper_types;
 pub mod __ascii_case_conv;
 
 #[doc(hidden)]
-#[cfg(feature = "const_generics")]
 pub mod __str_methods;
+
+pub use __str_methods::StrSpliced;
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]

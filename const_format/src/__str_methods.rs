@@ -1,7 +1,13 @@
+#[cfg(feature = "const_generics")]
 mod str_replace;
 
+#[cfg(feature = "const_generics")]
 pub use self::str_replace::{str_replace, str_replace_length, ReplaceInput, ReplaceInputConv};
 
+mod str_splice;
+pub use str_splice::{DecomposedString, StrReplaceArgs, StrReplaceArgsConv, StrSpliced};
+
+#[cfg(feature = "const_generics")]
 mod ascii_byte {
     #[derive(Copy, Clone)]
     pub struct AsciiByte(u8);
@@ -22,9 +28,11 @@ mod ascii_byte {
         }
     }
 }
+#[cfg(feature = "const_generics")]
 pub use ascii_byte::AsciiByte;
 
 // copied from the konst crate, if that implementation is wrong, this needs to be fixed
+#[cfg(feature = "const_generics")]
 const fn bytes_find(left: &[u8], right: &[u8], from: usize) -> Option<usize> {
     let mut matching = right;
 

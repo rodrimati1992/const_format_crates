@@ -75,8 +75,7 @@ macro_rules! str_replace {
             const OB: &[$crate::pmr::u8; L] =
                 &str_replace::<L>(STR_OSRCTFL4A, REPLACE_OSRCTFL4A, WITH_OSRCTFL4A);
 
-            const OS: &$crate::pmr::str =
-                unsafe { $crate::pmr::transmute::<&[$crate::pmr::u8], &$crate::pmr::str>(OB) };
+            const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
 
             OS
         }
@@ -139,8 +138,111 @@ macro_rules! str_repeat {
                     [*transmute::<*const u8, &[u8; STR_LEN]>(ptr); TIMES_OSRCTFL4A],
                 )
             };
-            const OUT_S: &str = unsafe { transmute::<&'static [u8], &'static str>(OUT_B) };
+            const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
             OUT_S
         }
     }};
 }
+
+/// Replaces a substring in a `&'static str`.
+/// Returns both the new resulting `&'static str`, and the replaced substring.
+///
+/// # Signature
+///
+/// This macro acts like a function of this signature:
+/// ```rust
+/// # trait SomeIndex {}
+///
+/// fn str_splice(
+///     input: &'static str,
+///     range: impl SomeIndex,
+///     replace_with: &'static str,
+/// ) -> const_format::StrSpliced
+/// # {unimplemented!()}
+/// ```
+/// Where `range` determines what part of `input` is replaced,
+/// and can be any of these types:
+///
+/// - `usize`
+/// - `Range<usize>`
+/// - `RangeTo<usize>`
+/// - `RangeFrom<usize>`
+/// - `RangeInclusive<usize>`
+/// - `RangeToInclusive<usize>`
+/// - `RangeFull`
+///
+/// [`StrSpliced`] contains:
+/// - `output`: a `&'static str` with the substring at `range` in `input` replaced with
+/// `replace_with`.
+/// - `removed`: the substring at `range` in `input`.
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::{str_splice, StrSpliced};
+///
+/// const OUT: StrSpliced = str_splice!("foo bar baz", 4..=6, "is");
+/// assert_eq!(OUT , StrSpliced{output: "foo is baz", removed: "bar"});
+///
+/// // You can pass `const`ants to this macro, not just literals
+/// {
+///     const IN: &str = "this is bad";
+///     const INDEX: std::ops::RangeFrom<usize> = 8..;
+///     const REPLACE_WITH: &str = "... fine";
+///     const OUT: StrSpliced = str_splice!(IN, INDEX, REPLACE_WITH);
+///     assert_eq!(OUT , StrSpliced{output: "this is ... fine", removed: "bad"});
+/// }
+/// ```
+///
+/// [`StrSpliced`]: ./struct.StrSpliced.html
+#[macro_export]
+macro_rules! str_splice {
+    ($string:expr, $index:expr, $insert:expr) => {{
+        const P_OSRCTFL4A: $crate::__str_methods::StrReplaceArgs =
+            $crate::__str_methods::StrReplaceArgsConv($string, $index, $insert).conv();
+        {
+            use $crate::__hidden_utils::PtrToRef;
+            use $crate::__str_methods::{DecomposedString, StrReplaceArgs, StrSpliced};
+            use $crate::pmr::{str, transmute, u8};
+
+            const P: &StrReplaceArgs = &P_OSRCTFL4A;
+
+            type DecompIn = DecomposedString<[u8; P.start], [u8; P.range_len], [u8; P.suffix_len]>;
+
+            type DecompOut =
+                DecomposedString<[u8; P.start], [u8; P.insert_len], [u8; P.suffix_len]>;
+
+            const OUT_A: (&DecompOut, &str) = unsafe {
+                let input = PtrToRef {
+                    ptr: P.str.as_ptr() as *const DecompIn,
+                }
+                .reff;
+                let insert = PtrToRef {
+                    ptr: P.insert.as_ptr() as *const [u8; P.insert_len],
+                }
+                .reff;
+
+                (
+                    &DecomposedString {
+                        prefix: input.prefix,
+                        middle: *insert,
+                        suffix: input.suffix,
+                    },
+                    $crate::__priv_transmute_bytes_to_str!(&input.middle),
+                )
+            };
+
+            const OUT: StrSpliced = unsafe {
+                let output = OUT_A.0 as *const DecompOut as *const [u8; P.out_len];
+                StrSpliced {
+                    output: $crate::__priv_transmute_raw_bytes_to_str!(output),
+                    removed: OUT_A.1,
+                }
+            };
+
+            OUT
+        }
+    }};
+}
+
+// const _: crate::StrSpliced = str_splice!("hello", 0, "world");
