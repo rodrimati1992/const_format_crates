@@ -157,7 +157,7 @@ macro_rules! str_repeat {
 ///     input: &'static str,
 ///     range: impl SomeIndex,
 ///     replace_with: &'static str,
-/// ) -> const_format::StrSpliced
+/// ) -> const_format::SplicedStr
 /// # {unimplemented!()}
 /// ```
 /// Where `range` determines what part of `input` is replaced,
@@ -171,7 +171,7 @@ macro_rules! str_repeat {
 /// - `RangeToInclusive<usize>`
 /// - `RangeFull`
 ///
-/// [`StrSpliced`] contains:
+/// [`SplicedStr`] contains:
 /// - `output`: a `&'static str` with the substring at `range` in `input` replaced with
 /// `replace_with`.
 /// - `removed`: the substring at `range` in `input`.
@@ -179,22 +179,43 @@ macro_rules! str_repeat {
 /// # Example
 ///
 /// ```rust
-/// use const_format::{str_splice, StrSpliced};
+/// use const_format::{str_splice, SplicedStr};
 ///
-/// const OUT: StrSpliced = str_splice!("foo bar baz", 4..=6, "is");
-/// assert_eq!(OUT , StrSpliced{output: "foo is baz", removed: "bar"});
+/// const OUT: SplicedStr = str_splice!("foo bar baz", 4..=6, "is");
+/// assert_eq!(OUT , SplicedStr{output: "foo is baz", removed: "bar"});
 ///
 /// // You can pass `const`ants to this macro, not just literals
 /// {
 ///     const IN: &str = "this is bad";
 ///     const INDEX: std::ops::RangeFrom<usize> = 8..;
 ///     const REPLACE_WITH: &str = "... fine";
-///     const OUT: StrSpliced = str_splice!(IN, INDEX, REPLACE_WITH);
-///     assert_eq!(OUT , StrSpliced{output: "this is ... fine", removed: "bad"});
+///     const OUT: SplicedStr = str_splice!(IN, INDEX, REPLACE_WITH);
+///     assert_eq!(OUT , SplicedStr{output: "this is ... fine", removed: "bad"});
 /// }
 /// ```
 ///
-/// [`StrSpliced`]: ./struct.StrSpliced.html
+/// ### Invalid index
+///
+/// Invalid indices cause compilation errors.
+///
+/// ```compile_fail
+/// const_format::str_splice!("foo", 0..10, "");
+/// ```
+#[cfg_attr(
+    feature = "testing",
+    doc = r#"
+```rust
+const_format::str_splice!("foo", 0..3, "");
+```
+
+```compile_fail
+const_format::str_splice!("foo", 0..usize::MAX, "");
+```
+"#
+)]
+///
+///
+/// [`SplicedStr`]: ./struct.SplicedStr.html
 #[macro_export]
 macro_rules! str_splice {
     ($string:expr, $index:expr, $insert:expr) => {{
@@ -202,7 +223,7 @@ macro_rules! str_splice {
             $crate::__str_methods::StrReplaceArgsConv($string, $index, $insert).conv();
         {
             use $crate::__hidden_utils::PtrToRef;
-            use $crate::__str_methods::{DecomposedString, StrReplaceArgs, StrSpliced};
+            use $crate::__str_methods::{DecomposedString, SplicedStr, StrReplaceArgs};
             use $crate::pmr::{str, transmute, u8};
 
             const P: &StrReplaceArgs = &P_OSRCTFL4A;
@@ -232,9 +253,9 @@ macro_rules! str_splice {
                 )
             };
 
-            const OUT: StrSpliced = unsafe {
+            const OUT: SplicedStr = unsafe {
                 let output = OUT_A.0 as *const DecompOut as *const [u8; P.out_len];
-                StrSpliced {
+                SplicedStr {
                     output: $crate::__priv_transmute_raw_bytes_to_str!(output),
                     removed: OUT_A.1,
                 }
@@ -245,4 +266,4 @@ macro_rules! str_splice {
     }};
 }
 
-// const _: crate::StrSpliced = str_splice!("hello", 0, "world");
+// const _: crate::SplicedStr = str_splice!("hello", 0, "world");

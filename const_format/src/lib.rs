@@ -382,7 +382,6 @@ pub mod marker_traits;
 #[cfg(feature = "testing")]
 pub mod test_utils;
 
-#[cfg(feature = "fmt")]
 #[cfg(feature = "testing")]
 #[allow(missing_docs)]
 pub mod doctests;
@@ -406,7 +405,7 @@ pub mod __ascii_case_conv;
 #[doc(hidden)]
 pub mod __str_methods;
 
-pub use __str_methods::StrSpliced;
+pub use __str_methods::SplicedStr;
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]

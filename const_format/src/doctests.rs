@@ -41,6 +41,7 @@
 /// }
 /// ```
 ///
+#[cfg(feature = "fmt")]
 pub struct ImplFmtWhereClause;
 
 ///
@@ -99,6 +100,7 @@ pub struct ConstDebugWhereClause;
 ///
 /// ```
 ///
+#[cfg(feature = "fmt")]
 pub struct AsStr_For_StrWriterMut_NoEncoding;
 
 /// ```rust

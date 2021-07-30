@@ -91,7 +91,7 @@ pub struct StrReplaceArgs {
 
 /// The return value of [`str_splice`](./macro.str_splice.html)
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct StrSpliced {
+pub struct SplicedStr {
     /// A string that had `removed` replaced with some other string.
     pub output: &'static str,
     /// The part of the string that was removed.
