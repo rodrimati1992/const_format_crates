@@ -1,101 +1,26 @@
-use core::ops::{self, Range};
+use super::str_indexing::{pass_range_types, IndexValidity, StrIndexArgs, StrIndexArgsConv};
 
-use crate::__hidden_utils::{max_usize, saturating_add};
-
-pub struct NormalizeRange<T> {
-    pub arg: T,
-    pub str: &'static str,
-}
-
-pub struct StrReplaceArgsConv<T> {
+pub struct StrSplceArgsConv<T> {
     pub arg: T,
     pub str: &'static str,
     pub insert: &'static str,
 }
 
 #[allow(non_snake_case)]
-pub const fn StrReplaceArgsConv<T>(
+pub const fn StrSplceArgsConv<T>(
     str: &'static str,
     arg: T,
     insert: &'static str,
-) -> StrReplaceArgsConv<T> {
-    StrReplaceArgsConv { str, arg, insert }
+) -> StrSplceArgsConv<T> {
+    StrSplceArgsConv { str, arg, insert }
 }
 
-macro_rules! define_conversions {
-    (
-        $( fn($self:ident, $ty:ty) $block:block )*
-    ) => {
-        $(
-            impl NormalizeRange<$ty> {
-                pub const fn call($self) -> Range<usize> $block
-            }
-
-            impl StrReplaceArgsConv<$ty> {
-                pub const fn conv($self) -> StrReplaceArgs {
-                    let range = NormalizeRange{
-                        arg: $self.arg,
-                        str: $self.str,
-                    }.call();
-                    let str_len = $self.str.len();
-                    let range_len = range.end - range.start;
-
-                    StrReplaceArgs{
-                        str: $self.str,
-                        insert: $self.insert,
-                        str_len,
-                        start: range.start,
-                        end: range.end,
-                        range_len,
-                        insert_len: $self.insert.len(),
-                        suffix_len: str_len - range.end,
-                        out_len: str_len - range_len + $self.insert.len(),
-                    }
-                }
-            }
-        )*
-    };
-}
-
-define_conversions! {
-    fn(self, usize) {
-        self.arg .. saturating_add(self.arg, 1)
-    }
-
-    fn(self, ops::Range<usize>) {
-        let Range{start, end} = self.arg;
-        start .. max_usize(start, end)
-    }
-
-    fn(self, ops::RangeTo<usize>) {
-        0..self.arg.end
-    }
-
-    fn(self, ops::RangeFrom<usize>) {
-        self.arg.start..self.str.len()
-    }
-
-    fn(self, ops::RangeInclusive<usize>) {
-        let start = *self.arg.start();
-        start .. max_usize(saturating_add(*self.arg.end(), 1), start)
-    }
-
-    fn(self, ops::RangeToInclusive<usize>) {
-        0 .. saturating_add(self.arg.end, 1)
-    }
-
-    fn(self, ops::RangeFull) {
-        0 .. self.str.len()
-    }
-}
-
-pub struct StrReplaceArgs {
+pub struct StrSpliceArgs {
     pub str: &'static str,
     pub insert: &'static str,
-    pub str_len: usize,
-    pub start: usize,
-    pub end: usize,
-    pub range_len: usize,
+    pub index_validity: IndexValidity,
+    pub used_rstart: usize,
+    pub used_rlen: usize,
     pub insert_len: usize,
     pub suffix_len: usize,
     pub out_len: usize,
@@ -116,3 +41,39 @@ pub struct DecomposedString<P, M, S> {
     pub middle: M,
     pub suffix: S,
 }
+
+macro_rules! define_conversions {
+    (
+        $( fn($self:ident, $ty:ty) $block:block )*
+    ) => {
+        $(
+            impl StrSplceArgsConv<$ty> {
+                pub const fn conv(self) -> StrSpliceArgs {
+                    let StrIndexArgs{
+                        str,
+                        index_validity,
+                        used_rstart,
+                        used_rend,
+                        used_rlen,
+                    } = StrIndexArgsConv{
+                        arg: self.arg,
+                        str: self.str,
+                    }.conv();
+
+                    StrSpliceArgs{
+                        str,
+                        index_validity,
+                        used_rstart,
+                        used_rlen,
+                        insert: self.insert,
+                        insert_len: self.insert.len(),
+                        suffix_len: str.len() - used_rend,
+                        out_len: str.len() - used_rlen + self.insert.len(),
+                    }
+                }
+            }
+        )*
+    };
+}
+
+pass_range_types! {define_conversions}

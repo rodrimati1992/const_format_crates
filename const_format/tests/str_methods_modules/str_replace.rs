@@ -22,7 +22,7 @@ macro_rules! assert_case {
 }
 
 #[test]
-fn test_smalL_pattern() {
+fn test_small_pattern() {
     assert_case! {"hequ", "q", "XY", "heXYu"}
     assert_case! {"hequx", "q", "XYZ", "heXYZux"}
     assert_case! {"hequq", "q", "XY", "heXYuXY"}

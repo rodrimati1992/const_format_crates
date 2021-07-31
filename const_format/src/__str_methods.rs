@@ -5,9 +5,10 @@ mod str_replace;
 pub use self::str_replace::{str_replace, str_replace_length, ReplaceInput, ReplaceInputConv};
 
 mod str_splice;
-pub use str_splice::{
-    DecomposedString, NormalizeRange, SplicedStr, StrReplaceArgs, StrReplaceArgsConv,
-};
+pub use str_splice::{DecomposedString, SplicedStr, StrSplceArgsConv, StrSpliceArgs};
+
+mod str_indexing;
+pub use str_indexing::{IndexValidity, StrIndexArgs, StrIndexArgsConv};
 
 #[cfg(feature = "const_generics")]
 mod ascii_byte {

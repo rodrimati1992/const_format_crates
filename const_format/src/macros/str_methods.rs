@@ -222,19 +222,25 @@ const_format::str_splice!("foo", 0..usize::MAX, "");
 #[macro_export]
 macro_rules! str_splice {
     ($string:expr, $index:expr, $insert:expr $(,)*) => {{
-        const P_OSRCTFL4A: $crate::__str_methods::StrReplaceArgs =
-            $crate::__str_methods::StrReplaceArgsConv($string, $index, $insert).conv();
+        const P_OSRCTFL4A: $crate::__str_methods::StrSpliceArgs =
+            $crate::__str_methods::StrSplceArgsConv($string, $index, $insert).conv();
         {
             use $crate::__hidden_utils::PtrToRef;
-            use $crate::__str_methods::{DecomposedString, SplicedStr, StrReplaceArgs};
+            use $crate::__str_methods::{DecomposedString, SplicedStr, StrSpliceArgs};
             use $crate::pmr::{str, transmute, u8};
 
-            const P: &StrReplaceArgs = &P_OSRCTFL4A;
+            const P: &StrSpliceArgs = &P_OSRCTFL4A;
 
-            type DecompIn = DecomposedString<[u8; P.start], [u8; P.range_len], [u8; P.suffix_len]>;
+            type DecompIn =
+                DecomposedString<[u8; P.used_rstart], [u8; P.used_rlen], [u8; P.suffix_len]>;
 
             type DecompOut =
-                DecomposedString<[u8; P.start], [u8; P.insert_len], [u8; P.suffix_len]>;
+                DecomposedString<[u8; P.used_rstart], [u8; P.insert_len], [u8; P.suffix_len]>;
+
+            $crate::pmr::respan_to! {
+                ($string)
+                const _ASSERT_VALID_INDEX: () = P.index_validity.assert_valid();
+            }
 
             const OUT_A: (&DecompOut, &str) = unsafe {
                 let input = PtrToRef {
@@ -332,30 +338,106 @@ const_format::str_index!("foo", 0..usize::MAX);
 #[macro_export]
 macro_rules! str_index {
     ($string:expr, $index:expr $(,)*) => {{
-        const STR_OSRCTFL4A: &$crate::pmr::str = $string;
-        const RANGE_OSRCTFL4A: $crate::pmr::Range<$crate::pmr::usize> = {
-            $crate::__str_methods::NormalizeRange {
-                arg: $index,
-                str: STR_OSRCTFL4A,
-            }
-            .call()
-        };
+        const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
+            $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
 
         {
+            $crate::pmr::respan_to! {
+                ($string)
+                const _ASSERT_VALID_INDEX: () =
+                    P_OSRCTFL4A.index_validity.assert_valid();
+            }
+
             use $crate::__hidden_utils::PtrToRef;
             use $crate::__str_methods::DecomposedString;
             type DecompIn = DecomposedString<
-                [u8; RANGE_OSRCTFL4A.start],
-                [u8; { RANGE_OSRCTFL4A.end - RANGE_OSRCTFL4A.start }],
+                [u8; P_OSRCTFL4A.used_rstart],
+                [u8; P_OSRCTFL4A.used_rlen],
                 [u8; 0],
             >;
 
             const OUT: &'static str = unsafe {
                 let input = PtrToRef {
-                    ptr: STR_OSRCTFL4A.as_ptr() as *const DecompIn,
+                    ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
                 }
                 .reff;
                 $crate::__priv_transmute_raw_bytes_to_str!(&input.middle)
+            };
+
+            OUT
+        }
+    }};
+}
+
+/// Indexes a `&'static str` constant, returning `None` when the index is out of bounds.
+///
+///
+/// # Signature
+///
+/// This macro acts like a function of this signature:
+/// ```rust
+/// # trait SomeIndex {}
+/// fn str_get(input: &'static str, range: impl SomeIndex) -> Option<&'static str>
+/// # {unimplemented!()}
+/// ```
+/// This accepts
+/// [the same index arguments as `str_splice`](macro.str_splice.html#range-argument)
+///
+/// # Example
+///
+/// ```
+/// use const_format::str_get;
+///
+/// use std::ops::RangeFrom;
+///
+/// assert_eq!(str_get!("foo bar baz", ..7), Some("foo bar"));
+/// assert_eq!(str_get!("foo bar baz", 4..7), Some("bar"));
+/// assert_eq!(str_get!("foo bar baz", 4..100), None);
+///
+/// // You can pass `const`ants to this macro, not just literals
+/// {
+///     const IN: &str = "hello world";
+///     const INDEX_0: RangeFrom<usize> = 6..;
+///     const OUT_0: Option<&str> = str_get!(IN, INDEX_0);
+///     assert_eq!(OUT_0, Some("world"));
+///     
+///     const INDEX_1: usize = 4;
+///     const OUT_1: Option<&str> = str_get!(IN, INDEX_1);
+///     assert_eq!(OUT_1, Some("o"));
+///
+///     const INDEX_2: usize = IN.len();
+///     const OUT_2: Option<&str> = str_get!(IN, INDEX_2);
+///     assert_eq!(OUT_2, None);
+/// }
+///
+/// ```
+///
+#[macro_export]
+macro_rules! str_get {
+    ($string:expr, $index:expr $(,)*) => {{
+        const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
+            $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
+
+        {
+            use $crate::__hidden_utils::PtrToRef;
+            use $crate::__str_methods::DecomposedString;
+            type DecompIn = DecomposedString<
+                [u8; P_OSRCTFL4A.used_rstart],
+                [u8; P_OSRCTFL4A.used_rlen],
+                [u8; 0],
+            >;
+
+            const OUT: $crate::pmr::Option<&'static $crate::pmr::str> = unsafe {
+                if P_OSRCTFL4A.index_validity.is_valid() {
+                    let input = PtrToRef {
+                        ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
+                    }
+                    .reff;
+
+                    $crate::pmr::Some($crate::__priv_transmute_raw_bytes_to_str!(&input.middle))
+                } else {
+                    $crate::pmr::None
+                }
             };
 
             OUT
