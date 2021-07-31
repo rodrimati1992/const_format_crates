@@ -14,6 +14,7 @@ fn splice_ranges() {
 
     assert_eq!(str_splice!(IN, 2..4, RW), ss("ab_.-efghij", "cd"));
     assert_eq!(str_splice!(IN, 4..4, RW), ss("abcd_.-efghij", ""));
+    assert_eq!(str_splice!(IN, 4..0, RW), ss("abcd_.-efghij", ""));
 
     assert_eq!(str_splice!(IN, 2..=4, RW), ss("ab_.-fghij", "cde"));
     assert_eq!(str_splice!(IN, 4..=4, RW), ss("abcd_.-fghij", "e"));

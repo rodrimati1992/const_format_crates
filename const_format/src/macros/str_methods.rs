@@ -58,7 +58,7 @@
 #[cfg(feature = "const_generics")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 macro_rules! str_replace {
-    ($string:expr, $replace:expr, $with:expr) => {{
+    ($string:expr, $replace:expr, $with:expr $(,)*) => {{
         const STR_OSRCTFL4A: &$crate::pmr::str = $string;
 
         const REPLACE_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
@@ -121,7 +121,7 @@ const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
 )]
 #[macro_export]
 macro_rules! str_repeat {
-    ($string:expr, $times:expr) => {{
+    ($string:expr, $times:expr  $(,)*) => {{
         const STR_OSRCTFL4A: &$crate::pmr::str = $string;
 
         const TIMES_OSRCTFL4A: $crate::pmr::usize = $times;
@@ -144,7 +144,7 @@ macro_rules! str_repeat {
     }};
 }
 
-/// Replaces a substring in a `&'static str`.
+/// Replaces a substring in a `&'static str` constant.
 /// Returns both the new resulting `&'static str`, and the replaced substring.
 ///
 /// # Signature
@@ -160,7 +160,10 @@ macro_rules! str_repeat {
 /// ) -> const_format::SplicedStr
 /// # {unimplemented!()}
 /// ```
-/// Where `range` determines what part of `input` is replaced,
+///
+/// ### `range` argument
+///
+/// The `range` parameter determines what part of `input` is replaced,
 /// and can be any of these types:
 ///
 /// - `usize`
@@ -218,7 +221,7 @@ const_format::str_splice!("foo", 0..usize::MAX, "");
 /// [`SplicedStr`]: ./struct.SplicedStr.html
 #[macro_export]
 macro_rules! str_splice {
-    ($string:expr, $index:expr, $insert:expr) => {{
+    ($string:expr, $index:expr, $insert:expr $(,)*) => {{
         const P_OSRCTFL4A: $crate::__str_methods::StrReplaceArgs =
             $crate::__str_methods::StrReplaceArgsConv($string, $index, $insert).conv();
         {
@@ -266,4 +269,96 @@ macro_rules! str_splice {
     }};
 }
 
-// const _: crate::SplicedStr = str_splice!("hello", 0, "world");
+/// Indexes a `&'static str` constant.
+///
+///
+/// # Signature
+///
+/// This macro acts like a function of this signature:
+/// ```rust
+/// # trait SomeIndex {}
+/// fn str_index(input: &'static str, range: impl SomeIndex) -> &'static str
+/// # {unimplemented!()}
+/// ```
+/// This accepts
+/// [the same index arguments as `str_splice`](macro.str_splice.html#range-argument)
+///
+/// # Example
+///
+/// ```
+/// use const_format::str_index;
+///
+/// use std::ops::RangeFrom;
+///
+/// assert_eq!(str_index!("foo bar baz", ..7), "foo bar");
+/// assert_eq!(str_index!("foo bar baz", 4..7), "bar");
+/// assert_eq!(str_index!("foo bar baz", 4..), "bar baz");
+///
+/// // You can pass `const`ants to this macro, not just literals
+/// {
+///     const IN: &str = "hello world";
+///     const INDEX_0: RangeFrom<usize> = 6..;
+///     const OUT_0: &str = str_index!(IN, INDEX_0);
+///     assert_eq!(OUT_0, "world");
+///     
+///     const INDEX_1: usize = 4;
+///     const OUT_1: &str = str_index!(IN, INDEX_1);
+///     assert_eq!(OUT_1, "o");
+/// }
+///
+/// ```
+///
+/// ### Invalid index
+///
+/// Invalid indices cause compilation errors.
+///
+/// ```compile_fail
+/// const_format::str_index!("foo", 0..10);
+/// ```
+#[cfg_attr(
+    feature = "testing",
+    doc = r#"
+```rust
+const_format::str_index!("foo", 0..3);
+```
+
+```compile_fail
+const_format::str_index!("foo", 0..usize::MAX);
+```
+"#
+)]
+///
+///
+#[macro_export]
+macro_rules! str_index {
+    ($string:expr, $index:expr $(,)*) => {{
+        const STR_OSRCTFL4A: &$crate::pmr::str = $string;
+        const RANGE_OSRCTFL4A: $crate::pmr::Range<$crate::pmr::usize> = {
+            $crate::__str_methods::NormalizeRange {
+                arg: $index,
+                str: STR_OSRCTFL4A,
+            }
+            .call()
+        };
+
+        {
+            use $crate::__hidden_utils::PtrToRef;
+            use $crate::__str_methods::DecomposedString;
+            type DecompIn = DecomposedString<
+                [u8; RANGE_OSRCTFL4A.start],
+                [u8; { RANGE_OSRCTFL4A.end - RANGE_OSRCTFL4A.start }],
+                [u8; 0],
+            >;
+
+            const OUT: &'static str = unsafe {
+                let input = PtrToRef {
+                    ptr: STR_OSRCTFL4A.as_ptr() as *const DecompIn,
+                }
+                .reff;
+                $crate::__priv_transmute_raw_bytes_to_str!(&input.middle)
+            };
+
+            OUT
+        }
+    }};
+}

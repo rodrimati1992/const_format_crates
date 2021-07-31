@@ -2,6 +2,11 @@ use core::ops::{self, Range};
 
 use crate::__hidden_utils::{max_usize, saturating_add};
 
+pub struct NormalizeRange<T> {
+    pub arg: T,
+    pub str: &'static str,
+}
+
 pub struct StrReplaceArgsConv<T> {
     pub arg: T,
     pub str: &'static str,
@@ -22,9 +27,16 @@ macro_rules! define_conversions {
         $( fn($self:ident, $ty:ty) $block:block )*
     ) => {
         $(
+            impl NormalizeRange<$ty> {
+                pub const fn call($self) -> Range<usize> $block
+            }
+
             impl StrReplaceArgsConv<$ty> {
                 pub const fn conv($self) -> StrReplaceArgs {
-                    let range = $block;
+                    let range = NormalizeRange{
+                        arg: $self.arg,
+                        str: $self.str,
+                    }.call();
                     let str_len = $self.str.len();
                     let range_len = range.end - range.start;
 
