@@ -126,20 +126,19 @@ macro_rules! str_repeat {
 
         {
             use $crate::__hidden_utils::PtrToRef;
-            use $crate::pmr::{str, u8, transmute};
+            use $crate::pmr::{str, transmute, u8};
 
             const P: &$crate::__str_methods::StrRepeatArgs = P_OSRCTFL4A;
 
-            const _ASSERT_VALID_LEN: () = {
-                if let Some(overflowed_len) = P.overflowed_len {
-                    [/* the returned string is too large */][overflowed_len]
-                }
-            };
+            $crate::pmr::respan_to! {
+                ($string)
+                const _ASSERT_VALID_LEN: () = P.assert_valid();
+            }
 
             const OUT_B: &[u8; P.out_len] = &unsafe {
                 let ptr = P.str.as_ptr() as *const [u8; P.str_len];
                 transmute::<[[u8; P.str_len]; P.repeat], [u8; P.out_len]>(
-                    [*PtrToRef{ptr}.reff; P.repeat],
+                    [*PtrToRef { ptr }.reff; P.repeat],
                 )
             };
             const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
@@ -257,7 +256,7 @@ macro_rules! str_splice {
         {
             use $crate::__hidden_utils::PtrToRef;
             use $crate::__str_methods::{DecomposedString, SplicedStr, StrSpliceArgs};
-            use $crate::pmr::{str, transmute, u8};
+            use $crate::pmr::{str, u8};
 
             const P: &StrSpliceArgs = &P_OSRCTFL4A;
 

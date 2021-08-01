@@ -6,6 +6,7 @@ pub struct StrRepeatArgs {
     pub repeat: usize,
 }
 
+#[allow(non_snake_case)]
 pub const fn StrRepeatArgs(str: &'static str, repeat: usize) -> StrRepeatArgs {
     let str_len = str.len();
     let (mul, overflowed) = str_len.overflowing_mul(repeat);
@@ -22,5 +23,13 @@ pub const fn StrRepeatArgs(str: &'static str, repeat: usize) -> StrRepeatArgs {
         out_len,
         overflowed_len,
         repeat,
+    }
+}
+
+impl StrRepeatArgs {
+    pub const fn assert_valid(&self) {
+        if let Some(overflowed_len) = self.overflowed_len {
+            [/* the returned string is too large */][overflowed_len]
+        }
     }
 }
