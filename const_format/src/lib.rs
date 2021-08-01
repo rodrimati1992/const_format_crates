@@ -20,6 +20,19 @@
 //! [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
 //! and emits a `&'static str` constant.
 //!
+//! - [`str_get`]:
+//! Indexes a `&'static str` constant, returning `None` when the index is out of bounds.
+//!
+//! - [`str_index`]:
+//! Indexes a `&'static str` constant.
+//!
+//! - [`str_repeat`]:
+//! Creates a `&'static str` by repeating a `&'static str` constant `times` times.
+//!
+//! - [`str_splice`]:
+//! Replaces a substring in a &'static str constant.
+//!
+//!
 //! ### Rust 1.51.0
 //!
 //! By enabling the "const_generics" feature, you can use these macros:
@@ -28,6 +41,9 @@
 //! Converts a `&'static str` to have a different casing style,
 //! determined by a [`Case`] argument.
 //!
+//! - [`str_replace`]:
+//! A const subset of [`str::replace`],
+//! which takes constants as arguments and returns a `&'static str`.
 //!
 //! ### Rust nightly
 //!
@@ -323,6 +339,19 @@
 //! [`map_ascii_case`]: ./macro.map_ascii_case.html
 //!
 //! [`Case`]: ./enum.Case.html
+//!
+//!
+//! [`str_get`]: ./macro.str_get.html
+//!
+//! [`str_index`]: ./macro.str_index.html
+//!
+//! [`str_repeat`]: ./macro.str_repeat.html
+//!
+//! [`str_splice`]: ./macro.str_splice.html
+//!
+//! [`str_replace`]: ./macro.str_replace.html
+//!
+//! [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]

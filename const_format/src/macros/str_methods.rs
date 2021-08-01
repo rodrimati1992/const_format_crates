@@ -6,7 +6,6 @@
 /// This macro acts like a function of this signature:
 /// ```rust
 /// # trait Pattern {}
-///
 /// fn str_replace(
 ///     string: &'static str,
 ///     pattern: impl Pattern,
@@ -82,7 +81,7 @@ macro_rules! str_replace {
     }};
 }
 
-/// Creates a `&'static str` by repeating a `&'static str` constant some amount of times times.
+/// Creates a `&'static str` by repeating a `&'static str` constant `times` times
 ///
 /// # Example
 ///

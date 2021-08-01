@@ -2,6 +2,17 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.16
+
+Added these macro that act like `str` methods:
+- `str_get`
+- `str_index`
+- `str_repeat`
+- `str_replace`
+- `str_splice`
+
+Added the `SplicedStr` struct.
+
 ### 0.2.15
 
 Added `map_ascii_case` macro to convert the casing style of a `&'static str`.
