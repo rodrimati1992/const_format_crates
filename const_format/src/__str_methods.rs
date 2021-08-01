@@ -4,6 +4,9 @@ mod str_replace;
 #[cfg(feature = "const_generics")]
 pub use self::str_replace::{str_replace, str_replace_length, ReplaceInput, ReplaceInputConv};
 
+mod str_repeat;
+pub use str_repeat::StrRepeatArgs;
+
 mod str_splice;
 pub use str_splice::{DecomposedString, SplicedStr, StrSplceArgsConv, StrSpliceArgs};
 

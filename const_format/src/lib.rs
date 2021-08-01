@@ -432,7 +432,7 @@ pub mod __cf_osRcTFl4A {
 
 #[doc(hidden)]
 pub mod pmr {
-    pub use {str, u8, usize};
+    pub use {bool, str, u8, usize};
 
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl, respan_to};
 

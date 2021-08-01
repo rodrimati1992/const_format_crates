@@ -82,7 +82,7 @@ macro_rules! str_replace {
     }};
 }
 
-/// Creates a `&'static str` by repeating a `&'static str` some amount of times times.
+/// Creates a `&'static str` by repeating a `&'static str` constant some amount of times times.
 ///
 /// # Example
 ///
@@ -122,20 +122,25 @@ const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
 #[macro_export]
 macro_rules! str_repeat {
     ($string:expr, $times:expr  $(,)*) => {{
-        const STR_OSRCTFL4A: &$crate::pmr::str = $string;
-
-        const TIMES_OSRCTFL4A: $crate::pmr::usize = $times;
+        const P_OSRCTFL4A: &$crate::__str_methods::StrRepeatArgs =
+            &$crate::__str_methods::StrRepeatArgs($string, $times);
 
         {
-            use $crate::pmr::transmute;
-            use $crate::pmr::{str, u8, usize};
+            use $crate::__hidden_utils::PtrToRef;
+            use $crate::pmr::{str, u8, transmute};
 
-            const STR_LEN: usize = STR_OSRCTFL4A.len();
-            const OUT_LEN: usize = STR_LEN * TIMES_OSRCTFL4A;
-            const OUT_B: &[u8; OUT_LEN] = &unsafe {
-                let ptr = STR_OSRCTFL4A.as_ptr();
-                transmute::<[[u8; STR_LEN]; TIMES_OSRCTFL4A], [u8; OUT_LEN]>(
-                    [*transmute::<*const u8, &[u8; STR_LEN]>(ptr); TIMES_OSRCTFL4A],
+            const P: &$crate::__str_methods::StrRepeatArgs = P_OSRCTFL4A;
+
+            const _ASSERT_VALID_LEN: () = {
+                if let Some(overflowed_len) = P.overflowed_len {
+                    [/* the returned string is too large */][overflowed_len]
+                }
+            };
+
+            const OUT_B: &[u8; P.out_len] = &unsafe {
+                let ptr = P.str.as_ptr() as *const [u8; P.str_len];
+                transmute::<[[u8; P.str_len]; P.repeat], [u8; P.out_len]>(
+                    [*PtrToRef{ptr}.reff; P.repeat],
                 )
             };
             const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
