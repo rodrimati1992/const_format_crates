@@ -4,7 +4,7 @@ use const_format::__str_methods::{
 use const_format::str_replace;
 
 macro_rules! assert_case {
-    ($input:expr, $patt:expr, $replace_with:expr, $output:expr $(,)?) => {{
+    ($input:expr, $patt:expr, $replace_with:expr, $output:expr $(,)*) => {{
         const IN: &str = $input;
         const PATT: ReplaceInput = ReplaceInputConv($patt).conv();
         const REPLACE_WITH: &str = $replace_with;

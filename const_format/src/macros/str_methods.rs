@@ -166,7 +166,7 @@ macro_rules! str_repeat {
 /// The `range` parameter determines what part of `input` is replaced,
 /// and can be any of these types:
 ///
-/// - `usize`
+/// - `usize`: the starting index of a char, only includes that char.
 /// - `Range<usize>`
 /// - `RangeTo<usize>`
 /// - `RangeFrom<usize>`
@@ -195,6 +195,10 @@ macro_rules! str_repeat {
 ///     const OUT: SplicedStr = str_splice!(IN, INDEX, REPLACE_WITH);
 ///     assert_eq!(OUT , SplicedStr{output: "this is ... fine", removed: "bad"});
 /// }
+/// {
+///     const OUT: SplicedStr = str_splice!("ABC豆-", 3, "DEFGH");
+///     assert_eq!(OUT , SplicedStr{output: "ABCDEFGH-", removed: "豆"});
+/// }
 /// ```
 ///
 /// ### Invalid index
@@ -214,6 +218,28 @@ const_format::str_splice!("foo", 0..3, "");
 ```compile_fail
 const_format::str_splice!("foo", 0..usize::MAX, "");
 ```
+
+```rust
+assert_eq!(
+    const_format::str_splice!("効率的", 3..6, "A"),
+    const_format::SplicedStr{output: "効A的", removed: "率"} ,
+);
+```
+
+```compile_fail
+assert_eq!(
+    const_format::str_splice!("効率的", 1..6, "A"),
+    const_format::SplicedStr{output: "効A的", removed: "率"} ,
+);
+```
+
+```compile_fail
+assert_eq!(
+    const_format::str_splice!("効率的", 3..5, "A"),
+    const_format::SplicedStr{output: "効A的", removed: "率"} ,
+);
+```
+
 "#
 )]
 ///
@@ -325,11 +351,14 @@ macro_rules! str_splice {
     feature = "testing",
     doc = r#"
 ```rust
-const_format::str_index!("foo", 0..3);
+assert_eq!(const_format::str_index!("効率的", 3..6), "率");
 ```
 
 ```compile_fail
-const_format::str_index!("foo", 0..usize::MAX);
+assert_eq!(const_format::str_index!("効率的", 3..5), "率");
+```
+```compile_fail
+assert_eq!(const_format::str_index!("効率的", 4..6), "率");
 ```
 "#
 )]
@@ -411,6 +440,16 @@ macro_rules! str_index {
 /// }
 ///
 /// ```
+#[cfg_attr(
+    feature = "testing",
+    doc = r#"
+```rust
+assert_eq!(const_format::str_get!("効率的", 3..6), Some("率"));
+assert_eq!(const_format::str_get!("効率的", 3..5), None);
+assert_eq!(const_format::str_get!("効率的", 4..6), None);
+```
+"#
+)]
 ///
 #[macro_export]
 macro_rules! str_get {

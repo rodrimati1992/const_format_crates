@@ -17,6 +17,7 @@ pub struct StrIndexArgs {
 }
 
 #[derive(Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum IndexValidity {
     Valid,
     StartOob(usize),
@@ -47,11 +48,20 @@ macro_rules! pass_range_types {
             use core::ops;
 
             #[allow(unused_imports)]
-            use crate::__hidden_utils::{max_usize, saturating_add};
+            use crate::__hidden_utils::{is_char_boundary_no_len_check, max_usize, saturating_add};
 
             $macro! {
                 fn(self, usize) {
-                    self.arg .. saturating_add(self.arg, 1)
+                    let mut end = saturating_add(self.arg, 1);
+                    let bytes = self.str.as_bytes();
+
+                    if end < self.str.len() {
+                        while !is_char_boundary_no_len_check(bytes, end) {
+                            end = saturating_add(end, 1);
+                        }
+                    }
+
+                    self.arg .. end
                 }
 
                 fn(self, ops::Range<usize>) {
@@ -135,3 +145,31 @@ macro_rules! define_conversions {
 }
 
 pass_range_types! {define_conversions}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn index_validity_test() {
+        macro_rules! miv {
+            ($str:expr, $range:expr) => {
+                StrIndexArgsConv($str, $range).conv().index_validity
+            };
+        }
+
+        assert_eq!(miv!("効率的", 3), IndexValidity::Valid);
+        assert_eq!(miv!("効率的", 6), IndexValidity::Valid);
+        assert_eq!(miv!("効率的", 3..6), IndexValidity::Valid);
+
+        assert_eq!(miv!("効率的", 4..6), IndexValidity::StartInsideChar(4));
+        assert_eq!(miv!("効率的", 3..5), IndexValidity::EndInsideChar(5));
+        assert_eq!(miv!("効率的", 7..9), IndexValidity::StartInsideChar(7));
+
+        assert_eq!(miv!("効率的", 100..9), IndexValidity::StartOob(100));
+        assert_eq!(miv!("効率的", 3..10), IndexValidity::EndOob(10));
+        assert_eq!(miv!("効率的", 9), IndexValidity::EndOob(10));
+        assert_eq!(miv!("効率的", 10), IndexValidity::StartOob(10));
+        assert_eq!(miv!("効率的", 100..900), IndexValidity::StartOob(100));
+    }
+}
