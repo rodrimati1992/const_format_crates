@@ -1,5 +1,5 @@
-/// A const subset of [`str::replace`],
-/// which takes constants as arguments and returns a `&'static str`.
+/// Replaces all the instances of a pattern in a `&'static str` constant with
+/// another `&'static str` constant.
 ///
 /// # Signature
 ///
@@ -155,7 +155,6 @@ macro_rules! str_repeat {
 /// This macro acts like a function of this signature:
 /// ```rust
 /// # trait SomeIndex {}
-///
 /// fn str_splice(
 ///     input: &'static str,
 ///     range: impl SomeIndex,
@@ -316,7 +315,7 @@ macro_rules! str_splice {
 /// # {unimplemented!()}
 /// ```
 /// This accepts
-/// [the same index arguments as `str_splice`](macro.str_splice.html#range-argument)
+/// [the same `range` arguments as `str_splice`](macro.str_splice.html#range-argument)
 ///
 /// # Example
 ///
@@ -413,7 +412,7 @@ macro_rules! str_index {
 /// # {unimplemented!()}
 /// ```
 /// This accepts
-/// [the same index arguments as `str_splice`](macro.str_splice.html#range-argument)
+/// [the same `range` arguments as `str_splice`](macro.str_splice.html#range-argument)
 ///
 /// # Example
 ///

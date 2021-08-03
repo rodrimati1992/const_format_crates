@@ -15,7 +15,7 @@
 /// This only transforms ascii characters because broader unicode case conversion,
 /// while possible, is much harder to implement purely with `const fn`s.
 ///
-/// Non-ascii characters are treated as though they're alphabetical ascii characters.
+/// Non-ascii characters are treated as though they're alphabetic ascii characters.
 ///
 /// # Ignored characters
 ///

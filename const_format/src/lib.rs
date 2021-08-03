@@ -38,12 +38,12 @@
 //! By enabling the "const_generics" feature, you can use these macros:
 //!
 //! - [`map_ascii_case`]:
-//! Converts a `&'static str` to have a different casing style,
+//! Converts a `&'static str` constant to a different casing style,
 //! determined by a [`Case`] argument.
 //!
 //! - [`str_replace`]:
-//! A const subset of [`str::replace`],
-//! which takes constants as arguments and returns a `&'static str`.
+//! Replaces all the instances of a pattern in a `&'static str` constant with
+//! another `&'static str` constant.
 //!
 //! ### Rust nightly
 //!
