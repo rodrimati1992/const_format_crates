@@ -11,8 +11,10 @@ This crate provides types and macros for formatting strings at compile-time.
 
 # Rust versions
 
-There are some features that require Rust 1.46.0, and others that require Rust nightly,
-the sections below describe the features that are available.
+There are some features that require Rust 1.46.0,
+some that require Rust 1.51.0,
+and others that require Rust nightly,
+the sections below describe the features that are available for each version.
 
 ### Rust 1.46.0
 
@@ -25,13 +27,29 @@ Concatenates `integers`, `bool`, and `&str` constants into a `&'static str` cons
 [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
 and emits a `&'static str` constant.
 
+- [`str_get`]: 
+Indexes a `&'static str` constant, returning `None` when the index is out of bounds. 
+
+- [`str_index`]: 
+Indexes a `&'static str` constant. 
+
+- [`str_repeat`]: 
+Creates a `&'static str` by repeating a `&'static str` constant `times` times.
+
+- [`str_splice`]: 
+Replaces a substring in a &'static str constant.
+
 ### Rust 1.51.0
 
 By enabling the "const_generics" feature, you can use these macros:
 
 - [`map_ascii_case`]:
-Converts a `&'static str` to have a different casing style,
+Converts a `&'static str` constant to a different casing style,
 determined by a [`Case`] argument.
+
+- [`str_replace`]:
+Replaces all the instances of a pattern in a `&'static str` constant with
+another `&'static str` constant.
 
 ### Rust nightly
 
@@ -331,3 +349,15 @@ need to be explicitly enabled with cargo features.
 [`map_ascii_case`]: https://docs.rs/const_format/0.2.*/const_format/macro.map_ascii_case.html
 
 [`Case`]: https://docs.rs/const_format/0.2.*/const_format/enum.Case.html
+
+[`str_get`]: https://docs.rs/const_format/0.2.*/macro.str_get.html
+
+[`str_index`]: https://docs.rs/const_format/0.2.*/macro.str_index.html
+
+[`str_repeat`]: https://docs.rs/const_format/0.2.*/macro.str_repeat.html
+
+[`str_splice`]: https://docs.rs/const_format/0.2.*/macro.str_splice.html
+
+[`str_replace`]: https://docs.rs/const_format/0.2.*/macro.str_replace.html
+
+[`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace

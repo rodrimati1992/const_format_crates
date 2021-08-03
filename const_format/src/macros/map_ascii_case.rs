@@ -15,7 +15,7 @@
 /// This only transforms ascii characters because broader unicode case conversion,
 /// while possible, is much harder to implement purely with `const fn`s.
 ///
-/// Non-ascii characters are treated as though they're alphabetical ascii characters.
+/// Non-ascii characters are treated as though they're alphabetic ascii characters.
 ///
 /// # Ignored characters
 ///
@@ -86,8 +86,7 @@ macro_rules! map_ascii_case {
             const OB: &[$crate::pmr::u8; L] =
                 &$crate::__ascii_case_conv::convert_str::<L>(CASE_OSRCTFL4A, S_OSRCTFL4A);
 
-            const OS: &$crate::pmr::str =
-                unsafe { $crate::pmr::transmute::<&[$crate::pmr::u8], &$crate::pmr::str>(OB) };
+            const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
 
             OS
         }

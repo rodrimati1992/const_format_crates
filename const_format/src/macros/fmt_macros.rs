@@ -95,7 +95,7 @@ macro_rules! __concatcp_inner {
             let slice =
                 $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
 
-            $crate::pmr::transmute::<&[u8], &str>(slice)
+            $crate::__priv_transmute_bytes_to_str!(slice)
         };
         CONCAT_STR
     }};
@@ -117,7 +117,7 @@ macro_rules! __concatcp_inner {
             let slice =
                 $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
 
-            $crate::pmr::transmute::<&[u8], &str>(slice)
+            $crate::__priv_transmute_bytes_to_str!(slice)
         };
         CONCAT_STR
     }};

@@ -151,7 +151,7 @@ mod tests {
 
         while let Some((niter, word_range)) = word_iter.next() {
             word_iter = niter;
-            list.push((&text[word_range]))
+            list.push(&text[word_range]);
         }
 
         list
