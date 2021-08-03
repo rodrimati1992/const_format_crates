@@ -350,14 +350,14 @@ need to be explicitly enabled with cargo features.
 
 [`Case`]: https://docs.rs/const_format/0.2.*/const_format/enum.Case.html
 
-[`str_get`]: https://docs.rs/const_format/0.2.*/macro.str_get.html
+[`str_get`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_get.html
 
-[`str_index`]: https://docs.rs/const_format/0.2.*/macro.str_index.html
+[`str_index`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_index.html
 
-[`str_repeat`]: https://docs.rs/const_format/0.2.*/macro.str_repeat.html
+[`str_repeat`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_repeat.html
 
-[`str_splice`]: https://docs.rs/const_format/0.2.*/macro.str_splice.html
+[`str_splice`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_splice.html
 
-[`str_replace`]: https://docs.rs/const_format/0.2.*/macro.str_replace.html
+[`str_replace`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_replace.html
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
