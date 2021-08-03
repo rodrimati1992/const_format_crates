@@ -4,7 +4,7 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 ### 0.2.16
 
-Added these macro that act like `str` methods:
+Added these macros that act like `str` methods:
 - `str_get`
 - `str_index`
 - `str_repeat`
