@@ -18,6 +18,7 @@ pub(crate) const fn is_char_boundary_no_len_check(str: &[u8], index: usize) -> b
     index == str.len() || (str[index] as i8) >= -0x40
 }
 
+#[repr(C)]
 pub union PtrToRef<'a, T: ?Sized> {
     pub ptr: *const T,
     pub reff: &'a T,
