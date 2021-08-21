@@ -107,6 +107,7 @@ pub const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
 
 #[doc(hidden)]
 #[cfg(feature = "constant_time_as_str")]
+#[repr(C)]
 pub union Dereference<'a, T: ?Sized> {
     pub ptr: *const T,
     pub reff: &'a T,

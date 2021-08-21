@@ -20,14 +20,30 @@
 //! [`format`]-like formatting which takes `integers`, `bool`, `char`, and `&str` constants,
 //! and emits a `&'static str` constant.
 //!
+//! - [`str_get`]:
+//! Indexes a `&'static str` constant, returning `None` when the index is out of bounds.
+//!
+//! - [`str_index`]:
+//! Indexes a `&'static str` constant.
+//!
+//! - [`str_repeat`]:
+//! Creates a `&'static str` by repeating a `&'static str` constant `times` times.
+//!
+//! - [`str_splice`]:
+//! Replaces a substring in a &'static str constant.
+//!
+//!
 //! ### Rust 1.51.0
 //!
 //! By enabling the "const_generics" feature, you can use these macros:
 //!
 //! - [`map_ascii_case`]:
-//! Converts a `&'static str` to have a different casing style,
+//! Converts a `&'static str` constant to a different casing style,
 //! determined by a [`Case`] argument.
 //!
+//! - [`str_replace`]:
+//! Replaces all the instances of a pattern in a `&'static str` constant with
+//! another `&'static str` constant.
 //!
 //! ### Rust nightly
 //!
@@ -324,6 +340,19 @@
 //!
 //! [`Case`]: ./enum.Case.html
 //!
+//!
+//! [`str_get`]: ./macro.str_get.html
+//!
+//! [`str_index`]: ./macro.str_index.html
+//!
+//! [`str_repeat`]: ./macro.str_repeat.html
+//!
+//! [`str_splice`]: ./macro.str_splice.html
+//!
+//! [`str_replace`]: ./macro.str_replace.html
+//!
+//! [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
+//!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 #![cfg_attr(feature = "assert", feature(const_panic))]
@@ -370,6 +399,9 @@ mod const_generic_concatcp;
 #[cfg(feature = "fmt")]
 pub mod utils;
 
+#[doc(hidden)]
+pub mod __hidden_utils;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod for_examples;
@@ -381,7 +413,6 @@ pub mod marker_traits;
 #[cfg(feature = "testing")]
 pub mod test_utils;
 
-#[cfg(feature = "fmt")]
 #[cfg(feature = "testing")]
 #[allow(missing_docs)]
 pub mod doctests;
@@ -401,6 +432,11 @@ pub mod wrapper_types;
 #[doc(hidden)]
 #[cfg(feature = "const_generics")]
 pub mod __ascii_case_conv;
+
+#[doc(hidden)]
+pub mod __str_methods;
+
+pub use __str_methods::SplicedStr;
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
@@ -427,7 +463,7 @@ pub mod __cf_osRcTFl4A {
 
 #[doc(hidden)]
 pub mod pmr {
-    pub use {str, u8, usize};
+    pub use {bool, str, u8, usize};
 
     pub use const_format_proc_macros::{__concatcp_impl, __formatcp_impl, respan_to};
 

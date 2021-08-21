@@ -12,6 +12,18 @@ macro_rules! __for_range{
 
 #[doc(hidden)]
 #[macro_export]
+macro_rules! iter_copy_slice{
+    ( $var:ident in $array:expr => $($for_body:tt)* )=>({
+        let mut array: &[_] = &$array;
+        while let [$var, ref rem @ ..] = *array {
+            {$($for_body)*}
+            array = rem;
+        }
+    })
+}
+
+#[doc(hidden)]
+#[macro_export]
 macro_rules! __write_pvariant {
     (char, $parg:expr, $elem:ident => $out:ident) => {{
         let encoded = $elem.encoded();
