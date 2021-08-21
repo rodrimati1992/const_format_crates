@@ -69,10 +69,5 @@ jobs:
 
         cargo clean 
 
-        cargo miri test --features "testing"
-        cargo miri test --features "testing fmt"
-        cargo miri test --features "testing assert"
-        cargo miri test --features "testing derive"
-        cargo miri test --features "testing constant_time_as_str"
-        cargo miri test --features "testing derive constant_time_as_str"
-        cargo miri test --features "testing derive constant_time_as_str assert"
+        cargo miri test --tests --features "testing derive fmt assert"
+        cargo miri test --features "testing derive fmt constant_time_as_str assert"
