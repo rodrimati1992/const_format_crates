@@ -21,10 +21,10 @@ the sections below describe the features that are available for each version.
 These macros are the only things available in Rust 1.46.0:
 
 - [`concatcp`]:
-Concatenates `integers`, `bool`, and `&str` constants into a `&'static str` constant.
+Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
 
 - [`formatcp`]:
-[`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
+[`format`]-like formatting which takes `integers`, `bool`, `char`, and `&str` constants,
 and emits a `&'static str` constant.
 
 - [`str_get`]: 
