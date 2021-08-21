@@ -906,6 +906,31 @@ impl<'w, E> StrWriterMut<'w, E> {
         self.write_str_inner(bytes, 0, s.len())
     }
 
+    /// Writes `character` with Display formatting
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::StrWriterMut;
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_char('3');
+    /// let _ = writer.write_char('5');
+    /// let _ = writer.write_char('8');
+    ///
+    /// assert_eq!(writer.as_str(), "358");
+    ///
+    /// ```
+    ///
+    pub const fn write_char(&mut self, character: char) -> Result<(), Error> {
+        let fmt = crate::char_encoding::char_to_display(character);
+        self.write_str_inner(fmt.encoded(), 0, fmt.len())
+    }
+
     /// Writes a subslice of `ascii` with Display formatting.
     ///
     /// Out of bounds range bounds are treated as being at `s.len()`.
@@ -1096,6 +1121,37 @@ impl<'w, E> StrWriterMut<'w, E> {
     pub const fn write_str_debug(&mut self, str: &str) -> Result<(), Error> {
         let bytes = str.as_bytes();
         self.write_str_debug_inner(bytes, 0, str.len())
+    }
+
+    /// Writes `character` with Debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::StrWriterMut;
+    ///
+    /// let mut len = 0;
+    /// let mut buffer = [0; 64];
+    /// let mut writer = StrWriterMut::from_custom_cleared(&mut buffer, &mut len);
+    ///
+    /// let _ = writer.write_str(" ");
+    /// let _ = writer.write_char_debug('\\');
+    /// let _ = writer.write_str(" ");
+    /// let _ = writer.write_char_debug('A');
+    /// let _ = writer.write_str(" ");
+    /// let _ = writer.write_char_debug('0');
+    /// let _ = writer.write_str(" ");
+    /// let _ = writer.write_char_debug('\'');
+    /// let _ = writer.write_str(" ");
+    ///
+    /// assert_eq!(writer.as_str(), r#" '\\' 'A' '0' '\'' "#);
+    ///
+    /// ```
+    ///
+    pub const fn write_char_debug(&mut self, character: char) -> Result<(), Error> {
+        let fmt = crate::char_encoding::char_to_debug(character);
+        self.write_str_inner(fmt.encoded(), 0, fmt.len())
     }
 
     /// Writes a subslice of `ascii` with Debug-like formatting.

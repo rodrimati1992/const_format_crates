@@ -13,6 +13,17 @@ macro_rules! __for_range{
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __write_pvariant {
+    (char, $parg:expr, $elem:ident => $out:ident) => {{
+        let encoded = $elem.encoded();
+        let len = $elem.len();
+
+        let mut start = 0;
+        while start < len {
+            $out.array[$out.len] = encoded[start];
+            $out.len += 1;
+            start += 1;
+        }
+    }};
     (int, $parg:expr, $elem:ident => $out:ident) => {{
         let wrapper = $crate::pmr::PWrapper($elem);
 

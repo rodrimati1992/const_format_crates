@@ -14,6 +14,8 @@
 ///
 /// - `i*`/`u*` (all the primitive integer types).
 ///
+/// - `char`
+///
 /// - `bool`
 ///
 /// This macro also shares
@@ -28,7 +30,7 @@
 /// ```rust
 /// use const_format::concatcp;
 ///
-/// const MSG: &str = concatcp!(2u8, "+", 2u8, "=", 2u8 + 2);
+/// const MSG: &str = concatcp!(2u8, "+", 2u8, '=', 2u8 + 2);
 ///
 /// assert_eq!(MSG, "2+2=4");
 ///
@@ -84,6 +86,7 @@ macro_rules! __concatcp_inner {
                 match current.elem {
                     PVariant::Str(s) => __write_pvariant!(str, current, s => out),
                     PVariant::Int(int) => __write_pvariant!(int, current, int => out),
+                    PVariant::Char(c) => __write_pvariant!(char, current, c => out),
                 }
             }
             &{ out }
@@ -165,6 +168,8 @@ macro_rules! __concatcp_inner {
 ///
 /// - `i*`/`u*` (all the primitive integer types).
 ///
+/// - `char`
+///
 /// - `bool`
 ///
 /// This macro also shares
@@ -182,6 +187,10 @@ macro_rules! __concatcp_inner {
 /// - Escape the `'\t'`,`'\n'`,`'\r'`,`'\\'`, `'\''`, and`'\"'` characters.
 /// - Escape control characters with `\xYY`,
 /// where `YY` is the hexadecimal value of the control character.
+///
+/// For `char` it does these things:
+/// - Prepend and append the single quote character (`'`).
+/// - Uses the same escapes as `&'static str`.
 ///
 /// Example:
 /// ```
@@ -226,11 +235,17 @@ macro_rules! __concatcp_inner {
 /// ```rust
 /// use const_format::formatcp;
 ///
-/// const TEXT: &str = r#"hello " \ world"#;
-/// const MSG: &str = formatcp!("{TEXT}____{TEXT:?}");
-///
-/// assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
-///
+/// {
+///     const TEXT: &str = r#"hello " \ world"#;
+///     const MSG: &str = formatcp!("{TEXT}____{TEXT:?}");
+///    
+///     assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
+/// }
+/// {
+///     const CHARS: &str = formatcp!("{0:?} - {0} - {1} - {:?}", '"', '👀');
+///    
+///     assert_eq!(CHARS, r#"'\"' - " - 👀 - '👀'"#);
+/// }
 /// ```
 ///
 /// [`format`]: https://doc.rust-lang.org/std/macro.format.html
@@ -290,7 +305,7 @@ macro_rules! formatcp {
 ///
 /// const STRING: &str = "foo bar baz";
 ///
-/// assert_eq!(concatc!(Sliced(STRING, 4..8), Foo), "bar table");
+/// assert_eq!(concatc!(Sliced(STRING, 4..7), ' ', Foo), "bar table");
 ///
 /// struct Foo;
 ///
@@ -461,9 +476,10 @@ macro_rules! __concatc_inner {
 ///     try_!(fmt.write_u32_debug(P.x));
 ///     try_!(fmt.write_str(" "));
 ///     try_!(fmt.write_u32_debug(P.y));
+///     try_!(fmt.write_char('.'));
 /// });
 ///
-/// assert_eq!(STR, "5 13;0x5 0xD;0b101 0b1101");
+/// assert_eq!(STR, "5 13.;0x5 0xD.;0b101 0b1101.");
 ///
 /// ```
 /// [`Formatter`]: ./fmt/struct.Formatter.html

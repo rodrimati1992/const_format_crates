@@ -1098,6 +1098,28 @@ delegate_write_methods! {
     fn write_str(string: &str)
     length = string.len();
 
+    /// Writes `character` into this Formatter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 4]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_char('a');
+    /// let _ = fmt.write_char('b');
+    /// let _ = fmt.write_char('c');
+    ///
+    /// assert_eq!(writer.as_str(), "abc");
+    ///
+    /// ```
+    ///
+    fn write_char(character: char)
+    length = crate::char_encoding::char_display_len(character);
+
     /// Writes `&ascii[range]` into this formatter.
     ///
     /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
@@ -1204,6 +1226,34 @@ delegate_write_methods! {
     ///
     fn write_str_debug(string: &str)
     length = PWrapper(string.as_bytes()).compute_utf8_debug_len();
+
+    /// Writes `character` into this Formatter, with debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('\\');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('A');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('0');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('\'');
+    /// let _ = fmt.write_str(" ");
+    ///
+    /// assert_eq!(writer.as_str(), r#" '\\' 'A' '0' '\'' "#);
+    ///
+    /// ```
+    ///
+    fn write_char_debug(character: char)
+    length = crate::char_encoding::char_debug_len(character);
 
     /// Writes `&ascii[range]` into this formatter, with debug formatting.
     ///

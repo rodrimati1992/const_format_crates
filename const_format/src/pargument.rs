@@ -1,6 +1,7 @@
 #![allow(clippy::wrong_self_convention)]
 
 use crate::{
+    char_encoding::FmtChar,
     formatting::{Formatting, FormattingFlags},
     wrapper_types::PWrapper,
 };
@@ -32,6 +33,7 @@ impl PArgument {
 pub enum PVariant {
     Str(&'static str),
     Int(Integer),
+    Char(FmtChar),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -132,6 +134,30 @@ impl PConvWrapper<bool> {
     #[inline]
     pub const fn to_pargument_debug(self, fmt_flags: FormattingFlags) -> PArgument {
         self.to_pargument_display(fmt_flags)
+    }
+}
+
+#[doc(hidden)]
+impl PConvWrapper<char> {
+    #[inline]
+    pub const fn to_pargument_display(self, fmt_flags: FormattingFlags) -> PArgument {
+        let elem = crate::char_encoding::char_to_display(self.0);
+        PArgument {
+            fmt_len: elem.len(),
+            fmt_flags,
+            fmt: Formatting::Display,
+            elem: PVariant::Char(elem),
+        }
+    }
+    #[inline]
+    pub const fn to_pargument_debug(self, fmt_flags: FormattingFlags) -> PArgument {
+        let elem = crate::char_encoding::char_to_debug(self.0);
+        PArgument {
+            fmt_len: elem.len(),
+            fmt_flags,
+            fmt: Formatting::Debug,
+            elem: PVariant::Char(elem),
+        }
     }
 }
 

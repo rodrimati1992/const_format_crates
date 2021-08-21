@@ -14,10 +14,10 @@
 //! These macros are the only things available in Rust 1.46.0:
 //!
 //! - [`concatcp`]:
-//! Concatenates `integers`, `bool`, and `&str` constants into a `&'static str` constant.
+//! Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
 //!
 //! - [`formatcp`]:
-//! [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
+//! [`format`]-like formatting which takes `integers`, `bool`, `char`, and `&str` constants,
 //! and emits a `&'static str` constant.
 //!
 //! ### Rust 1.51.0
@@ -358,6 +358,8 @@ mod equality;
 #[cfg(feature = "assert")]
 #[macro_use]
 pub mod panicking;
+
+mod char_encoding;
 
 mod pargument;
 
