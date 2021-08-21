@@ -6,6 +6,8 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 Added `char` support to all formatting macros.
 
+Added `char`, `&[char]`, and `Option<char>` impls of FormatMarker trait, with debug formatting methods.
+
 Added `Formatter::{write_char, write_char_debug}` methods.
 
 Added `StrWriterMut::{as_str_alt, write_char, write_char_debug}` methods.
