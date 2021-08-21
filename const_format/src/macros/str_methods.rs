@@ -1,5 +1,5 @@
-/// Replaces all the instances of a pattern in a `&'static str` constant with
-/// another `&'static str` constant.
+/// Replaces all the instances of `$pattern` in `$input`
+/// (a `&'static str` constant) with `$replace_with` (a `&'static str` constant).
 ///
 /// # Signature
 ///
@@ -7,7 +7,7 @@
 /// ```rust
 /// # trait Pattern {}
 /// fn str_replace(
-///     string: &'static str,
+///     input: &'static str,
 ///     pattern: impl Pattern,
 ///     replace_with: &'static str,
 /// ) -> &'static str
@@ -57,22 +57,13 @@
 #[cfg(feature = "const_generics")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 macro_rules! str_replace {
-    ($string:expr, $replace:expr, $with:expr $(,)*) => {{
-        const STR_OSRCTFL4A: &$crate::pmr::str = $string;
-
-        const REPLACE_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
-            $crate::__str_methods::ReplaceInputConv($replace).conv();
-
-        const WITH_OSRCTFL4A: &$crate::pmr::str = $with;
+    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
+        const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
+            $crate::__str_methods::ReplaceInputConv($input, $pattern, $replace_with).conv();
 
         {
-            use $crate::__str_methods::{str_replace, str_replace_length};
-
-            const L: $crate::pmr::usize =
-                str_replace_length(STR_OSRCTFL4A, REPLACE_OSRCTFL4A, WITH_OSRCTFL4A);
-
-            const OB: &[$crate::pmr::u8; L] =
-                &str_replace::<L>(STR_OSRCTFL4A, REPLACE_OSRCTFL4A, WITH_OSRCTFL4A);
+            const OB: &[$crate::pmr::u8; ARGS_OSRCTFL4A.replace_length()] =
+                &ARGS_OSRCTFL4A.replace();
 
             const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
 
@@ -328,16 +319,16 @@ macro_rules! str_splice {
 /// assert_eq!(str_index!("foo bar baz", 4..7), "bar");
 /// assert_eq!(str_index!("foo bar baz", 4..), "bar baz");
 ///
-/// // You can pass `const`ants to this macro, not just literals
 /// {
 ///     const IN: &str = "hello world";
-///     const INDEX_0: RangeFrom<usize> = 6..;
-///     const OUT_0: &str = str_index!(IN, INDEX_0);
+///     const INDEX: RangeFrom<usize> = 6..;
+///     // You can pass `const`ants to this macro, not just literals
+///     const OUT_0: &str = str_index!(IN, INDEX);
 ///     assert_eq!(OUT_0, "world");
-///     
-///     const INDEX_1: usize = 4;
-///     const OUT_1: &str = str_index!(IN, INDEX_1);
-///     assert_eq!(OUT_1, "o");
+/// }
+/// {
+///     const OUT: &str = str_index!("hello world", 4);
+///     assert_eq!(OUT, "o");
 /// }
 ///
 /// ```
@@ -400,7 +391,8 @@ macro_rules! str_index {
     }};
 }
 
-/// Indexes a `&'static str` constant, returning `None` when the index is out of bounds.
+/// Indexes a `&'static str` constant,
+/// returning `None` when the index is not on a character boundary.
 ///
 ///
 /// # Signature
@@ -421,24 +413,31 @@ macro_rules! str_index {
 ///
 /// use std::ops::RangeFrom;
 ///
-/// assert_eq!(str_get!("foo bar baz", ..7), Some("foo bar"));
-/// assert_eq!(str_get!("foo bar baz", 4..7), Some("bar"));
-/// assert_eq!(str_get!("foo bar baz", 4..100), None);
+/// assert_eq!(str_get!("foo 鉄 baz", ..7), Some("foo 鉄"));
+/// assert_eq!(str_get!("foo 鉄 baz", 4..7), Some("鉄"));
+/// assert_eq!(str_get!("foo 鉄 baz", 4..100), None);
 ///
-/// // You can pass `const`ants to this macro, not just literals
+///
 /// {
-///     const IN: &str = "hello world";
-///     const INDEX_0: RangeFrom<usize> = 6..;
-///     const OUT_0: Option<&str> = str_get!(IN, INDEX_0);
-///     assert_eq!(OUT_0, Some("world"));
-///     
-///     const INDEX_1: usize = 4;
-///     const OUT_1: Option<&str> = str_get!(IN, INDEX_1);
-///     assert_eq!(OUT_1, Some("o"));
-///
-///     const INDEX_2: usize = IN.len();
-///     const OUT_2: Option<&str> = str_get!(IN, INDEX_2);
-///     assert_eq!(OUT_2, None);
+///     const IN: &str = "hello 鉄";
+///     const INDEX: RangeFrom<usize> = 6..;
+///     // You can pass `const`ants to this macro, not just literals
+///     const OUT: Option<&str> = str_get!(IN, INDEX);
+///     assert_eq!(OUT, Some("鉄"));
+/// }
+/// {
+///     const OUT: Option<&str> = str_get!("hello 鉄", 4);
+///     assert_eq!(OUT, Some("o"));
+/// }
+/// {
+///     // End index not on a character boundary
+///     const OUT: Option<&str> = str_get!("hello 鉄", 0..7);
+///     assert_eq!(OUT, None);
+/// }
+/// {
+///     // Out of bounds indexing
+///     const OUT: Option<&str> = str_get!("hello 鉄", 0..1000 );
+///     assert_eq!(OUT, None);
 /// }
 ///
 /// ```

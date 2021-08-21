@@ -188,16 +188,16 @@ macro_rules! __concatcp_inner {
 /// - Escape control characters with `\xYY`,
 /// where `YY` is the hexadecimal value of the control character.
 ///
-/// For `char` it does these things:
-/// - Prepend and append the single quote character (`'`).
-/// - Uses the same escapes as `&'static str`.
-///
 /// Example:
 /// ```
 /// use const_format::formatcp;
 ///
 /// assert_eq!(formatcp!("{:?}", r#" \ " ó "#), r#"" \\ \" ó ""#);
 /// ```
+///
+/// For `char` it does these things:
+/// - Prepend and append the single quote character (`'`).
+/// - Uses the same escapes as `&'static str`.
 ///
 /// ### Display
 ///
@@ -242,7 +242,7 @@ macro_rules! __concatcp_inner {
 ///     assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
 /// }
 /// {
-///     const CHARS: &str = formatcp!("{0:?} - {0} - {1} - {:?}", '"', '👀');
+///     const CHARS: &str = formatcp!("{0:?} - {0} - {1} - {1:?}", '"', '👀');
 ///    
 ///     assert_eq!(CHARS, r#"'\"' - " - 👀 - '👀'"#);
 /// }

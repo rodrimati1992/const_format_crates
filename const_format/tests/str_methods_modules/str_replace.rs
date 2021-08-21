@@ -1,19 +1,17 @@
-use const_format::__str_methods::{
-    str_replace, str_replace_length, ReplaceInput, ReplaceInputConv,
-};
+use const_format::__str_methods::{ReplaceInput, ReplaceInputConv};
 use const_format::str_replace;
 
 macro_rules! assert_case {
     ($input:expr, $patt:expr, $replace_with:expr, $output:expr $(,)*) => {{
         const IN: &str = $input;
-        const PATT: ReplaceInput = ReplaceInputConv($patt).conv();
+        const ARGS: ReplaceInput = ReplaceInputConv(IN, $patt, REPLACE_WITH).conv();
         const REPLACE_WITH: &str = $replace_with;
         const OUT: &str = $output;
 
-        assert_eq!(str_replace_length(IN, PATT, REPLACE_WITH), OUT.len());
+        assert_eq!(ARGS.replace_length(), OUT.len());
 
         assert_eq!(
-            std::str::from_utf8(&str_replace::<{ OUT.len() }>(IN, PATT, REPLACE_WITH)).unwrap(),
+            std::str::from_utf8(&ARGS.replace::<{ OUT.len() }>()).unwrap(),
             OUT,
         );
 
