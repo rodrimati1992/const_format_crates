@@ -404,8 +404,7 @@ macro_rules! __concatc_inner {
             [(); STR_WRITER_NHPMWYD3NJA.error.capacity],
         > as __cf_osRcTFl4A::msg::ErrorAsType>::Type>::NEW;
 
-        const STR_NHPMWYD3NJA: &str =
-            __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
+        const STR_NHPMWYD3NJA: &str = STR_WRITER_NHPMWYD3NJA.writer.unsize().as_str_alt();
 
         STR_NHPMWYD3NJA
     }};

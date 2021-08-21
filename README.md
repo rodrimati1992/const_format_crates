@@ -160,7 +160,7 @@ panicking at compile-time requires a nightly feature.
 ```rust
 #![feature(const_mut_refs)]
 
-use const_format::{StrWriter, assertc_ne, strwriter_as_str, writec};
+use const_format::{StrWriter, assertc_ne, writec};
 use const_format::utils::str_eq;
 
 macro_rules! check_valid_pizza{

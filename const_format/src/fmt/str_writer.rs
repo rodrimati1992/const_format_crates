@@ -55,7 +55,7 @@ use core::marker::PhantomData;
 /// ```rust
 /// #![feature(const_mut_refs)]
 ///
-/// use const_format::{StrWriter, strwriter_as_str, writec, unwrap};
+/// use const_format::{StrWriter, writec, unwrap};
 ///
 /// trait Num {
 ///     const V: u32;
@@ -83,7 +83,7 @@ use core::marker::PhantomData;
 ///
 /// impl<L: Num, R: Num> Mul<L, R> {
 ///     const __STR: &'static StrWriter<[u8]> = &compute_str(L::V, R::V);
-///     const STR: &'static str = strwriter_as_str!(Self::__STR);
+///     const STR: &'static str = Self::__STR.as_str_alt();
 /// }
 ///
 /// assert_eq!(Mul::<Two,Three>::STR, "2 * 3 == 6");
@@ -296,7 +296,7 @@ impl StrWriter {
     /// ### Runtime
     ///
     /// If the "constant_time_as_str" feature is disabled,
-    /// thich takes time proportional to `self.capacity() - self.len()`.
+    /// this takes time proportional to `self.capacity() - self.len()`.
     ///
     /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
     /// but uses a few additional nightly features.
@@ -329,6 +329,49 @@ impl StrWriter {
         crate::utils::slice_up_to_len_alt(&self.buffer, self.len)
     }
 
+    /// Gets the written part of this `StrWriter` as a `&str`
+    ///
+    /// ### Runtime
+    ///
+    /// If the "constant_time_as_str" feature is disabled,
+    /// this takes time proportional to `self.capacity() - self.len()`.
+    ///
+    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
+    /// but uses a few additional nightly features.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::StrWriter;
+    /// use const_format::{unwrap, writec};
+    ///
+    ///
+    /// const CAP: usize = 128;
+    ///
+    /// const __STR: &StrWriter = &{
+    ///     let mut writer =  StrWriter::new([0; CAP]);
+    ///
+    ///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
+    ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
+    ///
+    ///     writer
+    /// };
+    ///
+    /// const STR: &str = __STR.as_str_alt();
+    ///
+    /// fn main() {
+    ///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
+    /// }
+    /// ```
+    #[inline(always)]
+    pub const fn as_str_alt(&self) -> &str {
+        // All the methods that modify the buffer must ensure utf8 validity,
+        // only methods from this module need to ensure this.
+        unsafe { core::str::from_utf8_unchecked(self.as_bytes_alt()) }
+    }
+
     conditionally_const! {
         feature = "constant_time_as_str";
         /// Gets the written part of this `StrWriter` as a `&str`
@@ -336,19 +379,19 @@ impl StrWriter {
         /// ### Constness
         ///
         /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
+        /// which requires nightly Rust versions after 2021-07-15.
         ///
         /// ### Alternative
         ///
-        /// For converting `&'static StrWriter` constants to `&'static str` constants,
-        /// you can also use the [`strwriter_as_str`] macro.
+        /// You can also use the [`as_str_alt`](Self::as_str_alt) method,
+        /// which is always available,
+        /// but takes linear time to run when the "constant_time_as_str" feature
+        /// is disabled.
         ///
         /// ### Examples
         ///
         /// You can look at the [type-level docs](#examples)
         /// for examples of using this method.
-        ///
-        /// [`strwriter_as_str`]: ../macro.strwriter_as_str.html
         #[inline(always)]
         pub fn as_str(&self) -> &str {
             // All the methods that modify the buffer must ensure utf8 validity,
@@ -363,7 +406,7 @@ impl StrWriter {
         /// ### Constness
         ///
         /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
+        /// which requires nightly Rust versions after 2021-07-15.
         ///
         /// # Example
         ///
@@ -475,6 +518,27 @@ impl<const N: usize> StrWriter<[u8; N]> {
     ///
     #[inline(always)]
     pub const fn r(&self) -> &StrWriter<[u8]> {
+        self
+    }
+    /// Casts a `&StrWriter<[u8; N]>` to a `&StrWriter<[u8]>`,
+    /// for calling methods defined on `StrWriter<[u8]>` (most of them).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use const_format::StrWriter;
+    ///
+    /// let mut buffer = StrWriter::new([0; 64]);
+    ///
+    /// buffer.as_mut().write_str("Hello,");
+    /// buffer.as_mut().write_str(" world!");
+    ///
+    /// assert_eq!(buffer.unsize().as_str(), "Hello, world!");
+    ///
+    /// ```
+    ///
+    #[inline(always)]
+    pub const fn unsize(&self) -> &StrWriter<[u8]> {
         self
     }
 

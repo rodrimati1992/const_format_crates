@@ -68,20 +68,16 @@ macro_rules! try_ {
 /// ```rust
 /// #![feature(const_mut_refs)]
 ///
-/// use const_format::{StrWriter, strwriter_as_str, unwrap, writec};
+/// use const_format::{StrWriter, unwrap, writec};
 ///
 /// const CAP: usize = 11;
-/// // Defined this function as a workaround for mutable references not
-/// // being allowed in `const`ants.
-/// const fn foo() -> StrWriter<[u8; CAP]> {
-///     let mut writer = StrWriter::new([0; CAP]);
-///     unwrap!(writec!(writer, "foo bar baz"));
-///     writer
-/// }
-///
 /// const TEXT: &str = {
-///     const S: &StrWriter = &foo();
-///     strwriter_as_str!(S)
+///     const S: &StrWriter = &{
+///         let mut writer = StrWriter::new([0; CAP]);
+///         unwrap!(writec!(writer, "foo bar baz"));
+///         writer
+///     };
+///     S.as_str_alt()
 /// };
 /// assert_eq!(TEXT, "foo bar baz")
 ///
@@ -125,7 +121,7 @@ macro_rules! unwrap {
 /// ```rust
 /// #![feature(const_mut_refs)]
 ///
-/// use const_format::{AsciiStr, strwriter_as_str, unwrap_or_else};
+/// use const_format::{AsciiStr, unwrap_or_else};
 ///
 /// const FOO: AsciiStr = unwrap_or_else!(AsciiStr::new(b"AB\x80"), |_| AsciiStr::empty() );
 ///
@@ -166,7 +162,7 @@ macro_rules! unwrap_or_else {
 /// use const_format::{
 ///     for_examples::Unit,
 ///     Formatter, FormattingFlags, PWrapper, StrWriter,
-///     coerce_to_fmt, strwriter_as_str,
+///     coerce_to_fmt,
 /// };
 ///
 /// const CAP: usize = 128;
@@ -202,7 +198,7 @@ macro_rules! unwrap_or_else {
 ///
 /// const TEXT: &str = {
 ///     const TEXT_: &StrWriter = &make_strwriter();
-///     strwriter_as_str!(TEXT_)
+///     TEXT_.as_str_alt()
 /// };
 ///
 /// assert_eq!(TEXT, "[0, 1],[0, 1],100,100,Unit,Unit");
@@ -232,10 +228,14 @@ macro_rules! coerce_to_fmt {
 /// This is usable in `const` or `static` initializers,
 /// but not inside of `const fn`s.
 ///
+/// **Deprecated:** This macro is deprecated because
+/// the [`StrWriter::as_str_alt`](crate::StrWriter::as_str_alt) method
+/// allows converting a``&'static StrWriter` to a `&'static str`.
+///
 /// # Runtime
 ///
 /// If the "constant_time_as_str" feature is disabled,
-/// thich takes time proportional to `$expr.capacity() - $expr.len()`.
+/// this takes time proportional to `$expr.capacity() - $expr.len()`.
 ///
 /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
 /// but uses a few additional nightly features.
@@ -251,20 +251,16 @@ macro_rules! coerce_to_fmt {
 ///
 /// const CAP: usize = 128;
 ///
-/// // Can't use mutable references in `const`s yet, the `const fn` is a workaround
-/// const fn formatted() -> StrWriter<[u8; CAP]> {
+/// const __STR: &StrWriter = &{
 ///     let mut writer =  StrWriter::new([0; CAP]);
 ///
 ///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
 ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
 ///
 ///     writer
-/// }
-///
-/// const STR: &str = {
-///     const S: &StrWriter = &formatted();
-///     strwriter_as_str!(S)
 /// };
+///
+/// const STR: &str = strwriter_as_str!(__STR);
 ///
 /// fn main() {
 ///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
@@ -273,6 +269,7 @@ macro_rules! coerce_to_fmt {
 ///
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
+#[deprecated(since = "0.2.19", note = "Use `StrWriter::as_str_alt` instead")]
 #[macro_export]
 macro_rules! strwriter_as_str {
     ($expr:expr) => {

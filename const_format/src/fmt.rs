@@ -117,7 +117,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{ConstDebug, strwriter_as_str, try_, unwrap, writec};
+//! use const_format::{ConstDebug, try_, unwrap, writec};
 //!
 //! use std::ops::Range;
 //!
@@ -148,8 +148,8 @@
 //! }
 //!
 //! const STRING: &str = {
-//!     const STR: &StrWriter<[u8; CAP]> = &build_string();
-//!     strwriter_as_str!(STR)
+//!     const STR: &StrWriter = &build_string();
+//!     STR.as_str_alt()
 //! };
 //!
 //! // The formatter
@@ -169,7 +169,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, strwriter_as_str, try_};
+//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, try_};
 //!
 //! use std::cmp::Ordering;
 //!
@@ -228,8 +228,8 @@
 //! }
 //!
 //! const STRING: &str = {
-//!     const S: &StrWriter<[u8; CAP]> = &build_string();
-//!     strwriter_as_str!(S)
+//!     const S: &StrWriter = &build_string();
+//!     S.as_str_alt()
 //! };
 //!
 //! assert_eq!(

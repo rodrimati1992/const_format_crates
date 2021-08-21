@@ -5,8 +5,8 @@ use const_format::{concatcp, formatcp};
 #[cfg(feature = "nightly")]
 pub mod nightly {
     use const_format::{
-        assertc, assertc_eq, assertc_ne, concatc, for_examples::Unit, formatc, strwriter_as_str,
-        writec, StrWriter, StrWriterMut,
+        assertc, assertc_eq, assertc_ne, concatc, for_examples::Unit, formatc, writec, StrWriter,
+        StrWriterMut,
     };
 
     pub const TWO: u32 = 2;
@@ -33,7 +33,8 @@ pub mod nightly {
         writer
     }
 
-    pub const AS_STR: &str = strwriter_as_str!(&as_str_ctor());
+    pub const __AS_STR: &StrWriter = &as_str_ctor();
+    pub const AS_STR: &str = __AS_STR.as_str_alt();
 }
 
 pub const CONCATCP_A: &str = concatcp!("hello", "world");

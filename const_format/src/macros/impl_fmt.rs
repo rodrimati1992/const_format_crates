@@ -15,7 +15,7 @@
 /// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
-/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+/// use const_format::{formatc, impl_fmt, try_};
 ///
 /// use std::marker::PhantomData;
 ///
@@ -59,7 +59,7 @@
 /// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
-/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+/// use const_format::{formatc, impl_fmt, try_};
 ///
 /// use std::cmp::Ordering;
 ///

@@ -430,7 +430,7 @@ impl<'w, E> StrWriterMut<'w, E> {
     /// ### Runtime
     ///
     /// If the "constant_time_as_str" feature is disabled,
-    /// thich takes time proportional to `self.capacity() - self.len()`.
+    /// this takes time proportional to `self.capacity() - self.len()`.
     ///
     /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
     /// but uses a few additional nightly features.
@@ -457,6 +457,49 @@ impl<'w, E> StrWriterMut<'w, E> {
 }
 
 impl<'w> StrWriterMut<'w, Utf8Encoding> {
+    /// Gets the written part of this StrWriterMut as a `&str`
+    ///
+    /// ### Runtime
+    ///
+    /// If the "constant_time_as_str" feature is disabled,
+    /// this takes time proportional to `self.capacity() - self.len()`.
+    ///
+    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
+    /// but uses a few additional nightly features.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #![feature(const_mut_refs)]
+    ///
+    /// use const_format::{StrWriter, StrWriterMut};
+    /// use const_format::{unwrap, writec};
+    ///
+    ///
+    /// const CAP: usize = 128;
+    ///
+    /// const __STR: &StrWriter = &{
+    ///     let mut buffer =  StrWriter::new([0; CAP]);
+    ///     let mut writer = StrWriterMut::new(&mut buffer);
+    ///
+    ///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
+    ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
+    ///
+    ///     buffer
+    /// };
+    ///
+    /// const STR: &str = __STR.as_str_alt();
+    ///
+    /// fn main() {
+    ///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
+    /// }
+    /// ```
+    #[inline(always)]
+    pub const fn as_str_alt(&self) -> &str {
+        // All the methods that modify the buffer must ensure utf8 validity,
+        // only methods from this module need to ensure this.
+        unsafe { core::str::from_utf8_unchecked(self.as_bytes_alt()) }
+    }
     conditionally_const! {
         feature = "constant_time_as_str";
         /// Gets the written part of this StrWriterMut as a `&str`
@@ -464,7 +507,14 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
         /// ### Constness
         ///
         /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
+        /// which requires nightly Rust versions after 2021-07-15.
+        ///
+        /// ### Alternative
+        ///
+        /// You can also use the [`as_str_alt`](Self::as_str_alt) method,
+        /// which is always available,
+        /// but takes linear time to run when the "constant_time_as_str" feature
+        /// is disabled.
         ///
         /// # Example
         ///
@@ -501,7 +551,7 @@ impl<'w, E> StrWriterMut<'w, E> {
         /// ### Constness
         ///
         /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2020-08-15.
+        /// which requires nightly Rust versions after 2021-07-15.
         ///
         /// # Example
         ///

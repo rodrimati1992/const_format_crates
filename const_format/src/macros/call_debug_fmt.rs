@@ -34,7 +34,7 @@
 /// use const_format::{
 ///     for_examples::{Point3, Unit},
 ///     Error, Formatter, FormattingFlags, StrWriter,
-///     call_debug_fmt, strwriter_as_str, try_, unwrap,
+///     call_debug_fmt, try_, unwrap,
 /// };
 ///
 /// use std::num::Wrapping;
@@ -63,7 +63,7 @@
 ///
 /// const TEXT: &str = {
 ///     const PROM: &StrWriter<[u8]> = &unwrap!(make());
-///     strwriter_as_str!(PROM)
+///     PROM.as_str_alt()
 /// };
 ///
 /// const EXPECTED: &str = "\
