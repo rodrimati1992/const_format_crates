@@ -66,6 +66,7 @@ fn char_to_utf8_debug_test() {
     for (c, expected) in first_escapes.iter().copied() {
         let utf8_here = char_to_debug(c);
         assert_eq!(expected.as_bytes(), utf8_here.as_bytes(), "{:?}", c);
+        assert_eq!(expected.len(), char_debug_len(c), "{:?}", c);
     }
 
     let other_escapes = [('\'', r#"'\''"#), ('\"', r#"'\"'"#), ('\\', r#"'\\'"#)];
@@ -79,12 +80,14 @@ fn char_to_utf8_debug_test() {
             .and_then(|c| other_escapes.iter().copied().find(|x| x.0 == c))
         {
             assert_eq!(expected.as_bytes(), utf8_here.as_bytes(), "{:?}", c);
+            assert_eq!(expected.len(), char_debug_len(c), "{:?}", c);
         } else {
             buffer.clear();
             buffer.push('\'');
             buffer.push(c);
             buffer.push('\'');
             assert_eq!(buffer.as_bytes(), utf8_here.as_bytes(), "{:?}", c);
+            assert_eq!(buffer.len(), char_debug_len(c), "{:?}", c);
         }
     }
 }

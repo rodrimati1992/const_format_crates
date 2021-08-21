@@ -60,6 +60,7 @@ macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
 slice_of_std_impl! {
     &str,
     bool,
+    char,
     u8, i8,
     u16, i16,
     u32, i32,
@@ -108,6 +109,7 @@ impl_fmt! {
     impl[] Option<usize>;
     impl[] Option<isize>;
     impl[] Option<bool>;
+    impl[] Option<char>;
     impl['a,] Option<&'a str>;
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {

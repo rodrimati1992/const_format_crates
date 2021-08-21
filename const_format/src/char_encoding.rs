@@ -14,6 +14,7 @@ pub(crate) const fn char_display_len(c: char) -> usize {
 pub(crate) const fn char_debug_len(c: char) -> usize {
     let inner = match c {
         '\t' | '\r' | '\n' | '\\' | '\'' | '\"' => 2,
+        '\x00'..='\x1F' => 4,
         _ => char_display_len(c),
     };
     inner + 2
