@@ -136,3 +136,21 @@ fn miscelaneous_enums() {
         (AtomicOrdering::Release, "Release", "Release")
     }
 }
+
+#[test]
+fn chars() {
+    test_fmt! {
+        char;
+        ('\\', r#"'\\'"#, r#"'\\'"#)
+        ('\'', r#"'\''"#, r#"'\''"#)
+        ('\"', r#"'\"'"#, r#"'\"'"#)
+        ('\n', r#"'\n'"#, r#"'\n'"#)
+        ('\r', r#"'\r'"#, r#"'\r'"#)
+        ('\t', r#"'\t'"#, r#"'\t'"#)
+        ('o', r#"'o'"#, r#"'o'"#)
+        ('ñ', r#"'ñ'"#, r#"'ñ'"#)
+        ('个', r#"'个'"#, r#"'个'"#)
+        // non-ascii characters are always written unescaped
+        ('\u{100000}', "'\u{100000}'", "'\u{100000}'")
+    }
+}
