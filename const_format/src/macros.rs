@@ -230,7 +230,7 @@ macro_rules! coerce_to_fmt {
 ///
 /// **Deprecated:** This macro is deprecated because
 /// the [`StrWriter::as_str_alt`](crate::StrWriter::as_str_alt) method
-/// allows converting a``&'static StrWriter` to a `&'static str`.
+/// allows converting a`&'static StrWriter` to a `&'static str`.
 ///
 /// # Runtime
 ///

@@ -2,7 +2,7 @@ use super::{char_debug_len, char_display_len, char_to_debug, char_to_display};
 
 #[test]
 fn char_to_utf8_encoding_test() {
-    for c in '\0'..=char::MAX {
+    for c in '\0'..=core::char::MAX {
         let mut utf8_std = [0u8; 4];
         let utf8_std = c.encode_utf8(&mut utf8_std);
 
@@ -15,7 +15,7 @@ fn char_to_utf8_encoding_test() {
 
 #[test]
 fn char_to_utf8_display_test() {
-    for c in '\0'..=char::MAX {
+    for c in '\0'..=core::char::MAX {
         let mut utf8_std = [0u8; 4];
         let utf8_std = c.encode_utf8(&mut utf8_std);
 
@@ -71,7 +71,7 @@ fn char_to_utf8_debug_test() {
     let other_escapes = [('\'', r#"'\''"#), ('\"', r#"'\"'"#), ('\\', r#"'\\'"#)];
 
     let mut buffer = arrayvec::ArrayString::<[u8; 12]>::new();
-    for c in '\x20'..=char::MAX {
+    for c in '\x20'..=core::char::MAX {
         let utf8_here = char_to_debug(c);
 
         if let Some((_, expected)) = Some(c)
