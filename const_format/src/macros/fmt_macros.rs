@@ -176,7 +176,7 @@ macro_rules! __concatcp_inner {
 /// [the limitations described in here](./index.html#macro-limitations)
 /// as well.
 ///
-/// # Format specifiers
+/// # Formating behavior
 ///
 /// ### Debug-like
 ///
@@ -414,6 +414,9 @@ macro_rules! __concatc_inner {
 
 /// Formats constants of standard library and/or user-defined types into a `&'static str`.
 ///
+/// User-defined types must implement the [`FormatMarker`] trait
+/// (as described in the docs for that trait) to be usable with this macro.
+///
 /// # Stable equivalent
 ///
 /// For an equivalent macro which can be used in stable Rust (1.46.0 onwards),
@@ -481,7 +484,8 @@ macro_rules! __concatc_inner {
 /// assert_eq!(STR, "5 13.;0x5 0xD.;0b101 0b1101.");
 ///
 /// ```
-/// [`Formatter`]: ./fmt/struct.Formatter.html
+/// [`Formatter`]: crate::fmt::Formatter
+/// [`FormatMarker`]: crate::marker_traits::FormatMarker
 ///
 ///
 #[macro_export]

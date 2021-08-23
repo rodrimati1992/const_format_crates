@@ -29,7 +29,7 @@ use core::marker::PhantomData;
 /// # StrWriterMut
 ///
 /// `StrWriter` can be borrowed into a [`StrWriterMut`],
-/// which provides methods for writing a formatted string..
+/// which provides methods for writing a formatted string.
 ///
 /// Example:
 ///

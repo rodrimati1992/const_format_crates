@@ -212,17 +212,17 @@ enum WriterBackend<'w> {
 /// ```
 ///
 ///
-/// [`DebugStruct`]: ./struct.DebugStruct.html
-/// [`DebugTuple`]: ./struct.DebugTuple.html
-/// [`StrWriter`]: ./struct.StrWriter.html
-/// [`StrWriterMut`]: ./struct.StrWriterMut.html
-/// [`ComputeStrLength`]: ./struct.ComputeStrLength.html
+/// [`DebugStruct`]: crate::fmt::DebugStruct
+/// [`DebugTuple`]: crate::fmt::DebugTuple
+/// [`StrWriter`]: crate::fmt::StrWriter
+/// [`StrWriterMut`]: crate::fmt::StrWriterMut
+/// [`ComputeStrLength`]: crate::fmt::ComputeStrLength
 /// [`from_sw`]: #method.from_sw
 /// [`from_sw_mut`]: #method.from_sw_mut
 /// [`from_custom_cleared`]: #method.from_custom_cleared
 /// [`from_custom`]:  #method.from_custom
-/// [`NumberFormatting`]: ./enum.NumberFormatting.html
-/// [`FormattingFlags`]: ./struct.FormattingFlags.html
+/// [`NumberFormatting`]: crate::fmt::NumberFormatting
+/// [`FormattingFlags`]: crate::fmt::FormattingFlags
 ///
 pub struct Formatter<'w> {
     margin: u16,

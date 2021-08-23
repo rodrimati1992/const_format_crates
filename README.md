@@ -37,7 +37,7 @@ Indexes a `&'static str` constant.
 Creates a `&'static str` by repeating a `&'static str` constant `times` times.
 
 - [`str_splice`]: 
-Replaces a substring in a &'static str constant.
+Replaces a substring in a `&'static str` constant.
 
 ### Rust 1.51.0
 
@@ -286,9 +286,7 @@ provides the [`ConstDebug`] derive macro to format user-defined types at compile
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
 - "assert": implies the "fmt" feature,
-enables the assertion macros.<br>
-This is a separate cargo feature because 
-it uses nightly Rust features that are less stable than the "fmt" feature does.
+enables the assertion macros.
 
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,

@@ -30,7 +30,7 @@
 //! Creates a `&'static str` by repeating a `&'static str` constant `times` times.
 //!
 //! - [`str_splice`]:
-//! Replaces a substring in a &'static str constant.
+//! Replaces a substring in a `&'static str` constant.
 //!
 //!
 //! ### Rust 1.51.0
@@ -275,8 +275,6 @@
 //!
 //! - "assert": implies the "fmt" feature,
 //! enables the assertion macros.<br>
-//! This is a separate cargo feature because
-//! it uses nightly Rust features that are less stable than the "fmt" feature does.<br>
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
