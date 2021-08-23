@@ -1,9 +1,13 @@
 /// For implementing debug or display formatting "manually".
 ///
-/// # Impls
+/// # Generated code
 ///
-/// This macro implements [`FormatMarker`] for all the `impl`d types,
-/// and outputs the methods/associated constants in each of the listed impls.
+/// This macro generates:
+///
+/// - An implementation of the [`FormatMarker`] trait for all the `impl`d types,
+///
+/// - All the listed impls, by repeating the methods (and other associated items)
+/// passed to this macro in each of the impls.
 ///
 /// # Example
 ///
@@ -15,12 +19,17 @@
 /// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
-/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+/// use const_format::{formatc, impl_fmt, try_};
 ///
 /// use std::marker::PhantomData;
 ///
 /// pub struct Tupled<T>(u32, T);
 ///
+/// // Implements debug formatting for:
+/// // - Tupled<PhantomData<T>>
+/// // - Tupled<bool>
+/// // - Tupled<Option<bool>>
+/// // Repeating the `const_debug_fmt` function definition in each of those 3 impls.
 /// impl_fmt!{
 ///     // The trailing comma is required
 ///     impl[T,] Tupled<PhantomData<T>>
@@ -33,6 +42,9 @@
 ///         let mut fmt = fmt.debug_tuple("Tupled");
 ///
 ///         // PWrapper implements const_debug_fmt methods for many std types.
+///         //
+///         // You can use `call_debug_fmt` for formatting generic std types
+///         // if this doesn't work
 ///         try_!(PWrapper(self.0).const_debug_fmt(fmt.field()));
 ///         try_!(PWrapper(self.1).const_debug_fmt(fmt.field()));
 ///
@@ -53,13 +65,14 @@
 ///
 /// ### Enum
 ///
-/// This demonstrates how you can implement debug formatting for an enum.
+/// This demonstrates how you can implement debug formatting for an enum,
+/// using this macro purely for implementing the [`FormatMarker`] trait.
 ///
 /// ```rust
 /// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
-/// use const_format::{formatc, impl_fmt, try_, strwriter_as_str};
+/// use const_format::{formatc, impl_fmt, try_};
 ///
 /// use std::cmp::Ordering;
 ///
@@ -78,6 +91,9 @@
 ///                 let mut fmt = fmt.debug_struct("Braced");
 ///
 ///                 // PWrapper implements const_debug_fmt methods for many std types.
+///                 //
+///                 // You can use `call_debug_fmt` for formatting generic std types
+///                 // if this doesn't work
 ///                 try_!(PWrapper(*ord).const_debug_fmt(fmt.field("ord")));
 ///
 ///                 fmt.finish()

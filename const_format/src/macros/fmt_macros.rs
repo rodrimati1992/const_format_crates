@@ -14,6 +14,8 @@
 ///
 /// - `i*`/`u*` (all the primitive integer types).
 ///
+/// - `char`
+///
 /// - `bool`
 ///
 /// This macro also shares
@@ -28,7 +30,7 @@
 /// ```rust
 /// use const_format::concatcp;
 ///
-/// const MSG: &str = concatcp!(2u8, "+", 2u8, "=", 2u8 + 2);
+/// const MSG: &str = concatcp!(2u8, "+", 2u8, '=', 2u8 + 2);
 ///
 /// assert_eq!(MSG, "2+2=4");
 ///
@@ -84,6 +86,7 @@ macro_rules! __concatcp_inner {
                 match current.elem {
                     PVariant::Str(s) => __write_pvariant!(str, current, s => out),
                     PVariant::Int(int) => __write_pvariant!(int, current, int => out),
+                    PVariant::Char(c) => __write_pvariant!(char, current, c => out),
                 }
             }
             &{ out }
@@ -165,13 +168,15 @@ macro_rules! __concatcp_inner {
 ///
 /// - `i*`/`u*` (all the primitive integer types).
 ///
+/// - `char`
+///
 /// - `bool`
 ///
 /// This macro also shares
 /// [the limitations described in here](./index.html#macro-limitations)
 /// as well.
 ///
-/// # Format specifiers
+/// # Formating behavior
 ///
 /// ### Debug-like
 ///
@@ -189,6 +194,10 @@ macro_rules! __concatcp_inner {
 ///
 /// assert_eq!(formatcp!("{:?}", r#" \ " ó "#), r#"" \\ \" ó ""#);
 /// ```
+///
+/// For `char` it does these things:
+/// - Prepend and append the single quote character (`'`).
+/// - Uses the same escapes as `&'static str`.
 ///
 /// ### Display
 ///
@@ -226,11 +235,17 @@ macro_rules! __concatcp_inner {
 /// ```rust
 /// use const_format::formatcp;
 ///
-/// const TEXT: &str = r#"hello " \ world"#;
-/// const MSG: &str = formatcp!("{TEXT}____{TEXT:?}");
-///
-/// assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
-///
+/// {
+///     const TEXT: &str = r#"hello " \ world"#;
+///     const MSG: &str = formatcp!("{TEXT}____{TEXT:?}");
+///    
+///     assert_eq!(MSG, r#"hello " \ world____"hello \" \\ world""#);
+/// }
+/// {
+///     const CHARS: &str = formatcp!("{0:?} - {0} - {1} - {1:?}", '"', '👀');
+///    
+///     assert_eq!(CHARS, r#"'\"' - " - 👀 - '👀'"#);
+/// }
 /// ```
 ///
 /// [`format`]: https://doc.rust-lang.org/std/macro.format.html
@@ -290,7 +305,7 @@ macro_rules! formatcp {
 ///
 /// const STRING: &str = "foo bar baz";
 ///
-/// assert_eq!(concatc!(Sliced(STRING, 4..8), Foo), "bar table");
+/// assert_eq!(concatc!(Sliced(STRING, 4..7), ' ', Foo), "bar table");
 ///
 /// struct Foo;
 ///
@@ -389,8 +404,7 @@ macro_rules! __concatc_inner {
             [(); STR_WRITER_NHPMWYD3NJA.error.capacity],
         > as __cf_osRcTFl4A::msg::ErrorAsType>::Type>::NEW;
 
-        const STR_NHPMWYD3NJA: &str =
-            __cf_osRcTFl4A::strwriter_as_str!(&STR_WRITER_NHPMWYD3NJA.writer);
+        const STR_NHPMWYD3NJA: &str = STR_WRITER_NHPMWYD3NJA.writer.unsize().as_str_alt();
 
         STR_NHPMWYD3NJA
     }};
@@ -399,6 +413,9 @@ macro_rules! __concatc_inner {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Formats constants of standard library and/or user-defined types into a `&'static str`.
+///
+/// User-defined types must implement the [`FormatMarker`] trait
+/// (as described in the docs for that trait) to be usable with this macro.
 ///
 /// # Stable equivalent
 ///
@@ -461,12 +478,14 @@ macro_rules! __concatc_inner {
 ///     try_!(fmt.write_u32_debug(P.x));
 ///     try_!(fmt.write_str(" "));
 ///     try_!(fmt.write_u32_debug(P.y));
+///     try_!(fmt.write_char('.'));
 /// });
 ///
-/// assert_eq!(STR, "5 13;0x5 0xD;0b101 0b1101");
+/// assert_eq!(STR, "5 13.;0x5 0xD.;0b101 0b1101.");
 ///
 /// ```
-/// [`Formatter`]: ./fmt/struct.Formatter.html
+/// [`Formatter`]: crate::fmt::Formatter
+/// [`FormatMarker`]: crate::marker_traits::FormatMarker
 ///
 ///
 #[macro_export]

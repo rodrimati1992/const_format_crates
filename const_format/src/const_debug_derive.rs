@@ -7,9 +7,9 @@
 /// 
 /// This derive macro is only available with the "derive" feature,
 /// and the nightly compiler,
-/// because at the time of writing these docs (2020-08-XX) mutable references in const fn
+/// because at the time of writing these docs (2021-08-XX) mutable references in const fn
 /// require the unstable
-/// [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature..
+/// [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
 ///
 /// # Limitations
 ///
@@ -25,7 +25,8 @@
 ///
 /// - Provide a macro that formats the type.
 /// The `call_debug_fmt` macro is a version of this that formats generic std types,
-/// nothing equivalent is provided in this crate for user defined types.
+/// then it can be used to format fields of the type with the 
+/// [`#[cdeb(with_macro = "....")]`](#cdeb_with_macro) attribute.
 ///
 /// These are the things that this macro does to mitigate the limitations:
 ///
@@ -45,7 +46,7 @@
 ///
 /// ### `#[cdeb(impls(....))]`
 ///
-/// Allows users to implement debug formatting for multiple different
+/// Allows users to implement const debug formatting for multiple different
 /// concrete instances of the type.
 /// 
 /// When this attribute is used it disables the default implementation
@@ -85,16 +86,18 @@
 ///
 /// ### `#[cdeb(with = "module::function")]`
 ///
-/// Uses the function at the passed-in path to format the field,
+/// Uses the function at the passed-in path to format the field.
 ///
 /// The function is expected to have this signature:
 /// ```ignored
 /// const fn(&FieldType, &mut const_format::Formatter<'_>) -> Result<(), const_format::Error>
 /// ```
 ///
+/// <span id = "cdeb_with_macro"> </span>
+///
 /// ### `#[cdeb(with_macro = "module::the_macro")]`
 ///
-/// Uses the macro at the passed-in path to format the field,
+/// Uses the macro at the passed-in path to format the field.
 ///
 /// The macro is expected to be callable like a function with this signature: 
 /// ```ignored
@@ -128,16 +131,16 @@
 ///
 /// - `#[cdeb(is_a(array))]`/`#[cdeb(is_a(slice))]`:
 /// Treats the field as being a slice/array,
-/// printing the elements with debug formatting.
+/// printing the elements of std or user-defined type with const debug formatting.
 ///
 /// - `#[cdeb(is_a(Option))]`/`#[cdeb(is_a(option))]`:
 /// Treats the field as being an Option, 
-/// printing the contents with debug formatting.
+/// printing the contents of std or user-defined type with const debug formatting.
 ///
 /// - `#[cdeb(is_a(newtype))]`:
 /// Treats the field as being being a single field tuple struct, 
 /// using the identifier of the field type as the name of the struct,
-/// then printing the single field with debug formatting.
+/// then printing the single field of std or user-defined type with const debug formatting.
 ///
 /// - `#[cdeb(is_a(non_std))]`/`#[cdeb(is_a(not_std))]`:
 /// This acts as an opt-out for the automatic detection of std types,
@@ -195,7 +198,7 @@
 /// 
 /// This example demonstrates the `#[cdeb(impls)]` attribute,
 /// a workaround for deriving this trait for generic types,
-/// specifying a list of impls of types that unconditionally implement debug formatting
+/// specifying a list of impls of types that unconditionally implement const debug formatting
 /// 
 /// ```rust
 /// #![feature(const_mut_refs)]
@@ -216,7 +219,7 @@
 /// assert_eq!(S_PHANTOM, r#"Foo(PhantomData)"#);
 /// 
 /// 
-/// // This type implements debug formatting three times:
+/// // This type implements const debug formatting three times:
 /// // - `Foo<u32>`
 /// // - `Foo<&str>`
 /// // - `Foo<PhantomData<T>>`: with a generic `T`
@@ -246,7 +249,7 @@
 /// };
 /// 
 /// const STRUCT: &Struct = &Struct {
-///     arr: [3, 5, 8, 13],
+///     arr: [Ordering::Less, Ordering::Equal, Ordering::Greater, Ordering::Less],
 ///     opt: Some(Unit),
 ///     wrap: Wrapping(21),
 ///     not_option: Option(PhantomData), // This is not the standard library `Option`
@@ -257,10 +260,10 @@
 /// const EXPECTED: &str = "\
 /// Struct {
 ///     arr: [
-///         3,
-///         5,
-///         8,
-///         13,
+///         Less,
+///         Equal,
+///         Greater,
+///         Less,
 ///     ],
 ///     opt: Some(
 ///         Unit,
@@ -279,21 +282,33 @@
 /// 
 /// #[derive(ConstDebug)]
 /// struct Struct {
+///     // `Ordering` implements const debug formatting,
+///     // but `[Ordering; 4]` does not, so this attribute is required for the 
+///     // derive macro to generate code to format this array field.
 ///     #[cdeb(is_a(array))]
 ///     arr: Array,
 ///     
+///     // Attribute is required to tell the derive macro that this is an
+///     // `Option` wrapping a user-defined type,
+///     // since `Option<Unit>` doesn't implement const debug formatting.
 ///     #[cdeb(is_a(option))]
 ///     opt: Opt,
 ///     
+///     // Attribute is required because `Wrapping<usize>` is a newtype struct
+///     // that doesn't implement const debug formatting,
+///     // so the derive generates code to format it.
 ///     #[cdeb(is_a(newtype))]
 ///     wrap: Wrapping<usize>,
 ///
+///     // Attribute is required for the field to be treated as a user-defined type,
+///     // otherwise it'd be assumed to be `Option` from the standard library.
 ///     #[cdeb(is_a(not_std))]
 ///     not_option: Option<u32>, 
 ///     
 /// }
 /// 
-/// type Array = [u32; 4];
+/// type Array = [Ordering; 4];
+/// 
 /// type Opt = std::option::Option<Unit>;
 /// 
 /// #[derive(ConstDebug)]

@@ -1,38 +1,62 @@
 use super::{bytes_find, AsciiByte};
 
-pub struct ReplaceInputConv<T>(pub T);
+pub struct ReplaceInputConv<T>(pub &'static str, pub T, pub &'static str);
 
 impl ReplaceInputConv<u8> {
     pub const fn conv(self) -> ReplaceInput {
-        ReplaceInput::AsciiByte(AsciiByte::new(self.0))
+        ReplaceInput {
+            str: self.0,
+            pattern: ReplacePattern::AsciiByte(AsciiByte::new(self.1)),
+            replaced_with: self.2,
+        }
     }
 }
 
 impl ReplaceInputConv<&'static str> {
     pub const fn conv(self) -> ReplaceInput {
-        ReplaceInput::Str(self.0)
+        ReplaceInput {
+            str: self.0,
+            pattern: ReplacePattern::Str(self.1),
+            replaced_with: self.2,
+        }
     }
 }
 
-pub enum ReplaceInput {
+pub struct ReplaceInput {
+    str: &'static str,
+    pattern: ReplacePattern,
+    replaced_with: &'static str,
+}
+
+#[derive(Copy, Clone)]
+pub enum ReplacePattern {
     AsciiByte(AsciiByte),
     Str(&'static str),
 }
 
-pub const fn str_replace_length(inp: &str, r: ReplaceInput, replaced_with: &str) -> usize {
+impl ReplaceInput {
+    pub const fn replace_length(&self) -> usize {
+        str_replace_length(self.str, self.pattern, self.replaced_with)
+    }
+    pub const fn replace<const L: usize>(&self) -> [u8; L] {
+        str_replace(self.str, self.pattern, self.replaced_with)
+    }
+}
+
+const fn str_replace_length(inp: &str, r: ReplacePattern, replaced_with: &str) -> usize {
     let inp = inp.as_bytes();
 
     let replaced_len = replaced_with.len();
     let mut out_len = 0;
 
     match r {
-        ReplaceInput::AsciiByte(byte) => {
+        ReplacePattern::AsciiByte(byte) => {
             let byte = byte.get();
             iter_copy_slice! {b in inp =>
                 out_len += if b == byte { replaced_len } else { 1 };
             }
         }
-        ReplaceInput::Str(str) => {
+        ReplacePattern::Str(str) => {
             if str.is_empty() {
                 return inp.len();
             }
@@ -50,11 +74,7 @@ pub const fn str_replace_length(inp: &str, r: ReplaceInput, replaced_with: &str)
     out_len
 }
 
-pub const fn str_replace<const L: usize>(
-    inp: &str,
-    r: ReplaceInput,
-    replaced_with: &str,
-) -> [u8; L] {
+const fn str_replace<const L: usize>(inp: &str, r: ReplacePattern, replaced_with: &str) -> [u8; L] {
     let inp = inp.as_bytes();
 
     let replaced_with_bytes = replaced_with.as_bytes();
@@ -77,7 +97,7 @@ pub const fn str_replace<const L: usize>(
     }
 
     match r {
-        ReplaceInput::AsciiByte(byte) => {
+        ReplacePattern::AsciiByte(byte) => {
             let byte = byte.get();
             iter_copy_slice! {b in inp =>
                 if b == byte {
@@ -87,7 +107,7 @@ pub const fn str_replace<const L: usize>(
                 }
             }
         }
-        ReplaceInput::Str(str) => {
+        ReplacePattern::Str(str) => {
             if str.is_empty() {
                 iter_copy_slice! {b in inp =>
                     write_byte!(b);

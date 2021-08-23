@@ -14,10 +14,10 @@
 //! These macros are the only things available in Rust 1.46.0:
 //!
 //! - [`concatcp`]:
-//! Concatenates `integers`, `bool`, and `&str` constants into a `&'static str` constant.
+//! Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
 //!
 //! - [`formatcp`]:
-//! [`format`]-like formatting which takes `integers`, `bool`, and `&str` constants,
+//! [`format`]-like formatting which takes `integers`, `bool`, `char`, and `&str` constants,
 //! and emits a `&'static str` constant.
 //!
 //! - [`str_get`]:
@@ -30,7 +30,7 @@
 //! Creates a `&'static str` by repeating a `&'static str` constant `times` times.
 //!
 //! - [`str_splice`]:
-//! Replaces a substring in a &'static str constant.
+//! Replaces a substring in a `&'static str` constant.
 //!
 //!
 //! ### Rust 1.51.0
@@ -154,7 +154,7 @@
 #![cfg_attr(not(feature = "assert"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //!
-//! use const_format::{StrWriter, assertc_ne, strwriter_as_str, writec};
+//! use const_format::{StrWriter, assertc_ne, writec};
 //! use const_format::utils::str_eq;
 //!
 //! macro_rules! check_valid_pizza{
@@ -275,8 +275,6 @@
 //!
 //! - "assert": implies the "fmt" feature,
 //! enables the assertion macros.<br>
-//! This is a separate cargo feature because
-//! it uses nightly Rust features that are less stable than the "fmt" feature does.<br>
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -387,6 +385,8 @@ mod equality;
 #[cfg(feature = "assert")]
 #[macro_use]
 pub mod panicking;
+
+mod char_encoding;
 
 mod pargument;
 

@@ -10,6 +10,8 @@ use core::marker::PhantomData;
 
 /// Marker trait for types that implement the const formatting methods.
 ///
+/// Debug formatting can be derived using the [`ConstDebug`] derive macro.
+///
 /// # Implementors
 ///
 /// Types that implement this trait are also expected to implement at least one of
@@ -80,6 +82,9 @@ use core::marker::PhantomData;
 ///
 /// ### Debug formatting
 ///
+/// For examples of using the [`ConstDebug`] derive macro,
+/// [look here](crate::ConstDebug#examples).
+///
 /// These are examples of implementing debug formatting using the `impl_fmt` macro for:
 ///
 /// - [Tupled structs and tuple variants.](../fmt/struct.DebugTuple.html#example)
@@ -88,6 +93,7 @@ use core::marker::PhantomData;
 ///
 ///
 /// [`IsAFormatMarker`]: ./struct.IsAFormatMarker.html
+/// [`ConstDebug`]: crate::ConstDebug
 /// [`impl_fmt`]: ../macro.impl_fmt.html
 ///
 pub trait FormatMarker {
@@ -249,7 +255,7 @@ std_kind_impls! {
     i64, u64,
     i128, u128,
     isize, usize,
-    bool,
+    bool, char,
 }
 
 impl FormatMarker for str {

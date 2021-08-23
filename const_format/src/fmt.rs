@@ -4,7 +4,7 @@
 //! # Features
 //!
 //! This module requires the "fmt" feature to be exported, and the nightly compiler,
-//! because at the time of writing these docs (2020-08-XX) mutable references in const fn
+//! because at the time of writing these docs (2021-08-XX) mutable references in const fn
 //! require the unstable
 //! [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
 //!
@@ -117,7 +117,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{ConstDebug, strwriter_as_str, try_, unwrap, writec};
+//! use const_format::{ConstDebug, try_, unwrap, writec};
 //!
 //! use std::ops::Range;
 //!
@@ -148,8 +148,8 @@
 //! }
 //!
 //! const STRING: &str = {
-//!     const STR: &StrWriter<[u8; CAP]> = &build_string();
-//!     strwriter_as_str!(STR)
+//!     const STR: &StrWriter = &build_string();
+//!     STR.as_str_alt()
 //! };
 //!
 //! // The formatter
@@ -169,7 +169,7 @@
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
-//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, strwriter_as_str, try_};
+//! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, try_};
 //!
 //! use std::cmp::Ordering;
 //!
@@ -228,8 +228,8 @@
 //! }
 //!
 //! const STRING: &str = {
-//!     const S: &StrWriter<[u8; CAP]> = &build_string();
-//!     strwriter_as_str!(S)
+//!     const S: &StrWriter = &build_string();
+//!     S.as_str_alt()
 //! };
 //!
 //! assert_eq!(

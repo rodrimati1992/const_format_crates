@@ -2,7 +2,8 @@
 ///
 /// # Errors
 ///
-/// This macro calls the appropriate formatting methods, and `return`s errors when they happen.
+/// This macro propagates errors from the debug formatting methods that
+/// it calls, by `return`ing them.
 ///
 /// # Macro variants
 ///
@@ -15,8 +16,8 @@
 /// - `newtype`: to format a single field tuple struct (eg: `struct Foo(Bar);`)
 /// which wraps *any debug type.
 ///
-/// - `std`: to format the standard library types where `PWrapper<ThatType>`
-/// has a `const_debug_fmt` method.
+/// - `std`: to format the standard library types, where `PWrapper<ThatType>`
+/// has a `const_debug_fmt` method.<br>
 ///
 /// - `other`: to format non-standard-library types that have a `const_debug_fmt` method.
 ///
@@ -34,7 +35,7 @@
 /// use const_format::{
 ///     for_examples::{Point3, Unit},
 ///     Error, Formatter, FormattingFlags, StrWriter,
-///     call_debug_fmt, strwriter_as_str, try_, unwrap,
+///     call_debug_fmt, try_, unwrap,
 /// };
 ///
 /// use std::num::Wrapping;
@@ -63,7 +64,7 @@
 ///
 /// const TEXT: &str = {
 ///     const PROM: &StrWriter<[u8]> = &unwrap!(make());
-///     strwriter_as_str!(PROM)
+///     PROM.as_str_alt()
 /// };
 ///
 /// const EXPECTED: &str = "\

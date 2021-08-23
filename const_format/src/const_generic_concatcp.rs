@@ -15,6 +15,7 @@ pub const fn __priv_concatenate<const LEN: usize>(input: &[PArgument]) -> LenAnd
         match current.elem {
             PVariant::Str(s) => crate::__write_pvariant!(str, current, s => out),
             PVariant::Int(int) => crate::__write_pvariant!(int, current, int => out),
+            PVariant::Char(c) => crate::__write_pvariant!(char, current, c => out),
         }
     }
 

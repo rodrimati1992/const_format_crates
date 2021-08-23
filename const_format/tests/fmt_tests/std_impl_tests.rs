@@ -71,6 +71,16 @@ fn array_impls() {
             "[\n    \"foo\\n\",\n    \"bar\\t\",\n]"
         )
     }
+    test_fmt! {&[char];
+        (
+            ['f', 'o', '\n', '\t', 'ñ', '个', '\u{100000}'],
+            "['f', 'o', '\\n', '\\t', 'ñ', '个', '\u{100000}']",
+            "[\n    'f',\n    'o',\n    '\\n',\
+              \n    '\\t',\n    'ñ',\n    '个',\
+              \n    '\u{100000}',\n\
+            ]"
+        )
+    }
 }
 
 #[test]
@@ -97,6 +107,11 @@ fn options() {
         (None::<bool>, "None", "None")
         (Some(false), "Some(false)", "Some(\n    false,\n)")
         (Some(true), "Some(true)", "Some(\n    true,\n)")
+    }
+    test_fmt! {Option<char>;
+        (None::<char>, "None", "None")
+        (Some('4'), "Some('4')", "Some(\n    '4',\n)")
+        (Some('\x00'), "Some('\\x00')", "Some(\n    '\\x00',\n)")
     }
     test_fmt! {Option<NonZeroU8>;
         (None::<NonZeroU8>, "None", "None")
@@ -134,5 +149,23 @@ fn miscelaneous_enums() {
         AtomicOrdering;
         (AtomicOrdering::Relaxed, "Relaxed", "Relaxed")
         (AtomicOrdering::Release, "Release", "Release")
+    }
+}
+
+#[test]
+fn chars() {
+    test_fmt! {
+        char;
+        ('\\', r#"'\\'"#, r#"'\\'"#)
+        ('\'', r#"'\''"#, r#"'\''"#)
+        ('\"', r#"'\"'"#, r#"'\"'"#)
+        ('\n', r#"'\n'"#, r#"'\n'"#)
+        ('\r', r#"'\r'"#, r#"'\r'"#)
+        ('\t', r#"'\t'"#, r#"'\t'"#)
+        ('o', r#"'o'"#, r#"'o'"#)
+        ('ñ', r#"'ñ'"#, r#"'ñ'"#)
+        ('个', r#"'个'"#, r#"'个'"#)
+        // non-ascii characters are always written unescaped
+        ('\u{100000}', "'\u{100000}'", "'\u{100000}'")
     }
 }

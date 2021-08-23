@@ -66,7 +66,7 @@ pub(crate) struct ExpandWithFormatter {
 pub(crate) struct LocalVariable {
     // The local variable that the macro will output for this argument,
     // so that it is not evaluated multiple times when it's used multiple times
-    // in the format string..
+    // in the format string.
     pub(crate) ident: Ident,
     /// Using a TokenStream2 because it is validated to be a valid expression in
     /// the macro_rules! macros that call these proc macros.

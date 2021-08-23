@@ -31,6 +31,17 @@ impl PWrapper<bool> {
     }
 }
 
+impl PWrapper<char> {
+    pub const fn const_display_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.write_char(self.0)
+    }
+
+    #[inline(always)]
+    pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        f.write_char_debug(self.0)
+    }
+}
+
 macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
     $(
 
@@ -49,6 +60,7 @@ macro_rules! slice_of_std_impl {($($elem:ty),* $(,)?) => (
 slice_of_std_impl! {
     &str,
     bool,
+    char,
     u8, i8,
     u16, i16,
     u32, i32,
@@ -97,6 +109,7 @@ impl_fmt! {
     impl[] Option<usize>;
     impl[] Option<isize>;
     impl[] Option<bool>;
+    impl[] Option<char>;
     impl['a,] Option<&'a str>;
 
     pub const fn const_debug_fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {

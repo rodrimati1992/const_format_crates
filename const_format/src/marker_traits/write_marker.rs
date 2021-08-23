@@ -1,4 +1,4 @@
-//! Marker trait for types that can be written to..
+//! Marker trait for types that can be written to.
 //!
 //!
 
@@ -90,8 +90,8 @@ pub trait WriteMarker {
     /// Whether this is a StrWriter or not, this can be either of
     /// [`IsAStrWriter`] or [`IsNotAStrWriter`]
     ///
-    /// [`IsAStrWriter`]: ./struct.IsAStrWriter.html
-    /// [`IsNotAStrWriter`]: ./struct.IsNotAStrWriter.html
+    /// [`IsAStrWriter`]: crate::marker_traits::IsAStrWriter
+    /// [`IsNotAStrWriter`]: crate::marker_traits::IsNotAStrWriter
     type Kind;
 
     /// The type after dereferencing,

@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        rust: [stable, beta, nightly, 1.46.0]
+        rust: [stable, beta, nightly, 1.46.0, 1.51.0]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,10 +29,10 @@ jobs:
 
     - uses: actions/checkout@v2
     - name: ci-stable
-      # apparently github hadn't updated stable by 2021-03-27?
-      if: ${{ matrix.rust == 'beta' }}
+      if: ${{ matrix.rust == '1.51.0' }}
       run: |
         cargo update
+
         cd "${{github.workspace}}/const_format/"
         cargo test --features "testing const_generics"
 
@@ -69,10 +69,5 @@ jobs:
 
         cargo clean 
 
-        cargo miri test --features "testing"
-        cargo miri test --features "testing fmt"
-        cargo miri test --features "testing assert"
-        cargo miri test --features "testing derive"
-        cargo miri test --features "testing constant_time_as_str"
-        cargo miri test --features "testing derive constant_time_as_str"
-        cargo miri test --features "testing derive constant_time_as_str assert"
+        cargo miri test --tests --features "testing derive fmt assert"
+        cargo miri test --features "testing derive fmt constant_time_as_str assert"

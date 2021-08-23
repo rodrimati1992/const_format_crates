@@ -38,16 +38,21 @@ const fn inner(
     Ok(str_len.len())
 }
 
-fn test_case(this: &DisplayFoo, writer: &mut StrWriter, flags: FormattingFlags, expected: &str) {
-    writer.clear();
-    let len = inner(this, writer, flags).unwrap();
-
-    assert_eq!(writer.as_str(), expected);
-    assert_eq!(writer.len(), len, "{}", writer.as_str());
-}
-
 #[test]
-fn test_display() {
+fn test_display_foo() {
+    fn test_case(
+        this: &DisplayFoo,
+        writer: &mut StrWriter,
+        flags: FormattingFlags,
+        expected: &str,
+    ) {
+        writer.clear();
+        let len = inner(this, writer, flags).unwrap();
+
+        assert_eq!(writer.as_str(), expected);
+        assert_eq!(writer.len(), len, "{}", writer.as_str());
+    }
+
     let writer: &mut StrWriter = &mut StrWriter::new([0; 1024]);
 
     {
@@ -148,7 +153,7 @@ fn display_fmt_other_types() {
     const fn inner(fmt: &mut Formatter<'_>) -> cfmt_a::Result {
         cfmt_a::writec!(
             fmt,
-            concat!("{},{};", "{},{};{},{};{},{};{},{};",),
+            concat!("{},{};", "{},{};{},{};{},{};{},{};{},{},{},{};",),
             false,
             true,
             unwrap_opt!(NonZeroI8::new(-13)),
@@ -159,6 +164,10 @@ fn display_fmt_other_types() {
             unwrap_opt!(NonZeroU8::new(13)),
             unwrap_opt!(NonZeroUsize::new(3)),
             unwrap_opt!(NonZeroUsize::new(13)),
+            'o',
+            'ñ',
+            '个',
+            '\u{100000}',
         )
     }
 
@@ -177,6 +186,9 @@ fn display_fmt_other_types() {
 
         inner(&mut writer.make_formatter(flag)).unwrap();
 
-        assert_eq!(writer.as_str(), "false,true;-13,21;-13,21;3,13;3,13;");
+        assert_eq!(
+            writer.as_str(),
+            "false,true;-13,21;-13,21;3,13;3,13;o,ñ,个,\u{100000};",
+        );
     }
 }

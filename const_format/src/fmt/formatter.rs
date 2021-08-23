@@ -26,13 +26,11 @@ use core::ops::Range;
 ///     writec!(f, "{} + {} = {}", l, r, l + r)
 /// }
 ///
-/// // This is a const fn because mutable references can't be used in const initializers.
-/// const fn len() -> usize {
+/// const LEN: usize = {
 ///     let mut computer = ComputeStrLength::new();
 ///     unwrap!(write_sum(computer.make_formatter(FormattingFlags::NEW)));
 ///     computer.len()
-/// }
-/// const LEN: usize = len();
+/// };
 ///
 /// // The type annotation coerces a `&mut StrWriter<[u8; LEN]>`
 /// // to a `&mut StrWriter<[u8]>` (the type parameter defaults to `[u8]`)
@@ -212,17 +210,17 @@ enum WriterBackend<'w> {
 /// ```
 ///
 ///
-/// [`DebugStruct`]: ./struct.DebugStruct.html
-/// [`DebugTuple`]: ./struct.DebugTuple.html
-/// [`StrWriter`]: ./struct.StrWriter.html
-/// [`StrWriterMut`]: ./struct.StrWriterMut.html
-/// [`ComputeStrLength`]: ./struct.ComputeStrLength.html
+/// [`DebugStruct`]: crate::fmt::DebugStruct
+/// [`DebugTuple`]: crate::fmt::DebugTuple
+/// [`StrWriter`]: crate::fmt::StrWriter
+/// [`StrWriterMut`]: crate::fmt::StrWriterMut
+/// [`ComputeStrLength`]: crate::fmt::ComputeStrLength
 /// [`from_sw`]: #method.from_sw
 /// [`from_sw_mut`]: #method.from_sw_mut
 /// [`from_custom_cleared`]: #method.from_custom_cleared
 /// [`from_custom`]:  #method.from_custom
-/// [`NumberFormatting`]: ./enum.NumberFormatting.html
-/// [`FormattingFlags`]: ./struct.FormattingFlags.html
+/// [`NumberFormatting`]: crate::fmt::NumberFormatting
+/// [`FormattingFlags`]: crate::fmt::FormattingFlags
 ///
 pub struct Formatter<'w> {
     margin: u16,
@@ -1098,6 +1096,28 @@ delegate_write_methods! {
     fn write_str(string: &str)
     length = string.len();
 
+    /// Writes `character` into this Formatter.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 4]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_char('a');
+    /// let _ = fmt.write_char('b');
+    /// let _ = fmt.write_char('c');
+    ///
+    /// assert_eq!(writer.as_str(), "abc");
+    ///
+    /// ```
+    ///
+    fn write_char(character: char)
+    length = crate::char_encoding::char_display_len(character);
+
     /// Writes `&ascii[range]` into this formatter.
     ///
     /// This is a workaround for being unable to do `&foo[start..end]` at compile time.
@@ -1204,6 +1224,34 @@ delegate_write_methods! {
     ///
     fn write_str_debug(string: &str)
     length = PWrapper(string.as_bytes()).compute_utf8_debug_len();
+
+    /// Writes `character` into this Formatter, with debug formatting.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///
+    /// use const_format::{Formatter, FormattingFlags, StrWriter};
+    ///
+    /// let writer: &mut StrWriter = &mut StrWriter::new([0; 64]);
+    /// let mut fmt = writer.make_formatter(FormattingFlags::NEW);
+    ///
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('\\');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('A');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('0');
+    /// let _ = fmt.write_str(" ");
+    /// let _ = fmt.write_char_debug('\'');
+    /// let _ = fmt.write_str(" ");
+    ///
+    /// assert_eq!(writer.as_str(), r#" '\\' 'A' '0' '\'' "#);
+    ///
+    /// ```
+    ///
+    fn write_char_debug(character: char)
+    length = crate::char_encoding::char_debug_len(character);
 
     /// Writes `&ascii[range]` into this formatter, with debug formatting.
     ///

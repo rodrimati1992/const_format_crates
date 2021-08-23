@@ -2,6 +2,22 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.19
+
+Added `char` support to all formatting macros.
+
+Added `char`, `&[char]`, and `Option<char>` impls of FormatMarker trait, with debug formatting methods.
+
+Added `Formatter::{write_char, write_char_debug}` methods.
+
+Added `StrWriterMut::{as_str_alt, write_char, write_char_debug}` methods.
+
+Added `StrWriter::{as_str_alt, unsize}` methods.
+
+Deprecated `strwriter_as_str` macro, superceded by `StrWriter::as_str_alt`.
+
+Bumped the minimum required nightly version to 2021-07-05 due to use of const-stabilized `core::str::from_utf8_unchecked`.
+
 ### 0.2.18
 
 Fixed potential soundness bug where unions used to do pointer casts were not `#[repr(C)]`

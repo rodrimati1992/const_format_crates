@@ -23,10 +23,9 @@ mod tests;
 ///
 /// ### Excluded std types
 ///
-/// Note that this type does not implement the formatting methods for all std types,
-/// it can't implement them for std types which wrap non-std types,
-/// and for Options/arrays/slices it only does it with
-/// integer, and `&str` type parameters.
+/// Note that this type does not implement the formatting methods
+/// for std types which wrap non-std types,
+/// only for a selection of wrapped std types.
 ///
 /// You can use the [`call_debug_fmt`] macro to format arrays/slices/Options of
 /// any type that can be const debug formatted.
