@@ -152,7 +152,7 @@ macro_rules! unwrap_or_else {
 /// For std types, it wraps them in a [`PWrapper`], which implements the
 /// `const_*_fmt` methods.
 ///
-/// For std types, it just returns back the same reference.
+/// For non-std types, it just returns back the same reference.
 ///
 /// # Example
 ///
