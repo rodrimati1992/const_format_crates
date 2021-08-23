@@ -24,14 +24,14 @@ use core::{marker::PhantomData, ops::Range};
 ///
 /// # Relation to `Formatter`
 ///
-/// This is the type that Formatter uses to write formatted text to a slice,
+/// This is the type that [`Formatter`] uses to write formatted text to a slice,
 /// sharing all the `write_*` methods,
 /// the difference is that this doesn't store `FormattingFlags`,
 /// so you must pass them to the `write_*_debug` methods.
 ///
 /// # Errors
 ///
-/// Every single `write_*` method returns an `Error::NotEnoughSpace` if
+/// Every single `write_*` method returns an [`Error::NotEnoughSpace`] if
 /// there is not enough space to write the argument, leaving the string itself unmodified.
 ///
 /// # Encoding type parameter
@@ -46,9 +46,11 @@ use core::{marker::PhantomData, ops::Range};
 /// using a `StrWriterMut`.
 ///
 /// ```rust
+/// #![feature(const_mut_refs)]
+///
 /// use const_format::{Error, StrWriterMut, try_, writec};
 ///
-/// fn format_number(number: u32,slice: &mut [u8]) -> Result<usize, Error> {
+/// const fn format_number(number: u32,slice: &mut [u8]) -> Result<usize, Error> {
 ///     let mut len = 0;
 ///     let mut writer = StrWriterMut::from_custom_cleared(slice, &mut len);
 ///     
@@ -69,8 +71,10 @@ use core::{marker::PhantomData, ops::Range};
 /// [`from_custom_cleared`]: #method.from_custom_cleared
 /// [`from_custom`]: #method.from_custom
 ///
-/// [`Utf8Encoding`]: ./enum.Utf8Encoding.html
-/// [`NoEncoding`]: ./enum.NoEncoding.html
+/// [`Utf8Encoding`]: crate::fmt::Utf8Encoding
+/// [`NoEncoding`]: crate::fmt::NoEncoding
+/// [`Formatter`]: crate::fmt::Formatter
+/// [`Error::NotEnoughSpace`]: crate::fmt::Error::NotEnoughSpace
 ///
 pub struct StrWriterMut<'w, E = Utf8Encoding> {
     pub(super) len: &'w mut usize,
@@ -159,7 +163,12 @@ impl<'w> StrWriterMut<'w, NoEncoding> {
 }
 
 impl<'w> StrWriterMut<'w, Utf8Encoding> {
-    /// Construct a `StrWriterMut` from length and byte slice mutable references.
+    /// Construct a `StrWriterMut` from length and byte slice mutable references,
+    /// truncating the length to `0`.
+    ///
+    /// Using this instead of [`from_custom`](StrWriterMut::from_custom) allows
+    /// safely casting this to a `&str` with [`as_str_alt`]/[`as_str`]
+    ///
     ///
     /// # Example
     ///
@@ -179,6 +188,10 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
     ///
     /// # Ok::<(), const_format::Error>(())
     /// ```
+    ///
+    /// [`as_str_alt`]: Self::as_str_alt
+    /// [`as_str`]: Self::as_str
+    ///
     pub const fn from_custom_cleared(buffer: &'w mut [u8], length: &'w mut usize) -> Self {
         *length = 0;
 
@@ -1359,13 +1372,17 @@ write_integer_fn! {
         /// # Example
         ///
         /// ```rust
+        /// #![feature(const_mut_refs)]
         ///
         /// use const_format::{FormattingFlags, StrWriterMut};
         ///
-        /// fn debug_fmt<'a>(writer: &'a mut StrWriterMut<'_>, flag: FormattingFlags) -> &'a str {
+        /// const fn debug_fmt<'a>(
+        ///     writer: &'a mut StrWriterMut<'_>,
+        ///     flag: FormattingFlags
+        /// ) -> &'a str {
         ///     writer.clear();
         ///     let _ = writer.write_u8_debug(63, flag);
-        ///     writer.as_str()
+        ///     writer.as_str_alt()
         /// }
         ///
         /// let reg_flag = FormattingFlags::NEW.set_alternate(false);

@@ -11,7 +11,7 @@ pub enum Error {
     NotEnoughSpace,
     /// For compatibility with [`NotAsciiError`](../wrapper_types/struct.NotAsciiError.html)
     NotAscii,
-    /// Attempted to index a string arguent by an range where the one of the bounds
+    /// Attempted to index a string arguent by an range where one of the bounds
     /// was not on a char boundary.
     NotOnCharBoundary,
 }

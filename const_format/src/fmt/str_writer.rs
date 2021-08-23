@@ -6,25 +6,37 @@ use core::marker::PhantomData;
 
 /// A wrapper over an array usable to build up a `&str` at compile-time.
 ///
-/// # Construction
+/// # Calling methods
 ///
-/// This type is constructed with an array,
-/// and then a reference to it must be coerced to point to `StrWriter<[u8]>` to call
-/// [certain methods](#certain-methods)
+/// [Certain `StrWriter` methods](#certain-methods) require
+/// a `StrWriter<[u8]>` to be called,
+/// and since constructing `StrWriter` from an array produces a `StrWriter<[u8; N]>`,
+/// it must be cast to call them.
 ///
-/// Example of coercing it:
+/// `StrWriter`'s type parameter defaults to `[u8]`,
+/// so every instance of a `StrWriter` as a *type* is a `StrWriter<[u8]>`.
+///
+/// Example of casting it:
 ///
 /// ```rust
 /// # use const_format::StrWriter;
 /// let writer: &mut StrWriter<[u8; 8]> = &mut StrWriter::new([0; 8]);
 ///
-/// // Coerces the `&mut StrWriter<[u8; 8]>` to `&mut StrWriter<[u8]>`
-/// let writer: &mut StrWriter = writer;
+/// // Casts `&StrWriter<[u8; 8]>` to `&StrWriter`
+/// writer.unsize();
+///
+/// // Casts `&StrWriter<[u8; 8]>` to `&StrWriter`
+/// writer.r();
+///
+/// // Coerces the `&mut StrWriter<[u8; 8]>` to `&mut StrWriter`
+/// let _writer: &mut StrWriter = writer;
+///
+/// // Casts `&mut StrWriter<[u8; 8]>` to `StrWriterMut<'_>`,
+/// // which defines methods for mutating `StrWriter`
+/// let _writer = writer.as_mut();
+///
 /// # drop(writer);
 /// ```
-///
-/// `StrWriter`'s type parameter defaults to `[u8]`,
-/// so every instance of a `StrWriter` as a concrete type is a `StrWriter<[u8]>`.
 ///
 /// # StrWriterMut
 ///
@@ -179,9 +191,9 @@ impl<A: ?Sized> StrWriter<A> {
 
 /// <span id="certain-methods"></span>
 impl StrWriter {
-    /// Gets how the maximum length for a string written into this.
+    /// Gets the maximum length for a string written into this.
     ///
-    /// Trying to write more that the capacity causes is an error,
+    /// Trying to write more that the capacity causes an error,
     /// returning back an `Err(Error::NotEnoughSpace)`
     ///
     /// # Example
@@ -388,10 +400,6 @@ impl StrWriter {
         /// but takes linear time to run when the "constant_time_as_str" feature
         /// is disabled.
         ///
-        /// ### Examples
-        ///
-        /// You can look at the [type-level docs](#examples)
-        /// for examples of using this method.
         #[inline(always)]
         pub fn as_str(&self) -> &str {
             // All the methods that modify the buffer must ensure utf8 validity,

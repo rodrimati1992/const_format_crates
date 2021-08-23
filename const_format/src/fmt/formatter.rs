@@ -26,13 +26,11 @@ use core::ops::Range;
 ///     writec!(f, "{} + {} = {}", l, r, l + r)
 /// }
 ///
-/// // This is a const fn because mutable references can't be used in const initializers.
-/// const fn len() -> usize {
+/// const LEN: usize = {
 ///     let mut computer = ComputeStrLength::new();
 ///     unwrap!(write_sum(computer.make_formatter(FormattingFlags::NEW)));
 ///     computer.len()
-/// }
-/// const LEN: usize = len();
+/// };
 ///
 /// // The type annotation coerces a `&mut StrWriter<[u8; LEN]>`
 /// // to a `&mut StrWriter<[u8]>` (the type parameter defaults to `[u8]`)
