@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.19"
+version = "0.2.20"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -14,7 +14,7 @@ include = [
     "Cargo.toml", 
     "src/**/*.rs", 
     "../README.md",
-    "../LICENSE-ZLIB.md", 
+    "LICENSE-ZLIB.md", 
 ]
 
 [badges]
@@ -37,7 +37,7 @@ docsrs = []
 all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "assert", "docsrs"]
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.14"
+version = "=0.2.20"
 path = "../const_format_proc_macros"
 
 [dev-dependencies]
