@@ -261,7 +261,7 @@ macro_rules! formatcp {
 
         $crate::pmr::__formatcp_impl!(
             ($format_string)
-            $(, $(($expr),)+)?
+            $(, $($expr,)+)?
         )
     });
 }
@@ -497,7 +497,7 @@ macro_rules! formatc {
 
         $crate::pmr::__formatc_impl!{
             ($format_string)
-            $(, $(($expr),)+)?
+            $(, $($expr,)+)?
         }
     });
 }
@@ -696,7 +696,7 @@ macro_rules! writec {
         $crate::pmr::__writec_impl!{
             ($writer)
             ($format_string)
-            $(, $(($expr),)+)?
+            $(, $($expr,)+)?
         }
     });
 }

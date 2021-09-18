@@ -138,38 +138,61 @@ with_shared_docs! {
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc {
-        ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
-            const _: () = {
-                use $crate::__cf_osRcTFl4A;
-
-                const PANIC_IF_TRUE_NHPMWYD3NJA: bool = !($cond);
-
-                const MSG_NHPMWYD3NJA: &str = $crate::pmr::__formatc_if_impl!(
-                    (PANIC_IF_TRUE_NHPMWYD3NJA),
-                    (concat!(
-                        "{SEP_NHPMWYD3NJA}\
-                        module_path: {MODULE_NHPMWYD3NJA}\n\
-                        line: {LINE_NHPMWYD3NJA}\n\n\
-                        assertion failed: {PANIC_IF_TRUE_NHPMWYD3NJA}\n\n",
-                        $($fmt_literal,)?
-                        "{SEP_NHPMWYD3NJA}",
-                    )),
-                    $($(($fmt_arg),)*)?
-                    (PANIC_IF_TRUE_NHPMWYD3NJA = stringify!($cond)),
-                    (MODULE_NHPMWYD3NJA = module_path!()),
-                    (LINE_NHPMWYD3NJA = line!()),
-                    (SEP_NHPMWYD3NJA = "\
-                        \n\
-                        ----------------------------------------\
-                        ----------------------------------------\
-                        \n\
-                    "),
-                );
-
-                $crate::assert_with_str!(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA);
-            };
+        ($($parameters:tt)*) => (
+            $crate::__assertc_inner!{
+                ($($parameters)*)
+                ($($parameters)*)
+            }
         );
     }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertc_inner {
+    (
+        ($($parameters:tt)*)
+        ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?)
+    ) => {
+        const _: () = {
+            use $crate::__cf_osRcTFl4A;
+
+            $crate::__assertc_common!{
+                ($($parameters)*)
+                ($cond)
+                (
+                    concat!(
+                        "assertion failed. ",
+                        $($fmt_literal)?
+                    ),
+                    $($($fmt_arg),*)?
+                )
+            }
+        };
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertc_common {
+    (
+        ($($span:tt)*)
+        ($cond:expr)
+        ($($fmt_literal:expr $(,$fmt_arg:expr)*)?)
+    ) => (
+        const PANIC_IF_TRUE_NHPMWYD3NJA: bool = !($cond);
+
+        const MSG_NHPMWYD3NJA: &str = $crate::pmr::__formatc_if_impl!(
+            (PANIC_IF_TRUE_NHPMWYD3NJA),
+            ($($fmt_literal,)?),
+            $($($fmt_arg,)*)?
+        );
+
+        __cf_osRcTFl4A::pmr::respan_to!{
+            ($($span)*)
+            __cf_osRcTFl4A::panicking::assert_(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA)
+        }
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -358,12 +381,12 @@ assert_eq_docs! {
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_eq {
-        ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
+        ($($parameters:tt)*) => (
             $crate::__assertc_equality_inner!{
-                $left,
-                $right,
+                ($($parameters)*)
+                ($($parameters)*)
                 ( == )
-                $(, $fmt_literal $(,$fmt_arg)* )?
+                ("==")
             }
         );
     }
@@ -533,12 +556,12 @@ assert_eq_docs! {
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_ne {
-        ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
+        ($($parameters:tt)*) => (
             $crate::__assertc_equality_inner!{
-                $left,
-                $right,
+                ($($parameters)*)
+                ($($parameters)*)
                 ( != )
-                $(, $fmt_literal $(,$fmt_arg)* )?
+                ("!=")
             }
         );
     }
@@ -547,7 +570,16 @@ assert_eq_docs! {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __assertc_equality_inner {
-    ($left:expr, $right:expr, ($($op:tt)*) $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? )=>{
+    (
+        ($($parameters:tt)*)
+        (
+            $left:expr,
+            $right:expr
+            $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?
+        )
+        ($($op:tt)*)
+        ($op_str:expr)
+    )=>{
         const _: () = {
             use $crate::pmr::respan_to as __cf_respan_to;
             const LEFT: bool = {
@@ -560,34 +592,23 @@ macro_rules! __assertc_equality_inner {
                 }
             };
             const RIGHT: bool = true;
-            $crate::assertc!{
-                LEFT $($op)* RIGHT,
-                concat!(
-                    "{fmt_NHPMWYD3NJA}",
-                    $("\n\n", $fmt_literal)?
-                ),
-                $($($fmt_arg,)*)?
-                fmt_NHPMWYD3NJA = |__cf_fmt| {
-                    use __cf_osRcTFl4A::try_ as __cf_try;
-                    use __cf_osRcTFl4A::coerce_to_fmt as __cf_coerce_to_fmt;
 
-                    #[allow(irrefutable_let_patterns)]
-                    if let __cf_respan_to!(($left) (ref __cf_left, ref __cf_right, __cf_fmt)) =
-                        ($left, $right, __cf_fmt)
-                    {__cf_respan_to!{
-                        ($left)
-                        let __cf_fmt = &mut __cf_fmt
-                            .make_formatter(__cf_osRcTFl4A::FormattingFlags::__A_REG);
-
-                        __cf_try!(__cf_fmt.write_str(" left: `"));
-                        __cf_try!(__cf_coerce_to_fmt!(__cf_left).const_debug_fmt(__cf_fmt));
-                        __cf_try!(__cf_fmt.write_str("`"));
-
-                        __cf_try!(__cf_fmt.write_str("\nright: `"));
-                        __cf_try!(__cf_coerce_to_fmt!(__cf_right).const_debug_fmt(__cf_fmt));
-                        __cf_try!(__cf_fmt.write_str("`"));
-                    }}
-                },
+            $crate::__assertc_common!{
+                ($($parameters)*)
+                (LEFT $($op)* RIGHT)
+                (
+                    concat!(
+                        "assertion failed: `(left ",
+                        $op_str,
+                        " right)`\n",
+                        " left: `{left_NHPMWYD3NJA:?}`\n\
+                         right: `{right_NHPMWYD3NJA:?}`",
+                        $("\n", $fmt_literal, "\n")?
+                    ),
+                    $($($fmt_arg,)*)?
+                    left_NHPMWYD3NJA = $left,
+                    right_NHPMWYD3NJA = $right
+                )
             }
         };
     }
