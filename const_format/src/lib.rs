@@ -70,9 +70,23 @@
 //! [`ConstDebug`] derives the [`FormatMarker`] trait,
 //! and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 //!
-//! The "assert" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+//! The "assertc" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
 //! and the "fmt" feature.<br>
 //! These macros are like the standard library assert macros, but evaluated at compile-time.
+//!
+//! ### Rust Stable *Soon*
+//!
+//! The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`],
+//! and [`assertcp_ne`] macros.
+//! These macros are like the standard library assert macros,
+//! but evaluated at compile-time,
+//! with the limitation that they can only have primitive types as arguments
+//! (just like [`concatcp`] and [`formatcp`]).
+//!
+//! The `assertcp*` macros use the `const_panic` feature for panicking at compile-time,
+//! which as of writing these docs (2021-09-19) is still unstable,
+//! with an issue for stabilizing it.
+//! Soon after it's stabilized, this crate will be updated to stop using the nightly feature.
 //!
 //! # Examples
 //!
@@ -147,15 +161,14 @@
 //! This example demonstrates how you can use the [`assertc_ne`] macro to
 //! do compile-time inequality assertions with formatted error messages.
 //!
-//! This requires the "assert" feature, because as of writing these docs (2021-09-18),
+//! This requires the "assertc" feature, because as of writing these docs (2021-09-18),
 //! panicking at compile-time requires a nightly feature.
 //!
 #![cfg_attr(feature = "assertc", doc = "```compile_fail")]
 #![cfg_attr(not(feature = "assertc"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //!
-//! use const_format::{StrWriter, assertc_ne, writec};
-//! use const_format::utils::str_eq;
+//! use const_format::assertc_ne;
 //!
 //! macro_rules! check_valid_pizza{
 //!     ($user:expr, $topping:expr) => {
@@ -253,11 +266,11 @@
 //!
 //! - "assertc": implies the "fmt" feature,
 //! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
-//! This feature was previously named "assert",
+//! This feature was previously named "assertc",
 //! but it was renamed to avoid confusion with the "assertcp" feature.
 //!
 //! - "assertcp":
-//! Enables the `assertcp`, `assertcp_eq`, and `assertcp_ne` assertion macros.
+//! Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -288,6 +301,12 @@
 //! [`assertc_eq`]: ./macro.assertc_eq.html
 //!
 //! [`assertc_ne`]: ./macro.assertc_ne.html
+//!
+//! [`assertcp`]: ./macro.assertcp.html
+//!
+//! [`assertcp_eq`]: ./macro.assertcp_eq.html
+//!
+//! [`assertcp_ne`]: ./macro.assertcp_ne.html
 //!
 //! [`concatcp`]: ./macro.concatcp.html
 //!
