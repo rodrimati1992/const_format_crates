@@ -147,7 +147,7 @@
 //! This example demonstrates how you can use the [`assertc_ne`] macro to
 //! do compile-time inequality assertions with formatted error messages.
 //!
-//! This requires the "assert" feature,because as of writing these docs (2020-09-XX),
+//! This requires the "assert" feature, because as of writing these docs (2021-09-18),
 //! panicking at compile-time requires a nightly feature.
 //!
 #![cfg_attr(feature = "assert", doc = "```compile_fail")]
@@ -175,41 +175,19 @@
 //! # fn main(){}
 //! ```
 //!
-//! This is the compiler output,
-//! the first compilation error is there to have an indicator of what assertion failed,
-//! and the second is the assertion failure:
+//! This is the compiler output:
 //!
 //! ```text
-//! error: any use of this value will cause an error
-//!   --> src/lib.rs:140:1
+//! error[E0080]: evaluation of constant value failed
+//!   --> src/lib.rs:171:27
 //!    |
-//! 22 | check_valid_pizza!("Bob", "pineapple");
-//!    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-//!    |
-//!    = note: `#[deny(const_err)]` on by default
-//!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-//!
-//! error[E0080]: could not evaluate constant
-//!   --> /const_format/src/panicking.rs:32:5
-//!    |
-//! 32 |     .
-//!    |     ^ the evaluated program panicked at '
-//! --------------------------------------------------------------------------------
-//! module_path: rust_out
-//! line: 22
-//!
-//! assertion failed: LEFT != RIGHT
-//!
-//!  left: "pineapple"
-//! right: "pineapple"
-//!
+//! 21 | check_valid_pizza!("Bob", "pineapple");
+//!    |                           ^^^^^^^^^^^ the evaluated program panicked at '
+//! assertion failed: `(left != right)`
+//!  left: `"pineapple"`
+//! right: `"pineapple"`
 //! You can't put pineapple on pizza, Bob
-//! --------------------------------------------------------------------------------
-//! ', /const_format/src/panicking.rs:31:1
-//!    |
-//!    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-//!
-//! error: aborting due to 2 previous errors
+//! ', src/lib.rs:21:27
 //!
 //! ```
 //!

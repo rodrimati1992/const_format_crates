@@ -22,15 +22,6 @@ macro_rules! with_shared_docs {(
     /// [`formatc`] macro.
     ///
     $(#[$after_syntax])*
-    /// # Error message
-    ///
-    /// `const_format` uses some workarounds to avoid requiring users to enable the
-    /// `#![feature(const_panic)]` feature themselves,
-    /// as a result, the error message isn't as good as it could possibly be.
-    ///
-    /// Compile-time errors with this macro include the formatted error message,
-    /// and the module path + line where this macro was invoked.
-    ///
     $(#[$after_error_message])*
     /// # Limitations
     ///
@@ -85,7 +76,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-XX.
+    /// and how the compiler error looks like as of 2021-09-18.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -97,79 +88,84 @@ with_shared_docs! {
     /// const L: u64 = 2;
     /// const R: u64 = 2;
     ///
-    /// assertc!(L + R == 5, "{} plus {} isn't 5 buddy", L,  R);
+    /// assertc!(L + R == 5, "{} plus {} isn't 5, buddy", L,  R);
     ///
     /// # fn main(){}
     /// ```
     ///
-    /// This is the compiler output,
-    /// the first compilation error is there to have an indicator of what assertion failed,
-    /// and the second is the assertion failure.
+    /// This is the compiler output:
     ///
     /// ```text
-    /// error: any use of this value will cause an error
-    ///   --> src/macros/assertions.rs:59:1
+    /// error[E0080]: evaluation of constant value failed
+    ///   --> src/macros/assertions.rs:132:10
     ///    |
-    /// 13 | assertc!(L + R == 5, "{} plus {} isn't 5 buddy", L,  R);
-    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-    ///    |
-    ///    = note: `#[deny(const_err)]` on by default
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:32:5
-    ///    |
-    /// 32 |     .
-    ///    |     ^ the evaluated program panicked at '
-    /// --------------------------------------------------------------------------------
-    /// module_path: rust_out
-    /// line: 13
-    ///
-    /// assertion failed: L + R == 5
-    ///
-    /// 2 plus 2 isn't 5 buddy
-    /// --------------------------------------------------------------------------------
-    /// ', const_format/src/panicking.rs:31:1
-    ///    |
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    /// 12 | assertc!(L + R == 5, "{} plus {} isn't 5, buddy", L,  R);
+    ///    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed.
+    /// 2 plus 2 isn't 5, buddy
+    /// ', src/macros/assertions.rs:12:10
     ///
     /// ```
     ///
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc {
-        ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
-            const _: () = {
-                use $crate::__cf_osRcTFl4A;
-
-                const PANIC_IF_TRUE_NHPMWYD3NJA: bool = !($cond);
-
-                const MSG_NHPMWYD3NJA: &str = $crate::pmr::__formatc_if_impl!(
-                    (PANIC_IF_TRUE_NHPMWYD3NJA),
-                    (concat!(
-                        "{SEP_NHPMWYD3NJA}\
-                        module_path: {MODULE_NHPMWYD3NJA}\n\
-                        line: {LINE_NHPMWYD3NJA}\n\n\
-                        assertion failed: {PANIC_IF_TRUE_NHPMWYD3NJA}\n\n",
-                        $($fmt_literal,)?
-                        "{SEP_NHPMWYD3NJA}",
-                    )),
-                    $($(($fmt_arg),)*)?
-                    (PANIC_IF_TRUE_NHPMWYD3NJA = stringify!($cond)),
-                    (MODULE_NHPMWYD3NJA = module_path!()),
-                    (LINE_NHPMWYD3NJA = line!()),
-                    (SEP_NHPMWYD3NJA = "\
-                        \n\
-                        ----------------------------------------\
-                        ----------------------------------------\
-                        \n\
-                    "),
-                );
-
-                $crate::assert_with_str!(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA);
-            };
+        ($($parameters:tt)*) => (
+            $crate::__assertc_inner!{
+                ($($parameters)*)
+                ($($parameters)*)
+            }
         );
     }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertc_inner {
+    (
+        ($($parameters:tt)*)
+        ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?)
+    ) => {
+        const _: () = {
+            use $crate::__cf_osRcTFl4A;
+
+            $crate::__assertc_common!{
+                ($($parameters)*)
+                ($cond)
+                (
+                    concat!(
+                        "\nassertion failed.\n",
+                        $($fmt_literal,)?
+                        "\n",
+                    )
+                    $($(,$fmt_arg)*)?
+                )
+            }
+        };
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertc_common {
+    (
+        ($($span:tt)*)
+        ($cond:expr)
+        ($($fmt_literal:expr $(,$fmt_arg:expr)*)?)
+    ) => (
+        const PANIC_IF_TRUE_NHPMWYD3NJA: bool = !($cond);
+
+        const MSG_NHPMWYD3NJA: &str = $crate::pmr::__formatc_if_impl!(
+            (PANIC_IF_TRUE_NHPMWYD3NJA),
+            ($($fmt_literal,)?),
+            $($($fmt_arg,)*)?
+        );
+
+        __cf_osRcTFl4A::pmr::respan_to!{
+            ($($span)*)
+            __cf_osRcTFl4A::panicking::assert_(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA)
+        }
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +226,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-XX.
+    /// and how the compiler error looks like as of 2021-09-18.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -244,39 +240,17 @@ assert_eq_docs! {
     /// # fn main(){}
     /// ```
     ///
-    /// This is the compiler output,
-    /// the first compilation error is there to have an indicator of what assertion failed,
-    /// and the second is the assertion failure.
+    /// This is the compiler output:
     ///
     /// ```text
-    /// error: any use of this value will cause an error
-    ///  --> src/macros/assertions.rs:256:1
+    /// error[E0080]: evaluation of constant value failed
+    ///  --> src/macros/assertions.rs:296:13
     ///   |
     /// 9 | assertc_eq!(size_of::<u32>(), size_of::<u8>());
-    ///   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-    ///   |
-    ///   = note: `#[deny(const_err)]` on by default
-    ///   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:32:5
-    ///    |
-    /// 32 |     .
-    ///    |     ^ the evaluated program panicked at '
-    /// --------------------------------------------------------------------------------
-    /// module_path: rust_out
-    /// line: 9
-    ///
-    /// assertion failed: LEFT == RIGHT
-    ///
+    ///   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left == right)`
     ///  left: `4`
-    /// right: `1`
-    /// --------------------------------------------------------------------------------
-    /// ', /const_format/src/panicking.rs:31:1
-    ///    |
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error: aborting due to 2 previous errors
+    /// right: `1`', src/macros/assertions.rs:9:13
     ///
     /// ```
     ///
@@ -316,26 +290,12 @@ assert_eq_docs! {
     /// This is the compiler output:
     ///
     /// ```text
-    /// error: any use of this value will cause an error
-    ///   --> src/macros/assertions.rs:343:1
+    /// error[E0080]: evaluation of constant value failed
+    ///   --> src/macros/assertions.rs:331:14
     ///    |
-    /// 12 | assertc_eq!(POINT, OTHER_POINT);
-    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-    ///    |
-    ///    = note: `#[deny(const_err)]` on by default
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:32:5
-    ///    |
-    /// 32 |     .
-    ///    |     ^ the evaluated program panicked at '
-    /// --------------------------------------------------------------------------------
-    /// module_path: rust_out
-    /// line: 12
-    ///
-    /// assertion failed: LEFT == RIGHT
-    ///
+    /// 12 |  assertc_eq!(POINT, OTHER_POINT);
+    ///    |              ^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left == right)`
     ///  left: `Point {
     ///     x: 5,
     ///     y: 8,
@@ -345,25 +305,21 @@ assert_eq_docs! {
     ///     x: 21,
     ///     y: 34,
     ///     z: 55,
-    /// }`
-    /// --------------------------------------------------------------------------------
-    /// ', /const_format/src/panicking.rs:32:5
-    ///    |
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    /// }`', src/macros/assertions.rs:12:14
     ///
-    /// error: aborting due to 2 previous errors
+    /// error: aborting due to previous error
     ///
     /// ```
     ///
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_eq {
-        ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
+        ($($parameters:tt)*) => (
             $crate::__assertc_equality_inner!{
-                $left,
-                $right,
+                ($($parameters)*)
+                ($($parameters)*)
                 ( == )
-                $(, $fmt_literal $(,$fmt_arg)* )?
+                ("==")
             }
         );
     }
@@ -397,7 +353,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2020-09-XX.
+    /// and how the compiler error looks like as of 2021-09-18.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -413,39 +369,17 @@ assert_eq_docs! {
     /// # fn main(){}
     /// ```
     ///
-    /// This is the compiler output,
-    /// the first compilation error is there to have an indicator of what assertion failed,
-    /// and the second is the assertion failure:
+    /// This is the compiler output:
     ///
     /// ```text
-    /// error: any use of this value will cause an error
-    ///   --> src/macros/assertions.rs:411:1
+    /// error[E0080]: evaluation of constant value failed
+    ///   --> src/macros/assertions.rs:465:13
     ///    |
     /// 11 | assertc_ne!(size_of::<u32>(), size_of::<Foo>());
-    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-    ///    |
-    ///    = note: `#[deny(const_err)]` on by default
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:32:5
-    ///    |
-    /// 32 |     .
-    ///    |     ^ the evaluated program panicked at '
-    /// --------------------------------------------------------------------------------
-    /// module_path: rust_out
-    /// line: 11
-    ///
-    /// assertion failed: LEFT != RIGHT
-    ///
+    ///    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left != right)`
     ///  left: `4`
-    /// right: `4`
-    /// --------------------------------------------------------------------------------
-    /// ', /const_format/src/panicking.rs:31:1
-    ///    |
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error: aborting due to 2 previous errors
+    /// right: `4`', src/macros/assertions.rs:11:13
     ///
     /// ```
     ///
@@ -484,26 +418,12 @@ assert_eq_docs! {
     /// This is the compiler output:
     ///
     /// ```text
-    /// error: any use of this value will cause an error
-    ///   --> src/macros/assertions.rs:522:1
+    /// error[E0080]: evaluation of constant value failed
+    ///   --> src/macros/assertions.rs:451:14
     ///    |
-    /// 11 | assertc_ne!(POINT, POINT);
-    ///    | ^^^^^^^^^^^^^^^^^^^^^^^^^^ exceeded interpreter step limit (see `#[const_eval_limit]`)
-    ///    |
-    ///    = note: `#[deny(const_err)]` on by default
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-    ///
-    /// error[E0080]: could not evaluate constant
-    ///   --> /const_format/src/panicking.rs:32:5
-    ///    |
-    /// 32 |     .
-    ///    |     ^ the evaluated program panicked at '
-    /// --------------------------------------------------------------------------------
-    /// module_path: rust_out
-    /// line: 11
-    ///
-    /// assertion failed: LEFT != RIGHT
-    ///
+    /// 11 |  assertc_ne!(POINT, POINT);
+    ///    |              ^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left != right)`
     ///  left: `Point {
     ///     x: 5,
     ///     y: 8,
@@ -513,32 +433,21 @@ assert_eq_docs! {
     ///     x: 5,
     ///     y: 8,
     ///     z: 13,
-    /// }`
-    /// --------------------------------------------------------------------------------
-    /// ', /const_format/src/panicking.rs:32:5
-    ///    |
-    ///    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+    /// }`', src/macros/assertions.rs:11:14
     ///
-    /// error: aborting due to 2 previous errors
-    ///
-    /// For more information about this error, try `rustc --explain E0080`.
-    /// Couldn't compile the test.
-    ///
-    /// failures:
-    ///     src/macros/assertions.rs - assertc_ne (line 514)
-    ///
+    /// error: aborting due to previous error
     ///
     /// ```
     ///
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
     #[macro_export]
     macro_rules! assertc_ne {
-        ($left:expr, $right:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? ) => (
+        ($($parameters:tt)*) => (
             $crate::__assertc_equality_inner!{
-                $left,
-                $right,
+                ($($parameters)*)
+                ($($parameters)*)
                 ( != )
-                $(, $fmt_literal $(,$fmt_arg)* )?
+                ("!=")
             }
         );
     }
@@ -547,9 +456,19 @@ assert_eq_docs! {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __assertc_equality_inner {
-    ($left:expr, $right:expr, ($($op:tt)*) $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)? )=>{
+    (
+        ($($parameters:tt)*)
+        (
+            $left:expr,
+            $right:expr
+            $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?
+        )
+        ($($op:tt)*)
+        ($op_str:expr)
+    )=>{
         const _: () = {
             use $crate::pmr::respan_to as __cf_respan_to;
+            use $crate::__cf_osRcTFl4A;
             const LEFT: bool = {
                 // Have to use `respan_to` to make the `multiple coerce found` error
                 // point at the `$left` argument here.
@@ -560,34 +479,23 @@ macro_rules! __assertc_equality_inner {
                 }
             };
             const RIGHT: bool = true;
-            $crate::assertc!{
-                LEFT $($op)* RIGHT,
-                concat!(
-                    "{fmt_NHPMWYD3NJA}",
-                    $("\n\n", $fmt_literal)?
-                ),
-                $($($fmt_arg,)*)?
-                fmt_NHPMWYD3NJA = |__cf_fmt| {
-                    use __cf_osRcTFl4A::try_ as __cf_try;
-                    use __cf_osRcTFl4A::coerce_to_fmt as __cf_coerce_to_fmt;
 
-                    #[allow(irrefutable_let_patterns)]
-                    if let __cf_respan_to!(($left) (ref __cf_left, ref __cf_right, __cf_fmt)) =
-                        ($left, $right, __cf_fmt)
-                    {__cf_respan_to!{
-                        ($left)
-                        let __cf_fmt = &mut __cf_fmt
-                            .make_formatter(__cf_osRcTFl4A::FormattingFlags::__A_REG);
-
-                        __cf_try!(__cf_fmt.write_str(" left: `"));
-                        __cf_try!(__cf_coerce_to_fmt!(__cf_left).const_debug_fmt(__cf_fmt));
-                        __cf_try!(__cf_fmt.write_str("`"));
-
-                        __cf_try!(__cf_fmt.write_str("\nright: `"));
-                        __cf_try!(__cf_coerce_to_fmt!(__cf_right).const_debug_fmt(__cf_fmt));
-                        __cf_try!(__cf_fmt.write_str("`"));
-                    }}
-                },
+            $crate::__assertc_common!{
+                ($($parameters)*)
+                (LEFT $($op)* RIGHT)
+                (
+                    concat!(
+                        "\nassertion failed: `(left ",
+                        $op_str,
+                        " right)`\n",
+                        " left: `{left_NHPMWYD3NJA:#?}`\n\
+                         right: `{right_NHPMWYD3NJA:#?}`",
+                        $("\n", $fmt_literal, "\n")?
+                    ),
+                    $($($fmt_arg,)*)?
+                    left_NHPMWYD3NJA = $left,
+                    right_NHPMWYD3NJA = $right
+                )
             }
         };
     }

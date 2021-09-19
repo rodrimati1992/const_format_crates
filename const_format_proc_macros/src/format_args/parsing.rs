@@ -17,13 +17,9 @@ use proc_macro2::{Ident, Span, TokenTree};
 
 impl MyParse for UncheckedFormatArg {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
-        let paren = input.parse_paren()?;
-
-        let mut content = ParseBuffer::new(paren.contents);
-
         // the compile wraps `:expr` in macro_rules macros in a TokenStream::Group
         // with no delimiters.
-        content.parse_unwrap_tt(|content| {
+        input.parse_unwrap_group(|content| {
             let mut ident = None;
             if matches!(content.peek2(), Some(x) if x.is_punct('=')) {
                 ident = Some(content.parse_ident()?);
@@ -44,7 +40,11 @@ impl MyParse for UncheckedFormatArg {
                     content.parse_punct('|')?;
                 }
 
-                let (expr, spans) = content.parse_token_stream_and_span();
+                let (expr, spans) = if content.peek2().is_some() {
+                    content.parse_token_stream_and_span()
+                } else {
+                    content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?
+                };
 
                 Ok(Self {
                     spans,
