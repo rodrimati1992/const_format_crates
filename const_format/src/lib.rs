@@ -251,8 +251,13 @@
 //! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
-//! - "assert": implies the "fmt" feature,
-//! enables the assertion macros.<br>
+//! - "assertc": implies the "fmt" feature,
+//! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
+//! This feature was previously named "assert",
+//! but it was renamed to avoid confusion with the "assertcp" feature.
+//!
+//! - "assertcp":
+//! Enables the `assertcp`, `assertcp_eq`, and `assertcp_ne` assertion macros.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,

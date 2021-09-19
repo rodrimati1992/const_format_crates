@@ -26,7 +26,10 @@ const_generics = []
 nightly_const_generics = ["const_generics"]
 fmt = ["const_generics"]
 derive = ["fmt", "const_format_proc_macros/derive"]
-assert = ["fmt"]
+# soft-deprecated, use assertc instead.
+assert = ["assertc"]
+assertc = ["fmt", "assertcp"]
+assertcp = ["const_generics"]
 constant_time_as_str = ["fmt"]
 
 # "private" features
