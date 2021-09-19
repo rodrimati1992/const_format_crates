@@ -40,7 +40,11 @@ impl MyParse for UncheckedFormatArg {
                     content.parse_punct('|')?;
                 }
 
-                let (expr, spans) = content.parse_token_stream_and_span();
+                let (expr, spans) = if content.peek2().is_some() {
+                    content.parse_token_stream_and_span()
+                } else {
+                    content.parse_unwrap_tt(|content| Ok(content.parse_token_stream_and_span()))?
+                };
 
                 Ok(Self {
                     spans,

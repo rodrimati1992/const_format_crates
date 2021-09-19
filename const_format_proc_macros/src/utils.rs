@@ -52,7 +52,7 @@ impl<I: Iterator> Peekable2<I> {
         Some(&self.queue[0])
     }
     pub fn peek2(&mut self) -> Option<&I::Item> {
-        if self.queue.len() < 2 {
+        while self.queue.len() < 2 {
             self.queue.push_back(self.iter.next()?);
         }
         Some(&self.queue[1])
