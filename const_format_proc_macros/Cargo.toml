@@ -1,6 +1,6 @@
 [package]
 name = "const_format_proc_macros"
-version = "0.2.20"
+version = "0.2.21"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"

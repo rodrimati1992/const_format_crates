@@ -2,6 +2,13 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.21
+
+Rewrote assertion macros to:
+- Have more concise error messages
+- Point to all their arguments when the assertion fails
+- Resemble std error messages more
+
 ### 0.2.19
 
 Added `char` support to all formatting macros.
