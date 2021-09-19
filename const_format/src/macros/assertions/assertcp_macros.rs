@@ -47,7 +47,7 @@ macro_rules! with_shared_docs {(
 )}
 
 with_shared_docs! {
-    /// Compile-time assertions with formatting.
+    /// Compile-time assertion with formatting.
     ///
     ;clarification
     ;syntax
@@ -102,7 +102,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
     #[macro_export]
     macro_rules! assertcp {
         ($($parameters:tt)*) => (
@@ -110,6 +110,177 @@ with_shared_docs! {
                 __formatcp_if_impl
                 ($($parameters)*)
                 ($($parameters)*)
+            }
+        );
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __assertcp_equality_inner {
+    (
+        ($($parameters:tt)*)
+        (
+            $left:expr,
+            $right:expr
+            $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?
+        )
+        ($($op:tt)*)
+        ($op_str:expr)
+    )=>{
+        const _: () = {
+            use $crate::__cf_osRcTFl4A;
+            const LEFT: $crate::pmr::bool = $crate::PWrapper($left).const_eq(&$right);
+            const RIGHT: $crate::pmr::bool = true;
+
+            $crate::__assertc_common!{
+                __formatcp_if_impl
+                ($($parameters)*)
+                (LEFT $($op)* RIGHT)
+                (
+                    concat!(
+                        "\nassertion failed: `(left ",
+                        $op_str,
+                        " right)`\n",
+                        " left: `{left_NHPMWYD3NJA:#?}`\n\
+                         right: `{right_NHPMWYD3NJA:#?}`",
+                        $("\n", $fmt_literal, "\n")?
+                    ),
+                    $($($fmt_arg,)*)?
+                    left_NHPMWYD3NJA = $left,
+                    right_NHPMWYD3NJA = $right
+                )
+            }
+        };
+    }
+}
+
+with_shared_docs! {
+    /// Compile-time equality assertion with formatting.
+    ///
+    ;clarification
+    ;syntax
+    ;limitations
+    ///
+    /// # Examples
+    ///
+    /// ### Passing assertion
+    ///
+    /// ```rust
+    /// use const_format::assertcp_eq;
+    ///
+    /// const NAME: &str = "Bob";
+    ///
+    /// assertcp_eq!(NAME, "Bob", "Guessed wrong, the right value is {}", NAME);
+    ///
+    /// const SUM: u8 = 1 + 2 + 3;
+    /// assertcp_eq!(6u8, SUM, "Guessed wrong, the right value is {}", SUM);
+    /// ```
+    ///
+    /// ### Failing assertion
+    ///
+    /// This example demonstrates a failing assertion,
+    /// and how the compiler error looks like as of 2021-09-18.
+    ///
+    /// ```compile_fail
+    /// use const_format::assertcp_eq;
+    ///
+    /// use std::mem::size_of;
+    ///
+    /// #[repr(C)]
+    /// struct Type(u16, u16, u16);
+    ///
+    /// assertcp_eq!(size_of::<Type>(), size_of::<[u16; 2]>(), "Whoops, `Type` is too large");
+    ///
+    /// ```
+    ///
+    /// This is the compiler output:
+    ///
+    /// ```text
+    /// error[E0080]: evaluation of constant value failed
+    ///   --> src/macros/assertions/assertcp_macros.rs:226:14
+    ///    |
+    /// 11 | assertcp_eq!(size_of::<Type>(), size_of::<[u16; 2]>(), "Whoops, `Type` is too large");
+    ///    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left == right)`
+    ///  left: `6`
+    /// right: `4`
+    /// Whoops, `Type` is too large
+    /// ', src/macros/assertions/assertcp_macros.rs:11:14
+    ///
+    /// ```
+    ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
+    #[macro_export]
+    macro_rules! assertcp_eq {
+        ($($parameters:tt)*) => (
+            $crate::__assertcp_equality_inner!{
+                ($($parameters)*)
+                ($($parameters)*)
+                ( == )
+                ("==")
+            }
+        );
+    }
+}
+with_shared_docs! {
+    /// Compile-time inequality assertion with formatting.
+    ///
+    ;clarification
+    ;syntax
+    ;limitations
+    ///
+    /// # Examples
+    ///
+    /// ### Passing assertion
+    ///
+    /// ```rust
+    /// use const_format::assertcp_ne;
+    ///
+    /// assertcp_ne!(std::mem::size_of::<usize>(), 1usize, "Oh no, usize is tiny!");
+    ///
+    /// const CHAR: char = ';';
+    /// assertcp_ne!(CHAR, '.', "CHAR must not be a dot!");
+    /// ```
+    ///
+    /// ### Failing assertion
+    ///
+    /// This example demonstrates a failing assertion,
+    /// and how the compiler error looks like as of 2021-09-18.
+    ///
+    /// ```compile_fail
+    /// use const_format::assertcp_ne;
+    ///
+    /// const NAME: &str = "";
+    /// assertcp_ne!(NAME.len(), 0usize, "NAME must not be empty!");
+    ///
+    /// ```
+    ///
+    /// This is the compiler output:
+    ///
+    /// ```text
+    /// error[E0080]: evaluation of constant value failed
+    ///  --> src/macros/assertions/assertcp_macros.rs:288:14
+    ///   |
+    /// 7 | assertcp_ne!(NAME.len(), 0usize, "NAME must not be empty!");
+    ///   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// assertion failed: `(left != right)`
+    ///  left: `0`
+    /// right: `0`
+    /// NAME must not be empty!
+    /// ', src/macros/assertions/assertcp_macros.rs:7:14
+    ///
+    /// ```
+    ///
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
+    #[macro_export]
+    macro_rules! assertcp_ne {
+        ($($parameters:tt)*) => (
+            $crate::__assertcp_equality_inner!{
+                ($($parameters)*)
+                ($($parameters)*)
+                ( != )
+                ("!=")
             }
         );
     }

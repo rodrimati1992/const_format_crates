@@ -386,6 +386,10 @@ mod const_generic_concatcp;
 pub mod utils;
 
 #[doc(hidden)]
+#[cfg(any(feature = "fmt", feature = "assertcp"))]
+mod slice_cmp;
+
+#[doc(hidden)]
 pub mod __hidden_utils;
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
