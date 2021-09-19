@@ -418,6 +418,8 @@ macro_rules! __assertc_equality_inner {
     )=>{
         const _: () = {
             use $crate::__cf_osRcTFl4A;
+            use $crate::pmr::respan_to as __cf_respan_to;
+
             const LEFT: $crate::pmr::bool = {
                 // Have to use `respan_to` to make the `multiple coerce found` error
                 // point at the `$left` argument here.

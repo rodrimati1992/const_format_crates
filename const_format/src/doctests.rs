@@ -194,3 +194,37 @@ pub struct Assert;
 ///
 #[cfg(feature = "assertc")]
 pub struct AssertCmp;
+
+/// ```rust
+/// const_format::assertcp!(true, "foo");
+/// ```
+///
+/// ```compile_fail
+/// const_format::assertcp!(false, "foo");
+/// ```
+///
+#[cfg(feature = "assertcp")]
+pub struct AssertCP;
+
+/// # assert_eq
+///
+/// ```rust
+/// const_format::assertcp_eq!(0u8, 0u8, "foo");
+/// ```
+///
+/// ```compile_fail
+/// const_format::assertcp_eq!(0u8, 10u8, "foo");
+/// ```
+///
+/// # assert_ne
+///
+/// ```rust
+/// const_format::assertcp_ne!(0u8, 10u8, "foo");
+/// ```
+///
+/// ```compile_fail
+/// const_format::assertcp_ne!(0u8, 0u8, "foo");
+/// ```
+///
+#[cfg(feature = "assertcp")]
+pub struct AssertCPCmp;

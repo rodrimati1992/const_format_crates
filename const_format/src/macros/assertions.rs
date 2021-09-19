@@ -12,6 +12,7 @@ macro_rules! __assertc_inner {
         ($($parameters:tt)*)
         ($cond:expr $(, $fmt_literal:expr $(,$fmt_arg:expr)*)? $(,)?)
     ) => {
+        #[allow(non_snake_case)]
         const _: () = {
             use $crate::__cf_osRcTFl4A;
 

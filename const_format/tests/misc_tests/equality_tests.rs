@@ -19,6 +19,7 @@ macro_rules! compare_array_case {
 #[test]
 fn compare_arrays() {
     compare_array_case!("hello", "world", "cool"; "foo", "bar");
+    compare_array_case! {'a', 'A', 'Ñ'; '3', '2'}
 
     compare_array_case!(3u8, 5u8, 8u8; 13u8, 21u8);
     compare_array_case!(3u16, 5u16, 8u16; 13u16, 21u16);
@@ -101,6 +102,11 @@ fn enums() {
         AtomicOrdering::AcqRel,
         AtomicOrdering::SeqCst,
     }
+}
+
+#[test]
+fn char_cases() {
+    compare_cases! {'a', 'A', 'Ñ', 'ñ'}
 }
 
 #[test]

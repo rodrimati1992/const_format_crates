@@ -128,15 +128,27 @@ macro_rules! __assertcp_equality_inner {
         ($($op:tt)*)
         ($op_str:expr)
     )=>{
+        #[allow(non_snake_case)]
         const _: () = {
             use $crate::__cf_osRcTFl4A;
-            const LEFT: $crate::pmr::bool = $crate::PWrapper($left).const_eq(&$right);
-            const RIGHT: $crate::pmr::bool = true;
+            const ARGS_NHPMWYD3NJA:
+                ($crate::pmr::bool, $crate::pmr::PArgument, $crate::pmr::PArgument)
+            = {
+                let left = $crate::PWrapper($left);
+                let right = $crate::pmr::PConvWrapper($right);
+                let cond = left.const_eq(&right.0);
+                let fmt = $crate::pmr::FormattingFlags::NEW.set_alternate(true);
+                (
+                    cond,
+                    $crate::pmr::PConvWrapper(left.0).to_pargument_debug(fmt),
+                    right.to_pargument_debug(fmt),
+                )
+            };
 
             $crate::__assertc_common!{
                 __formatcp_if_impl
                 ($($parameters)*)
-                (LEFT $($op)* RIGHT)
+                (ARGS_NHPMWYD3NJA.0 $($op)* true)
                 (
                     concat!(
                         "\nassertion failed: `(left ",
@@ -147,8 +159,8 @@ macro_rules! __assertcp_equality_inner {
                         $("\n", $fmt_literal, "\n")?
                     ),
                     $($($fmt_arg,)*)?
-                    left_NHPMWYD3NJA = $left,
-                    right_NHPMWYD3NJA = $right
+                    left_NHPMWYD3NJA = ARGS_NHPMWYD3NJA.1,
+                    right_NHPMWYD3NJA = ARGS_NHPMWYD3NJA.2
                 )
             }
         };
@@ -252,7 +264,7 @@ with_shared_docs! {
     /// use const_format::assertcp_ne;
     ///
     /// const NAME: &str = "";
-    /// assertcp_ne!(NAME.len(), 0usize, "NAME must not be empty!");
+    /// assertcp_ne!(NAME, "", "NAME must not be empty!");
     ///
     /// ```
     ///
@@ -260,16 +272,15 @@ with_shared_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///  --> src/macros/assertions/assertcp_macros.rs:288:14
+    ///  --> src/macros/assertions/assertcp_macros.rs:298:14
     ///   |
-    /// 7 | assertcp_ne!(NAME.len(), 0usize, "NAME must not be empty!");
-    ///   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    /// 7 | assertcp_ne!(NAME, "", "NAME must not be empty!");
+    ///   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed: `(left != right)`
-    ///  left: `0`
-    /// right: `0`
+    ///  left: `""`
+    /// right: `""`
     /// NAME must not be empty!
     /// ', src/macros/assertions/assertcp_macros.rs:7:14
-    ///
     /// ```
     ///
     #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]

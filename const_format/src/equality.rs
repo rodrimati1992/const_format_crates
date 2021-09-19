@@ -61,6 +61,7 @@ macro_rules! slice_of_equal_op_impl {($($elem:ty),* $(,)?) => (
 
 slice_of_equal_op_impl! {
     bool,
+    char,
     u8, i8,
     u16, i16,
     u32, i32,

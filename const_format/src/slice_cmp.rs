@@ -2,7 +2,8 @@
 ///
 /// # Example
 ///
-/// ```rust
+#[cfg_attr(feature = "fmt", doc = "```rust")]
+#[cfg_attr(not(feature = "fmt"), doc = "```ignore")]
 /// use const_format::utils::str_eq;
 ///
 /// const STRS: &[&str] = &[
@@ -40,7 +41,8 @@ pub const fn str_eq(left: &str, right: &str) -> bool {
 ///
 /// # Example
 ///
-/// ```rust
+#[cfg_attr(feature = "fmt", doc = "```rust")]
+#[cfg_attr(not(feature = "fmt"), doc = "```ignore")]
 /// use const_format::utils::u8_slice_eq;
 ///
 /// const SLICES: &[&[u8]] = &[
@@ -117,25 +119,5 @@ mod tests {
         assert!(!str_eq("0, 1", "1"));
         assert!(str_eq("0, 1", "0, 1"));
         assert!(!str_eq("0, 1", "0, 2"));
-    }
-
-    #[test]
-    fn test_slice_up_to_len_alt() {
-        let mut list = [0u16; 256];
-
-        (100..).zip(list.iter_mut()).for_each(|(i, m)| *m = i);
-
-        for i in 0..list.len() {
-            assert_eq!(slice_up_to_len_alt(&list, i), &list[..i]);
-        }
-    }
-
-    #[test]
-    fn slice_in_bounds() {
-        assert_eq!(slice_up_to_len(&[3, 5], 0), []);
-        assert_eq!(slice_up_to_len(&[3, 5], 1), [3]);
-        assert_eq!(slice_up_to_len(&[3, 5], 2), [3, 5]);
-        assert_eq!(slice_up_to_len(&[3, 5], 3), [3, 5]);
-        assert_eq!(slice_up_to_len(&[3, 5], 4), [3, 5]);
     }
 }
