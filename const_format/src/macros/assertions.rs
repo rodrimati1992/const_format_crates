@@ -1,7 +1,7 @@
 #[cfg(feature = "assertc")]
 mod assertc_macros;
 
-#[cfg(feature = "assertc")]
+#[cfg(feature = "assertcp")]
 mod assertcp_macros;
 
 #[doc(hidden)]
@@ -51,7 +51,7 @@ macro_rules! __assertc_common {
 
         __cf_osRcTFl4A::pmr::respan_to!{
             ($($span)*)
-            __cf_osRcTFl4A::panicking::assert_(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA)
+            __cf_osRcTFl4A::pmr::assert_(PANIC_IF_TRUE_NHPMWYD3NJA, MSG_NHPMWYD3NJA)
         }
     );
 }

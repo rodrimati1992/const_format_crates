@@ -67,7 +67,7 @@ macro_rules! concatcp {
 #[macro_export]
 #[cfg(not(feature = "const_generics"))]
 macro_rules! __concatcp_inner {
-    ($variables:ident) => {{
+    ($variables:expr) => {{
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
 
         const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
@@ -108,7 +108,7 @@ macro_rules! __concatcp_inner {
 #[macro_export]
 #[cfg(feature = "const_generics")]
 macro_rules! __concatcp_inner {
-    ($variables:ident) => {{
+    ($variables:expr) => {{
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
 
         const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> =

@@ -11,7 +11,7 @@ macro_rules! with_shared_docs {(
 ) => (
     $(#[$before_clarification])*
     ///
-    /// This macro requires the "assert" feature to be exported,
+    /// This macro requires the "assertcp" feature to be exported,
     /// because it uses some nightly Rust features.<br>
     ///
     $(#[$before_syntax])*
@@ -83,8 +83,6 @@ with_shared_docs! {
     ///
     /// use const_format::assertc;
     ///
-    /// use std::mem::size_of;
-    ///
     /// const L: u64 = 2;
     /// const R: u64 = 2;
     ///
@@ -107,7 +105,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc {
         ($($parameters:tt)*) => (
@@ -263,7 +261,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc_eq {
         ($($parameters:tt)*) => (
@@ -391,7 +389,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assert")))]
+    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc_ne {
         ($($parameters:tt)*) => (

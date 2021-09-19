@@ -157,7 +157,7 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 ///
 /// ```
 ///
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertc")]
 pub struct Assert;
 
 /// # assert_eq
@@ -192,5 +192,5 @@ pub struct Assert;
 ///
 /// ```
 ///
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertc")]
 pub struct AssertCmp;

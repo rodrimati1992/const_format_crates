@@ -150,8 +150,8 @@
 //! This requires the "assert" feature, because as of writing these docs (2021-09-18),
 //! panicking at compile-time requires a nightly feature.
 //!
-#![cfg_attr(feature = "assert", doc = "```compile_fail")]
-#![cfg_attr(not(feature = "assert"), doc = "```ignore")]
+#![cfg_attr(feature = "assertc", doc = "```compile_fail")]
+#![cfg_attr(not(feature = "assertc"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //!
 //! use const_format::{StrWriter, assertc_ne, writec};
@@ -336,7 +336,12 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-#![cfg_attr(feature = "assert", feature(const_panic))]
+#![cfg_attr(any(
+    feature = "assertc",
+    // disable this when the const_panic feature is stabilized,
+    // no need to hurry since it'll be in nightly and beta for a while before reaching stable.
+    feature = "assertcp",
+), feature(const_panic))]
 #![cfg_attr(
     feature = "constant_time_as_str",
     feature(const_slice_from_raw_parts, const_fn_union,)
@@ -361,13 +366,13 @@ mod macros;
 
 mod formatting;
 
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertc")]
 mod equality;
 
 #[doc(hidden)]
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertcp")]
 #[macro_use]
-pub mod panicking;
+pub mod for_assert_macros;
 
 mod char_encoding;
 
@@ -451,6 +456,9 @@ pub mod pmr {
     #[cfg(feature = "fmt")]
     pub use const_format_proc_macros::{__formatc_if_impl, __formatc_impl, __writec_impl};
 
+    #[cfg(feature = "assertcp")]
+    pub use const_format_proc_macros::__formatcp_if_impl;
+
     pub use core::{
         cmp::Reverse,
         convert::identity,
@@ -463,6 +471,9 @@ pub mod pmr {
 
     #[cfg(feature = "const_generics")]
     pub use crate::const_generic_concatcp::__priv_concatenate;
+
+    #[cfg(feature = "assertcp")]
+    pub use crate::for_assert_macros::{assert_, ConcatArgsIf};
 
     #[cfg(feature = "fmt")]
     pub use crate::{
