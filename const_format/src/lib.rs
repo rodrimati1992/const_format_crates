@@ -45,6 +45,15 @@
 //! Replaces all the instances of a pattern in a `&'static str` constant with
 //! another `&'static str` constant.
 //!
+//! ### Rust 1.57.0
+//!
+//! The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`],
+//! and [`assertcp_ne`] macros.
+//! These macros are like the standard library assert macros,
+//! but evaluated at compile-time,
+//! with the limitation that they can only have primitive types as arguments
+//! (just like [`concatcp`] and [`formatcp`]).
+//!
 //! ### Rust nightly
 //!
 //! By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
@@ -70,10 +79,9 @@
 //! [`ConstDebug`] derives the [`FormatMarker`] trait,
 //! and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 //!
-//! The "assert" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+//! The "assertc" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
 //! and the "fmt" feature.<br>
 //! These macros are like the standard library assert macros, but evaluated at compile-time.
-//!
 //! # Examples
 //!
 //! ### Concatenation of primitive types
@@ -142,24 +150,23 @@
 //!
 //! ```
 //!
-//! ### Formatted const panics
+//! ### Formatted const assertions
 //!
-//! This example demonstrates how you can use the [`assertc_ne`] macro to
+//! This example demonstrates how you can use the [`assertcp_ne`] macro to
 //! do compile-time inequality assertions with formatted error messages.
 //!
-//! This requires the "assert" feature, because as of writing these docs (2021-09-18),
-//! panicking at compile-time requires a nightly feature.
+//! This requires the "assertcp" feature,
+//! because using the `panic` macro at compile-time requires Rust 1.57.0.
 //!
-#![cfg_attr(feature = "assert", doc = "```compile_fail")]
-#![cfg_attr(not(feature = "assert"), doc = "```ignore")]
+#![cfg_attr(feature = "assertcp", doc = "```compile_fail")]
+#![cfg_attr(not(feature = "assertcp"), doc = "```ignore")]
 //! #![feature(const_mut_refs)]
 //!
-//! use const_format::{StrWriter, assertc_ne, writec};
-//! use const_format::utils::str_eq;
+//! use const_format::assertcp_ne;
 //!
 //! macro_rules! check_valid_pizza{
 //!     ($user:expr, $topping:expr) => {
-//!         assertc_ne!(
+//!         assertcp_ne!(
 //!             $topping,
 //!             "pineapple",
 //!             "You can't put pineapple on pizza, {}",
@@ -179,15 +186,16 @@
 //!
 //! ```text
 //! error[E0080]: evaluation of constant value failed
-//!   --> src/lib.rs:171:27
+//!   --> src/lib.rs:178:27
 //!    |
-//! 21 | check_valid_pizza!("Bob", "pineapple");
+//! 20 | check_valid_pizza!("Bob", "pineapple");
 //!    |                           ^^^^^^^^^^^ the evaluated program panicked at '
 //! assertion failed: `(left != right)`
 //!  left: `"pineapple"`
 //! right: `"pineapple"`
 //! You can't put pineapple on pizza, Bob
-//! ', src/lib.rs:21:27
+//! ', src/lib.rs:20:27
+//!
 //!
 //! ```
 //!
@@ -251,8 +259,13 @@
 //! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
-//! - "assert": implies the "fmt" feature,
-//! enables the assertion macros.<br>
+//! - "assertc": implies the "fmt" feature,
+//! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
+//! This feature was previously named "assert",
+//! but it was renamed to avoid confusion with the "assertcp" feature.
+//!
+//! - "assertcp": Requires Rust 1.57.0, implies the "const_generics" feature.
+//! Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 //!
 //! - "constant_time_as_str": implies the "fmt" feature.
 //! An optimization that requires a few additional nightly features,
@@ -283,6 +296,12 @@
 //! [`assertc_eq`]: ./macro.assertc_eq.html
 //!
 //! [`assertc_ne`]: ./macro.assertc_ne.html
+//!
+//! [`assertcp`]: ./macro.assertcp.html
+//!
+//! [`assertcp_eq`]: ./macro.assertcp_eq.html
+//!
+//! [`assertcp_ne`]: ./macro.assertcp_ne.html
 //!
 //! [`concatcp`]: ./macro.concatcp.html
 //!
@@ -331,7 +350,7 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-#![cfg_attr(feature = "assert", feature(const_panic))]
+#![cfg_attr(feature = "assertc", feature(const_panic))]
 #![cfg_attr(
     feature = "constant_time_as_str",
     feature(const_slice_from_raw_parts, const_fn_union,)
@@ -356,13 +375,13 @@ mod macros;
 
 mod formatting;
 
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertc")]
 mod equality;
 
 #[doc(hidden)]
-#[cfg(feature = "assert")]
+#[cfg(feature = "assertcp")]
 #[macro_use]
-pub mod panicking;
+pub mod for_assert_macros;
 
 mod char_encoding;
 
@@ -374,6 +393,10 @@ mod const_generic_concatcp;
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod utils;
+
+#[doc(hidden)]
+#[cfg(any(feature = "fmt", feature = "assertcp"))]
+mod slice_cmp;
 
 #[doc(hidden)]
 pub mod __hidden_utils;
@@ -446,6 +469,9 @@ pub mod pmr {
     #[cfg(feature = "fmt")]
     pub use const_format_proc_macros::{__formatc_if_impl, __formatc_impl, __writec_impl};
 
+    #[cfg(feature = "assertcp")]
+    pub use const_format_proc_macros::__formatcp_if_impl;
+
     pub use core::{
         cmp::Reverse,
         convert::identity,
@@ -458,6 +484,9 @@ pub mod pmr {
 
     #[cfg(feature = "const_generics")]
     pub use crate::const_generic_concatcp::__priv_concatenate;
+
+    #[cfg(feature = "assertcp")]
+    pub use crate::for_assert_macros::{assert_, ConcatArgsIf};
 
     #[cfg(feature = "fmt")]
     pub use crate::{

@@ -2,6 +2,17 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.22
+
+
+Added the `assertcp`, `assertcp_ne`, and `assertcp_eq` macros under the "assertcp"  feature.
+
+Added `const_eq` methods for `PWrapper<&[char]>` and `PWrapper<Option<char>>`
+
+Added the "assertcp" feature, which enables the `assertcp*` macros.
+
+Aliased "assert" crate feature to "assertc", and removed old name from docs to reduce confusion.
+
 ### 0.2.21
 
 Rewrote assertion macros to:

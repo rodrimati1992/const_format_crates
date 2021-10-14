@@ -93,6 +93,15 @@ pub fn __formatc_if_impl(input: TokenStream1) -> TokenStream1 {
 
 #[doc(hidden)]
 #[proc_macro]
+pub fn __formatcp_if_impl(input: TokenStream1) -> TokenStream1 {
+    MyParse::parse_token_stream_1(input)
+        .and_then(format_macro::formatcp_if_macro_impl)
+        .unwrap_or_else(compile_err_empty_str)
+        .into()
+}
+
+#[doc(hidden)]
+#[proc_macro]
 pub fn __writec_impl(input: TokenStream1) -> TokenStream1 {
     MyParse::parse_token_stream_1(input)
         .and_then(format_macro::writec_macro_impl)

@@ -125,6 +125,18 @@ pconvwrapper_impls! {
 }
 
 #[doc(hidden)]
+impl PConvWrapper<PArgument> {
+    #[inline]
+    pub const fn to_pargument_display(self, _: FormattingFlags) -> PArgument {
+        self.0
+    }
+    #[inline]
+    pub const fn to_pargument_debug(self, fmt_flags: FormattingFlags) -> PArgument {
+        self.0
+    }
+}
+
+#[doc(hidden)]
 impl PConvWrapper<bool> {
     #[inline]
     pub const fn to_pargument_display(self, _: FormattingFlags) -> PArgument {

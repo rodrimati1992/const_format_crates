@@ -51,12 +51,13 @@ jobs:
         cd "${{github.workspace}}/const_format/"
         
         cargo test --features "testing"
+        cargo test --features "testing assertcp"
         cargo test --features "testing fmt"
-        cargo test --features "testing assert"
+        cargo test --features "testing assertc"
         cargo test --features "testing derive"
         cargo test --features "testing constant_time_as_str"
         cargo test --features "testing derive constant_time_as_str"
-        cargo test --features "testing derive constant_time_as_str assert"
+        cargo test --features "testing derive constant_time_as_str assertc"
 
         MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)
         echo "Installing latest nightly with Miri"
@@ -69,5 +70,5 @@ jobs:
 
         cargo clean 
 
-        cargo miri test --tests --features "testing derive fmt assert"
-        cargo miri test --features "testing derive fmt constant_time_as_str assert"
+        cargo miri test --tests --features "testing derive fmt assertc"
+        cargo miri test --features "testing derive fmt constant_time_as_str assertc"

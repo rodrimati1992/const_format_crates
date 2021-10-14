@@ -1,5 +1,4 @@
 #[macro_use]
-#[cfg(feature = "assert")]
 mod assertions;
 
 #[macro_use]

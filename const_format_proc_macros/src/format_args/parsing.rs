@@ -311,7 +311,6 @@ impl FormatArgs {
 impl MyParse for FormatIfArgs {
     fn parse(input: ParseStream) -> Result<Self, crate::Error> {
         let condition = ExprArg::parse(input)?;
-        input.parse_punct(',')?;
 
         let mut inner = FormatArgs::parse(input)?;
         inner.condition = Some(condition);

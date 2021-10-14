@@ -454,3 +454,48 @@ const _: () = {
         type This = Self;
     }
 };
+
+///////////////////////////////////////////////////////////////////////////
+
+#[cfg(feature = "assertcp")]
+macro_rules! impl_eq_for_primitives {
+    (
+        (l=$l:ident, r=$r:ident)
+
+        $(
+            impl[$($impl_:tt)*] $type:ty = $comparison:expr;
+        )*
+
+    ) => (
+        $(
+            impl<$($impl_)*> PWrapper<$type> {
+                /// This method is only available with the "assert" feature.
+                pub const fn const_eq(&self, $r:&$type) -> bool {
+                    let $l = self.0;
+                    $comparison
+                }
+            }
+        )*
+    )
+}
+
+#[cfg(feature = "assertcp")]
+impl_eq_for_primitives! {
+    (l = l, r = r)
+
+    impl[] u8 = l == *r;
+    impl[] i8 = l == *r;
+    impl[] u16 = l == *r;
+    impl[] i16 = l == *r;
+    impl[] u32 = l == *r;
+    impl[] i32 = l == *r;
+    impl[] u64 = l == *r;
+    impl[] i64 = l == *r;
+    impl[] u128 = l == *r;
+    impl[] i128 = l == *r;
+    impl[] usize = l == *r;
+    impl[] isize = l == *r;
+    impl[] bool = l == *r;
+    impl[] char = l == *r;
+    impl[] &str = crate::slice_cmp::str_eq(l, r);
+}

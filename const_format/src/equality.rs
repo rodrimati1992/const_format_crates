@@ -1,6 +1,6 @@
 #![allow(missing_docs, unused_variables)]
 
-use crate::{utils, wrapper_types::PWrapper};
+use crate::wrapper_types::PWrapper;
 
 use core::{
     cmp::Ordering,
@@ -61,6 +61,7 @@ macro_rules! slice_of_equal_op_impl {($($elem:ty),* $(,)?) => (
 
 slice_of_equal_op_impl! {
     bool,
+    char,
     u8, i8,
     u16, i16,
     u32, i32,
@@ -71,25 +72,12 @@ slice_of_equal_op_impl! {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-macro_rules! impl_eq_for_option {
+macro_rules! impl_eq_for_option_prim {
     (
         (l=$l:ident, r=$r:ident)
-
-        $(
-            impl[$($impl_:tt)*] $type:ty = $comparison:expr;
-        )*
-
+        $( impl[$($impl_:tt)*] $type:ty = $comparison:expr; )*
     ) => (
-
         $(
-            impl<$($impl_)*> PWrapper<$type> {
-                /// This method is only available with the "assert" feature.
-                pub const fn const_eq(&self, $r:&$type) -> bool {
-                    let $l = self.0;
-                    $comparison
-                }
-            }
-
             impl<$($impl_)*> PWrapper<Option<$type>> {
                 /// This method is only available with the "assert" feature.
                 pub const fn const_eq(&self, other:&Option<$type>) -> bool {
@@ -101,6 +89,47 @@ macro_rules! impl_eq_for_option {
                 }
             }
         )*
+    )
+}
+
+impl_eq_for_option_prim! {
+    (l=l, r=r)
+    impl[] u8 = l == *r;
+    impl[] i8 = l == *r;
+    impl[] u16 = l == *r;
+    impl[] i16 = l == *r;
+    impl[] u32 = l == *r;
+    impl[] i32 = l == *r;
+    impl[] u64 = l == *r;
+    impl[] i64 = l == *r;
+    impl[] u128 = l == *r;
+    impl[] i128 = l == *r;
+    impl[] usize = l == *r;
+    impl[] isize = l == *r;
+    impl[] bool = l == *r;
+    impl[] char = l == *r;
+    impl[] &str = crate::slice_cmp::str_eq(l, r);
+}
+
+macro_rules! impl_eq_for_option {
+    (
+        (l=$l:ident, r=$r:ident)
+        $( impl[$($impl_:tt)*] $type:ty = $comparison:expr; )*
+    ) => (
+        $(
+            impl<$($impl_)*> PWrapper<$type> {
+                /// This method is only available with the "assert" feature.
+                pub const fn const_eq(&self, $r:&$type) -> bool {
+                    let $l = self.0;
+                    $comparison
+                }
+            }
+        )*
+
+        impl_eq_for_option_prim! {
+            (l=$l, r=$r)
+            $( impl[$($impl_)*] $type = $comparison; )*
+        }
     )
 }
 
@@ -119,20 +148,6 @@ impl_eq_for_option! {
     impl[] NonZeroI128 = l.get() == r.get();
     impl[] NonZeroUsize = l.get() == r.get();
     impl[] NonZeroIsize = l.get() == r.get();
-    impl[] u8 = l == *r;
-    impl[] i8 = l == *r;
-    impl[] u16 = l == *r;
-    impl[] i16 = l == *r;
-    impl[] u32 = l == *r;
-    impl[] i32 = l == *r;
-    impl[] u64 = l == *r;
-    impl[] i64 = l == *r;
-    impl[] u128 = l == *r;
-    impl[] i128 = l == *r;
-    impl[] usize = l == *r;
-    impl[] isize = l == *r;
-    impl[] bool = l == *r;
-    impl[] &str = utils::str_eq(l, r);
 }
 
 macro_rules! impl_equality {

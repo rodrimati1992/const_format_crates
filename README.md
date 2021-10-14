@@ -51,6 +51,15 @@ determined by a [`Case`] argument.
 Replaces all the instances of a pattern in a `&'static str` constant with
 another `&'static str` constant.
 
+### Rust 1.57.0
+
+The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`], 
+and [`assertcp_ne`] macros. 
+These macros are like the standard library assert macros,
+but evaluated at compile-time,
+with the limitation that they can only have primitive types as arguments
+(just like [`concatcp`] and [`formatcp`]).
+
 ### Rust nightly
 
 By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
@@ -64,20 +73,22 @@ All the other features of this crate are implemented on top of the [`const_forma
 Concatenates many standard library and user defined types into a `&'static str` constant.
 
 - [`formatc`]:
-[`format`]-like macro that can format many standard library and user defined types into 
+[`format`]-like macro that can format many standard library and user defined types into
 a `&'static str` constant.
 
 - [`writec`]:
 [`write`]-like macro that can format many standard library and user defined types
 into a type that implements [`WriteMarker`].
 
-The "derive" feature enables the [`ConstDebug`] macro, and the "fmt" feature.<br>
+The "derive" feature enables the [`ConstDebug`] macro,
+and the "fmt" feature.<br>
 [`ConstDebug`] derives the [`FormatMarker`] trait,
 and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 
-The "assert" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+The "assertc" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
 and the "fmt" feature.<br>
 These macros are like the standard library assert macros, but evaluated at compile-time.
+
 
 # Examples
 
@@ -147,25 +158,22 @@ assert_eq!(
 
 ```
 
+### Formatted const assertions
 
-
-### Formatted const panics
-
-This example demonstrates how you can use the [`assertc_ne`] macro to
+This example demonstrates how you can use the [`assertcp_ne`] macro to
 do compile-time inequality assertions with formatted error messages.
 
-This requires the "assert" feature,because as of writing these docs (2021-09-18),
-panicking at compile-time requires a nightly feature.
+This requires the "assertcp" feature,
+because using the `panic` macro at compile-time requires Rust 1.57.0.
 
 ```rust
 #![feature(const_mut_refs)]
 
-use const_format::{StrWriter, assertc_ne, writec};
-use const_format::utils::str_eq;
+use const_format::assertcp_ne;
 
 macro_rules! check_valid_pizza{
     ($user:expr, $topping:expr) => {
-        assertc_ne!(
+        assertcp_ne!(
             $topping,
             "pineapple",
             "You can't put pineapple on pizza, {}",
@@ -177,24 +185,26 @@ macro_rules! check_valid_pizza{
 check_valid_pizza!("John", "salami");
 check_valid_pizza!("Dave", "sausage");
 check_valid_pizza!("Bob", "pineapple");
+
+# fn main(){}
 ```
 
 This is the compiler output:
 
 ```text
 error[E0080]: evaluation of constant value failed
-  --> src/lib.rs:171:27
+  --> src/lib.rs:178:27
    |
-21 | check_valid_pizza!("Bob", "pineapple");
+20 | check_valid_pizza!("Bob", "pineapple");
    |                           ^^^^^^^^^^^ the evaluated program panicked at '
 assertion failed: `(left != right)`
  left: `"pineapple"`
 right: `"pineapple"`
 You can't put pineapple on pizza, Bob
-', src/lib.rs:21:27
+', src/lib.rs:20:27
+
 
 ```
-
 
 
 
@@ -261,8 +271,13 @@ This feature includes the [`formatc`]/[`writec`] formatting macros.
 provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
-- "assert": implies the "fmt" feature,
-enables the assertion macros.
+- "assertc": implies the "fmt" feature,
+enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
+This feature was previously named "assert",
+but it was renamed to avoid confusion with the "assertcp" feature.
+
+- "assertcp": Requires Rust 1.57.0, implies the "const_generics" feature.
+Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 
 - "constant_time_as_str": implies the "fmt" feature.
 An optimization that requires a few additional nightly features,
@@ -291,6 +306,12 @@ need to be explicitly enabled with cargo features.
 [`assertc_eq`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_eq.html
 
 [`assertc_ne`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc_ne.html
+
+[`assertcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertcp.html
+
+[`assertcp_eq`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertcp_eq.html
+
+[`assertcp_ne`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertcp_ne.html
 
 [`concatcp`]: https://docs.rs/const_format/0.2.*/const_format/macro.concatcp.html
 

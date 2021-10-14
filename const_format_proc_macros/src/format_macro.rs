@@ -38,6 +38,12 @@ pub(crate) fn concatcp_impl(value: ExprArgs) -> Result<TokenStream2, crate::Erro
     })))
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+pub(crate) fn formatcp_if_macro_impl(value: FormatIfArgs) -> Result<TokenStream2, crate::Error> {
+    formatcp_impl(value.inner)
+}
+
 pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate::Error> {
     let locals = fmt_args
         .local_variables
@@ -79,21 +85,38 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
         ExpandInto::WithFormatter { .. } => unreachable!(),
     });
 
-    Ok(quote!(({
-        // The suffix is to avoid name collisions with identifiers in the passed-in expression.
-        #[allow(unused_mut, non_snake_case)]
-        const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = {
-            let mut len = 0usize;
+    let fmt_if_true = quote!({
+        let mut len = 0usize;
 
-            #( #locals )*
+        #( #locals )*
 
-            &[
-                #( #parg_constructor ),*
-            ]
-        };
+        &[
+            #( #parg_constructor ),*
+        ]
+    });
 
-        __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
-    })))
+    if let Some(cond) = fmt_args.condition {
+        Ok(quote!(({
+            enum __Foo_osRcTFl4A {}
+
+            // This is generic so that the constant is only evaluated when it's needed.
+            impl<T> __cf_osRcTFl4A::pmr::ConcatArgsIf<T, true> for __Foo_osRcTFl4A {
+                const PARGUMENTS : &'static [__cf_osRcTFl4A::pmr::PArgument] = #fmt_if_true;
+            }
+
+            __cf_osRcTFl4A::__concatcp_inner!(
+                <__Foo_osRcTFl4A as __cf_osRcTFl4A::pmr::ConcatArgsIf<(), #cond>>::PARGUMENTS
+            )
+        })))
+    } else {
+        Ok(quote!(({
+            // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+            #[allow(unused_mut, non_snake_case)]
+            const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = #fmt_if_true;
+
+            __cf_osRcTFl4A::__concatcp_inner!(CONCATP_NHPMWYD3NJA)
+        })))
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
