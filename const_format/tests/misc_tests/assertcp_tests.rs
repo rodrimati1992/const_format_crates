@@ -104,6 +104,7 @@ const _: () = {
         },
         "world{foo}",
         foo = {
+            #[allow(unconditional_panic)]
             let foo: u8 = [][0];
             foo
         },
