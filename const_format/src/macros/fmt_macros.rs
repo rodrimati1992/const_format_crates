@@ -60,7 +60,7 @@ macro_rules! concatcp {
         $crate::pmr::__concatcp_impl!{
             $( ( $arg ), )*
         }
-    });
+    } as &str );
 }
 
 #[doc(hidden)]
