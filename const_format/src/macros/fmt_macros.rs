@@ -60,7 +60,7 @@ macro_rules! concatcp {
         $crate::pmr::__concatcp_impl!{
             $( ( $arg ), )*
         }
-    } as &str );
+    } as &'static $crate::__::str );
 }
 
 #[doc(hidden)]
@@ -262,7 +262,7 @@ macro_rules! formatcp {
         $crate::pmr::__formatcp_impl!(
             ($format_string)
             $(, $($expr,)+)?
-        )
+        ) as &'static $crate::__::str
     });
 }
 
@@ -329,6 +329,7 @@ macro_rules! concatc {
         use $crate::__cf_osRcTFl4A;
 
         $crate::__concatc_expr!(($($anything)*) ($($anything)*))
+        as &'static $crate::__::str
     })
 }
 
@@ -498,7 +499,7 @@ macro_rules! formatc {
         $crate::pmr::__formatc_impl!{
             ($format_string)
             $(, $($expr,)+)?
-        }
+        } as &'static $crate::__::str
     });
 }
 
