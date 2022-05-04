@@ -55,12 +55,14 @@
 #[macro_export]
 macro_rules! concatcp {
     ()=>{""};
-    ($($arg: expr),* $(,)?)=>({
-        use $crate::__cf_osRcTFl4A;
-        $crate::pmr::__concatcp_impl!{
-            $( ( $arg ), )*
-        }
-    });
+    ($($arg: expr),* $(,)?)=>(
+        {
+            use $crate::__cf_osRcTFl4A;
+            $crate::pmr::__concatcp_impl!{
+                $( ( $arg ), )*
+            }
+        } as &'static $crate::pmr::str
+    );
 }
 
 #[doc(hidden)]
@@ -256,14 +258,16 @@ macro_rules! __concatcp_inner {
 ///
 #[macro_export]
 macro_rules! formatcp {
-    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
-        use $crate::__cf_osRcTFl4A;
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
+        {
+            use $crate::__cf_osRcTFl4A;
 
-        $crate::pmr::__formatcp_impl!(
-            ($format_string)
-            $(, $($expr,)+)?
-        )
-    });
+            $crate::pmr::__formatcp_impl!(
+                ($format_string)
+                $(, $($expr,)+)?
+            )
+        } as &'static $crate::pmr::str
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -325,11 +329,14 @@ macro_rules! formatcp {
 #[macro_export]
 macro_rules! concatc {
     ()=>{""};
-    ($($anything:tt)*)=>({
-        use $crate::__cf_osRcTFl4A;
+    ($($anything:tt)*)=>(
+        {
+            use $crate::__cf_osRcTFl4A;
 
-        $crate::__concatc_expr!(($($anything)*) ($($anything)*))
-    })
+            $crate::__concatc_expr!(($($anything)*) ($($anything)*))
+            as &'static $crate::pmr::str
+        }
+    )
 }
 
 #[doc(hidden)]
@@ -492,14 +499,16 @@ macro_rules! __concatc_inner {
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
-    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({
-        use $crate::__cf_osRcTFl4A;
+    ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
+        {
+            use $crate::__cf_osRcTFl4A;
 
-        $crate::pmr::__formatc_impl!{
-            ($format_string)
-            $(, $($expr,)+)?
-        }
-    });
+            $crate::pmr::__formatc_impl!{
+                ($format_string)
+                $(, $($expr,)+)?
+            }
+        } as &'static $crate::pmr::str
+    );
 }
 
 /// Writes some formatted standard library and/or user-defined types into a buffer.
