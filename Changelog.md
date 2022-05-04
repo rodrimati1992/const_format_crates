@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.23
+
+Added type annotations to `concatp`, `concatcp`, `formatc` and `formatcp` macros to help IDEs infer the type.
+
 ### 0.2.22
 
 
