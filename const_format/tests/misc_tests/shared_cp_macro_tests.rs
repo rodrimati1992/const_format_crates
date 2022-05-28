@@ -1,7 +1,7 @@
-use cfmt_b::{concatcp, formatcp};
+use cfmt_b::{__identity, concatcp, formatcp};
 
 #[cfg(feature = "fmt")]
-use cfmt_b::concatc;
+use cfmt_b::{concatc, formatc};
 
 use arrayvec::ArrayString;
 
@@ -88,5 +88,64 @@ fn other_tests() {
     {
         const EMPTY: &str = concatc!();
         assert_eq!(EMPTY, "");
+    }
+}
+
+// test that this error doesn't happen:
+// https://github.com/rodrimati1992/const_format_crates/issues/36
+#[test]
+fn call_in_braced_macro() {
+    {
+        assert_eq!(
+            {
+                __identity! {concatcp!("a", "b")}
+            },
+            "ab"
+        );
+        {
+            __identity! {concatcp!("a", "b")}
+        };
+        __identity! {concatcp!("a", "b")};
+    }
+
+    #[cfg(feature = "fmt")]
+    {
+        assert_eq!(
+            {
+                __identity! {concatc!("a", "b")}
+            },
+            "ab"
+        );
+        {
+            __identity! {concatc!("a", "b")}
+        };
+        __identity! {concatc!("a", "b")};
+    }
+
+    {
+        assert_eq!(
+            {
+                __identity! {formatcp!("ab")}
+            },
+            "ab"
+        );
+        {
+            __identity! {formatcp!("ab")}
+        };
+        __identity! {formatcp!("ab")};
+    }
+
+    #[cfg(feature = "fmt")]
+    {
+        assert_eq!(
+            {
+                __identity! {formatc!("ab")}
+            },
+            "ab"
+        );
+        {
+            __identity! {formatc!("ab")}
+        };
+        __identity! {formatc!("ab")};
     }
 }
