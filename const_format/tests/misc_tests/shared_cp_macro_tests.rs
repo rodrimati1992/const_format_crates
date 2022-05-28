@@ -95,15 +95,18 @@ fn other_tests() {
 // https://github.com/rodrimati1992/const_format_crates/issues/36
 #[test]
 fn call_in_braced_macro() {
-    assert_eq!(
+    {
+        assert_eq!(
+            {
+                __identity! {concatcp!("a", "b")}
+            },
+            "ab"
+        );
         {
             __identity! {concatcp!("a", "b")}
-        },
-        "ab"
-    );
-    {
-        __identity! {concatcp!("a", "b")}
-    };
+        };
+        __identity! {concatcp!("a", "b")};
+    }
 
     #[cfg(feature = "fmt")]
     {
@@ -116,17 +119,21 @@ fn call_in_braced_macro() {
         {
             __identity! {concatc!("a", "b")}
         };
+        __identity! {concatc!("a", "b")};
     }
 
-    assert_eq!(
+    {
+        assert_eq!(
+            {
+                __identity! {formatcp!("ab")}
+            },
+            "ab"
+        );
         {
             __identity! {formatcp!("ab")}
-        },
-        "ab"
-    );
-    {
-        __identity! {formatcp!("ab")}
-    };
+        };
+        __identity! {formatcp!("ab")};
+    }
 
     #[cfg(feature = "fmt")]
     {
@@ -139,5 +146,6 @@ fn call_in_braced_macro() {
         {
             __identity! {formatc!("ab")}
         };
+        __identity! {formatc!("ab")};
     }
 }
