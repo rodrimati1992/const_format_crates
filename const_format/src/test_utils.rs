@@ -2,6 +2,12 @@
 
 #[doc(hidden)]
 #[macro_export]
+macro_rules! __identity {
+    ($($tt:tt)*) => {$($tt)*};
+}
+
+#[doc(hidden)]
+#[macro_export]
 macro_rules! __declare_rng_ext {
     () => {
         pub trait RngExt {
