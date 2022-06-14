@@ -1,5 +1,5 @@
 #[doc(hidden)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Formatting {
     Debug,
     Display,
@@ -19,7 +19,7 @@ impl Formatting {
 /// debug formatting.
 ///
 ///
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum NumberFormatting {
     /// Formats numbers as decimal
     Decimal,

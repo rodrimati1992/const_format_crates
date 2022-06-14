@@ -27,7 +27,7 @@ pub struct StrSpliceArgs {
 }
 
 /// The return value of [`str_splice`](./macro.str_splice.html)
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SplicedStr {
     /// A string that had `removed` replaced with some other string.
     pub output: &'static str,

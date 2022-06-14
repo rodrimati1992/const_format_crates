@@ -63,7 +63,7 @@ fn lit_str_to_fmt_lit(lit: &LitStr) -> Result<FormatStr, crate::Error> {
     let lit_str = lit.value();
     let format_str_span = lit.span;
     FormatStr::parse(lit.value(), lit.rawness)
-        .map_err(|e| e.into_crate_err(format_str_span, &lit_str))
+        .map_err(|e| e.into_crate_err(format_str_span, lit_str))
 }
 
 fn parse_fmt_lit(this: &mut FormatStr, input: ParseStream<'_>) -> Result<(), crate::Error> {
