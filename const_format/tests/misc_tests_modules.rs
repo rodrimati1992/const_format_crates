@@ -12,6 +12,8 @@ mod misc_tests {
     #[cfg(not(feature = "only_new_tests"))]
     mod assertc_tests;
 
+    mod clippy_warnings;
+
     #[cfg(feature = "assertcp")]
     mod assertcp_tests;
 

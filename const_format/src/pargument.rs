@@ -131,7 +131,7 @@ impl PConvWrapper<PArgument> {
         self.0
     }
     #[inline]
-    pub const fn to_pargument_debug(self, fmt_flags: FormattingFlags) -> PArgument {
+    pub const fn to_pargument_debug(self, _: FormattingFlags) -> PArgument {
         self.0
     }
 }

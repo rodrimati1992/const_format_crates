@@ -2,6 +2,17 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.25
+
+Fixed the `clippy::double_parens` (false positive) warning by 
+encoding the `&'static str` type annotation some other way.
+
+Made `SplicedStr`, `Formatting`, `NumberFormatting`, 
+
+### 0.2.24
+
+Fixed error that caused formatting macros not to be usable in statement position.
+
 ### 0.2.23
 
 Added type annotations to `concatp`, `concatcp`, `formatc` and `formatcp` macros to help IDEs infer the type.

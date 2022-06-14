@@ -350,11 +350,7 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-#![cfg_attr(feature = "assertc", feature(const_panic))]
-#![cfg_attr(
-    feature = "constant_time_as_str",
-    feature(const_slice_from_raw_parts, const_fn_union,)
-)]
+#![cfg_attr(feature = "constant_time_as_str", feature(const_slice_from_raw_parts))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
@@ -366,6 +362,7 @@
 #![deny(clippy::wildcard_imports)]
 // All The methods that take self by value are for small Copy types
 #![allow(clippy::wrong_self_convention)]
+#![allow(clippy::init_numbered_fields)]
 #![deny(missing_docs)]
 
 include! {"const_debug_derive.rs"}
@@ -504,6 +501,12 @@ pub mod pmr {
         pargument::{PArgument, PConvWrapper, PVariant},
         wrapper_types::PWrapper,
     };
+
+    #[doc(hidden)]
+    #[repr(transparent)]
+    pub struct __AssertStr {
+        pub x: &'static str,
+    }
 }
 
 #[cfg(all(test, not(feature = "testing")))]

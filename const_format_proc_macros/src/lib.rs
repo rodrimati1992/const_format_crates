@@ -1,4 +1,5 @@
 #![allow(clippy::or_fun_call)]
+#![allow(clippy::derive_partial_eq_without_eq)]
 
 use proc_macro::TokenStream as TokenStream1;
 
