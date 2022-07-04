@@ -35,6 +35,7 @@ jobs:
 
         cd "${{github.workspace}}/const_format/"
         cargo test --features "testing const_generics"
+        cargo test --features "testing assertcp"
 
 
     - uses: actions/checkout@v2
@@ -51,6 +52,7 @@ jobs:
         cd "${{github.workspace}}/const_format/"
         
         cargo test --features "testing"
+        cargo test --features "testing more_str_macros"
         cargo test --features "testing assertcp"
         cargo test --features "testing fmt"
         cargo test --features "testing assertc"
@@ -58,6 +60,7 @@ jobs:
         cargo test --features "testing constant_time_as_str"
         cargo test --features "testing derive constant_time_as_str"
         cargo test --features "testing derive constant_time_as_str assertc"
+        cargo test --features "testing derive constant_time_as_str assertc more_str_macros"
 
         MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)
         MIRIFLAGS="-Zmiri-strict-provenance -Zmiri-check-number-validity -Zmiri-symbolic-alignment-check"
