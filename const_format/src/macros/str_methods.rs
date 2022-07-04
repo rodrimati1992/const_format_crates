@@ -33,6 +33,12 @@
 ///     "The eeencredeeeble shreeenkeeeng man.",
 /// );
 ///
+/// // Passing a char pattern
+/// assert_eq!(
+///     str_replace!("The incredible shrinking man.", ' ', "---"),
+///     "The---incredible---shrinking---man.",
+/// );
+///
 /// // Passing an ascii u8 pattern.
 /// assert_eq!(
 ///     str_replace!("The incredible shrinking man.", b'i', "eee"),
