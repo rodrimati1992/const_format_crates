@@ -545,6 +545,7 @@ macro_rules! str_get {
 /// ```
 #[macro_export]
 #[cfg(feature = "more_str_macros")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "more_str_macros")))]
 macro_rules! str_split {
     ($string:expr, $splitter:expr $(,)?) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =

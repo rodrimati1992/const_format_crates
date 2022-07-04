@@ -8,6 +8,8 @@ Added `"more_str_macros"` crate feature.
 
 Added `str_split` macro, conditional on the `"more_str_macros"` feature.
 
+Added `char` pattern support to `str_replace`.
+
 ### 0.2.25
 
 Fixed the `clippy::double_parens` (false positive) warning by 
