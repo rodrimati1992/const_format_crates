@@ -6,4 +6,7 @@ mod str_methods_modules {
     mod str_replace;
 
     mod str_splice;
+
+    #[cfg(feature = "more_str_macros")]
+    mod str_split_tests;
 }
