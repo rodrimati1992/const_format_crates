@@ -484,3 +484,63 @@ macro_rules! str_get {
         }
     }};
 }
+
+/// Splits `$string` (a `&'static str` constant) with `$splitter`,
+/// returning an array of `&'static str`s.
+///
+/// # Signature
+///
+/// This macro acts like a function of this signature:
+/// ```rust
+/// # const LEN: usize = 0;
+/// # trait Splitter {}
+/// fn str_split(string: &'static str, splitter: impl Splitter) -> [&'static str; LEN]
+/// # { [] }
+/// ```
+///
+/// `impl Splitter` is any of these types:
+///
+/// - `&'static str`
+///
+/// - `u8`: only ascii values (0 up to 127 inclusive) are allowed
+///
+/// The value of `LEN` depends on the `string` and `splitter` arguments.
+///
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::str_split;
+///
+/// assert_eq!(str_split!("Hello, world!", ", "), ["Hello", "world!"]);
+///
+/// // A `""` splitter outputs all chars individually (`str::split` does the same)
+/// assert_eq!(str_split!("🧡BAR🧠", ""), ["", "🧡", "B", "A", "R", "🧠", ""]);
+///
+/// // Splitting the string with an ascii byte
+/// assert_eq!(str_split!("dash-separated-string", b'-'), ["dash", "separated", "string"]);
+///
+/// {
+///     const STR: &str = "foo bar baz";
+///     const SPLITTER: &str = " ";
+///
+///     // both arguments to the `str_aplit` macro can be non-literal constants
+///     const SPLIT: [&str; 3] = str_split!(STR, SPLITTER);
+///
+///     assert_eq!(SPLIT, ["foo", "bar", "baz"]);
+/// }
+///
+/// ```
+#[macro_export]
+#[cfg(feature = "more_str_macros")]
+macro_rules! str_split {
+    ($string:expr, $splitter:expr $(,)?) => {{
+        const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =
+            $crate::__str_methods::SplitInputConv($string, $splitter).conv();
+
+        {
+            const OB: [&$crate::pmr::str; ARGS_OSRCTFL4A.length()] = ARGS_OSRCTFL4A.split_it();
+            OB
+        }
+    }};
+}

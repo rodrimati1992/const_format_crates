@@ -277,6 +277,8 @@
 //! Also changes the the implementation of the [`concatcp`] and [`formatcp`]
 //! macros to use const generics.
 //!
+//! - "more_str_macros": Requires Rust nightly, implies the "const_generics" feature.
+//! Enables the [`str_split`] macro.
 //!
 //!
 //! # No-std support
@@ -345,6 +347,8 @@
 //! [`str_splice`]: ./macro.str_splice.html
 //!
 //! [`str_replace`]: ./macro.str_replace.html
+//!
+//! [`str_split`]: ./macro.str_split.html
 //!
 //! [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 //!

@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.25"
+version = "0.2.26"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -31,6 +31,7 @@ assert = ["assertc"]
 assertc = ["fmt", "assertcp"]
 assertcp = ["const_generics"]
 constant_time_as_str = ["fmt"]
+more_str_macros = ["konst", "konst/constant_time_slice", "const_generics"]
 
 # "private" features
 debug = ["const_format_proc_macros/debug"]
@@ -42,6 +43,11 @@ all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "asser
 [dependencies.const_format_proc_macros]
 version = "=0.2.22"
 path = "../const_format_proc_macros"
+
+[dependencies.konst]
+version = "0.2.13"
+default-features = false
+optional = true
 
 [dev-dependencies]
 fastrand = {version = "1.3.5", default_features = false}
