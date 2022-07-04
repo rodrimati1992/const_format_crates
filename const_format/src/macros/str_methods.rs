@@ -17,6 +17,8 @@
 ///
 /// - `&'static str`
 ///
+/// - `char`
+///
 /// - `u8`: required to be ascii (`0` up to `127` inclusive).
 ///
 /// # Example
@@ -502,6 +504,8 @@ macro_rules! str_get {
 ///
 /// - `&'static str`
 ///
+/// - `char`
+///
 /// - `u8`: only ascii values (0 up to 127 inclusive) are allowed
 ///
 /// The value of `LEN` depends on the `string` and `splitter` arguments.
@@ -511,6 +515,8 @@ macro_rules! str_get {
 ///
 /// ```rust
 /// use const_format::str_split;
+///
+/// assert_eq!(str_split!("this is nice", ' '), ["this", "is", "nice"]);
 ///
 /// assert_eq!(str_split!("Hello, world!", ", "), ["Hello", "world!"]);
 ///

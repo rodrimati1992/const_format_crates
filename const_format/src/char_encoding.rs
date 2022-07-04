@@ -101,6 +101,14 @@ impl FmtChar {
     fn as_bytes(&self) -> &[u8] {
         &self.encoded[..self.len()]
     }
+
+    #[cfg(feature = "more_str_macros")]
+    pub(crate) const fn as_str(&self) -> &str {
+        let bytes = konst::slice::slice_up_to(&self.encoded, self.len());
+
+        // safety: the tests ensure that all possible chars are encoded correctly
+        unsafe { core::str::from_utf8_unchecked(bytes) }
+    }
 }
 
 #[cfg(all(test, not(miri)))]

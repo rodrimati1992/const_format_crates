@@ -1,41 +1,30 @@
-use super::AsciiByte;
+use super::{Pattern, PatternCtor, PatternNorm};
 
 pub struct SplitInputConv<T>(pub &'static str, pub T);
 
-impl SplitInputConv<u8> {
-    pub const fn conv(self) -> SplitInput {
-        SplitInput {
-            str: self.0,
-            pattern: SplitPattern::AsciiByte(AsciiByte::new(self.1)),
-            length: usize::MAX,
+macro_rules! ctor {
+    ($ty:ty) => {
+        impl SplitInputConv<$ty> {
+            pub const fn conv(self) -> SplitInput {
+                SplitInput {
+                    str: self.0,
+                    pattern: PatternCtor(self.1).conv(),
+                    length: usize::MAX,
+                }
+                .compute_length()
+            }
         }
-        .compute_length()
-    }
+    };
 }
 
-impl SplitInputConv<&'static str> {
-    pub const fn conv(self) -> SplitInput {
-        let str = self.1;
-
-        let pattern = if let [b @ 0..=127] = *str.as_bytes() {
-            SplitPattern::AsciiByte(AsciiByte::new(b))
-        } else {
-            SplitPattern::Str(str)
-        };
-
-        SplitInput {
-            str: self.0,
-            pattern,
-            length: usize::MAX,
-        }
-        .compute_length()
-    }
-}
+ctor! {u8}
+ctor! {&'static str}
+ctor! {char}
 
 #[derive(Copy, Clone)]
 pub struct SplitInput {
     str: &'static str,
-    pattern: SplitPattern,
+    pattern: Pattern,
     length: usize,
 }
 
@@ -54,12 +43,6 @@ impl SplitInput {
     }
 }
 
-#[derive(Copy, Clone)]
-pub enum SplitPattern {
-    AsciiByte(AsciiByte),
-    Str(&'static str),
-}
-
 pub const fn count_splits(
     SplitInput {
         mut str, pattern, ..
@@ -67,8 +50,8 @@ pub const fn count_splits(
 ) -> usize {
     let mut count = 1;
 
-    match pattern {
-        SplitPattern::AsciiByte(ascii_c) => {
+    match pattern.normalize() {
+        PatternNorm::AsciiByte(ascii_c) => {
             let mut bytes = str.as_bytes();
             let ascii_c = ascii_c.get();
 
@@ -80,7 +63,7 @@ pub const fn count_splits(
                 }
             }
         }
-        SplitPattern::Str(str_pat) => {
+        PatternNorm::Str(str_pat) => {
             if str_pat.is_empty() {
                 let mut char_i = 0;
                 count += 1;
@@ -143,8 +126,8 @@ pub const fn split_it<const LEN: usize>(args: SplitInput) -> [&'static str; LEN]
         };
     }
 
-    match pattern {
-        SplitPattern::AsciiByte(ascii_c) => {
+    match pattern.normalize() {
+        PatternNorm::AsciiByte(ascii_c) => {
             let ascii_c = ascii_c.get();
 
             while let Some(found_at) = find_u8(str.as_bytes(), ascii_c) {
@@ -152,7 +135,7 @@ pub const fn split_it<const LEN: usize>(args: SplitInput) -> [&'static str; LEN]
                 str = konst::string::str_from(str, found_at + 1);
             }
         }
-        SplitPattern::Str(str_pat) => {
+        PatternNorm::Str(str_pat) => {
             if str_pat.is_empty() {
                 out_i += 1;
                 while let Some(next) = find_next_char_boundary(str, 0) {

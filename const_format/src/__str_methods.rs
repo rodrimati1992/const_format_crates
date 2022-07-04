@@ -1,3 +1,6 @@
+mod pattern;
+use pattern::{Pattern, PatternCtor, PatternNorm};
+
 #[cfg(feature = "const_generics")]
 mod str_replace;
 
