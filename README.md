@@ -289,6 +289,9 @@ Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
 Also changes the the implementation of the [`concatcp`] and [`formatcp`]
 macros to use const generics.
 
+- "more_str_macros": Requires Rust nightly, implies the "const_generics" feature.
+Enables the [`str_split`] macro. 
+
 # No-std support
 
 `const_format` is `#![no_std]`, it can be used anywhere Rust can be used.
@@ -354,5 +357,7 @@ need to be explicitly enabled with cargo features.
 [`str_splice`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_splice.html
 
 [`str_replace`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_replace.html
+
+[`str_split`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_split.html
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace

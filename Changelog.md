@@ -2,12 +2,18 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.26 
+
+Added `"more_str_macros"` crate feature.
+
+Added `str_split` macro, conditional on the `"more_str_macros"` feature.
+
 ### 0.2.25
 
 Fixed the `clippy::double_parens` (false positive) warning by 
 encoding the `&'static str` type annotation some other way.
 
-Made `SplicedStr`, `Formatting`, `NumberFormatting`, 
+Made `SplicedStr`, `Formatting`, and `NumberFormatting` derive `Eq` .
 
 ### 0.2.24
 
