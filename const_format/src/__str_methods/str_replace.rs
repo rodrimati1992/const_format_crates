@@ -52,7 +52,6 @@ const fn str_replace_length(inp: &str, r: Pattern, replaced_with: &str) -> usize
             if str.is_empty() {
                 return inp.len();
             }
-            let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;
             while let Some(next_match) = bytes_find(inp, str, i) {
@@ -106,7 +105,6 @@ const fn str_replace<const L: usize>(inp: &str, r: Pattern, replaced_with: &str)
                 }
                 return out;
             }
-            let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;
             while let Some(next_match) = bytes_find(inp, str, i) {

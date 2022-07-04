@@ -1,5 +1,7 @@
 use super::{Pattern, PatternCtor, PatternNorm};
 
+use konst::slice::{bytes_find, bytes_find_skip};
+
 pub struct SplitInputConv<T>(pub &'static str, pub T);
 
 macro_rules! ctor {
@@ -72,7 +74,8 @@ pub const fn count_splits(
                     count += 1;
                 }
             } else {
-                while let Some(next) = konst::string::find_skip(str, str_pat) {
+                let mut str = str.as_bytes();
+                while let Some(next) = bytes_find_skip(str, str_pat) {
                     str = next;
                     count += 1;
                 }
@@ -143,7 +146,7 @@ pub const fn split_it<const LEN: usize>(args: SplitInput) -> [&'static str; LEN]
                     str = konst::string::str_from(str, next);
                 }
             } else {
-                while let Some(found_at) = konst::string::find(str, str_pat, 0) {
+                while let Some(found_at) = bytes_find(str.as_bytes(), str_pat, 0) {
                     write_out! {konst::string::str_up_to(str, found_at)}
                     str = konst::string::str_from(str, found_at + str_pat.len());
                 }

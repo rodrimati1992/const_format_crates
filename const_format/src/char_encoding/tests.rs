@@ -23,9 +23,6 @@ fn char_to_utf8_display_test() {
         assert_eq!(utf8_here.len(), char_display_len(c));
 
         assert_eq!(utf8_std.as_bytes(), utf8_here.as_bytes());
-
-        #[cfg(feature = "more_str_macros")]
-        assert_eq!(utf8_std, utf8_here.as_str(), "{:?}", c);
     }
 }
 

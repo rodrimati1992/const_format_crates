@@ -38,15 +38,15 @@ pub(crate) enum Pattern {
 
 pub(crate) enum PatternNorm<'a> {
     AsciiByte(AsciiByte),
-    Str(&'a str),
+    Str(&'a [u8]),
 }
 
 impl Pattern {
     pub(crate) const fn normalize(&self) -> PatternNorm<'_> {
         match self {
             Pattern::AsciiByte(ab) => PatternNorm::AsciiByte(*ab),
-            Pattern::Str(str) => PatternNorm::Str(*str),
-            Pattern::Char(char) => PatternNorm::Str(char.as_str()),
+            Pattern::Str(str) => PatternNorm::Str(str.as_bytes()),
+            Pattern::Char(char) => PatternNorm::Str(char.as_bytes()),
         }
     }
 }

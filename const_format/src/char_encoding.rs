@@ -97,17 +97,39 @@ impl FmtChar {
         self.len as usize
     }
 
-    #[cfg(test)]
-    fn as_bytes(&self) -> &[u8] {
-        &self.encoded[..self.len()]
-    }
+    pub(crate) const fn as_bytes(&self) -> &[u8] {
+        #[cfg(not(feature = "more_str_macros"))]
+        {
+            match self.len() {
+                1 => {
+                    let [ret @ .., _, _, _, _, _] = &self.encoded;
+                    ret
+                }
+                2 => {
+                    let [ret @ .., _, _, _, _] = &self.encoded;
+                    ret
+                }
+                3 => {
+                    let [ret @ .., _, _, _] = &self.encoded;
+                    ret
+                }
+                4 => {
+                    let [ret @ .., _, _] = &self.encoded;
+                    ret
+                }
+                5 => {
+                    let [ret @ .., _] = &self.encoded;
+                    ret
+                }
+                6 => &self.encoded,
+                x => [/*bug WTF*/][x],
+            }
+        }
 
-    #[cfg(feature = "more_str_macros")]
-    pub(crate) const fn as_str(&self) -> &str {
-        let bytes = konst::slice::slice_up_to(&self.encoded, self.len());
-
-        // safety: the tests ensure that all possible chars are encoded correctly
-        unsafe { core::str::from_utf8_unchecked(bytes) }
+        #[cfg(feature = "more_str_macros")]
+        {
+            ::konst::slice::slice_up_to(&self.encoded, self.len())
+        }
     }
 }
 

@@ -1,6 +1,3 @@
-mod pattern;
-use pattern::{Pattern, PatternCtor, PatternNorm};
-
 #[cfg(feature = "const_generics")]
 mod str_replace;
 
@@ -21,6 +18,12 @@ mod str_split;
 
 #[cfg(feature = "more_str_macros")]
 pub use str_split::{SplitInput, SplitInputConv};
+
+#[cfg(feature = "const_generics")]
+mod pattern;
+
+#[cfg(feature = "const_generics")]
+use pattern::{Pattern, PatternCtor, PatternNorm};
 
 #[cfg(feature = "const_generics")]
 mod ascii_byte {
