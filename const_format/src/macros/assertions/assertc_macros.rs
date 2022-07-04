@@ -105,7 +105,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc {
         ($($parameters:tt)*) => (
@@ -261,7 +261,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc_eq {
         ($($parameters:tt)*) => (
@@ -389,7 +389,7 @@ assert_eq_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertc")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertc")))]
     #[macro_export]
     macro_rules! assertc_ne {
         ($($parameters:tt)*) => (

@@ -102,7 +102,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertcp")))]
     #[macro_export]
     macro_rules! assertcp {
         ($($parameters:tt)*) => (
@@ -222,7 +222,7 @@ with_shared_docs! {
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertcp")))]
     #[macro_export]
     macro_rules! assertcp_eq {
         ($($parameters:tt)*) => (
@@ -283,7 +283,7 @@ with_shared_docs! {
     /// ', src/macros/assertions/assertcp_macros.rs:7:14
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "assertcp")))]
+    #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertcp")))]
     #[macro_export]
     macro_rules! assertcp_ne {
         ($($parameters:tt)*) => (

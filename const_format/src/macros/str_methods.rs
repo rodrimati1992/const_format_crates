@@ -55,7 +55,7 @@
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
 #[cfg(feature = "const_generics")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
 macro_rules! str_replace {
     ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
@@ -102,7 +102,7 @@ macro_rules! str_replace {
 /// ```
 ///
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r##"
 ```rust
 const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
@@ -202,7 +202,7 @@ macro_rules! str_repeat {
 /// const_format::str_splice!("foo", 0..10, "");
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 const_format::str_splice!("foo", 0..3, "");
@@ -341,7 +341,7 @@ macro_rules! str_splice {
 /// const_format::str_index!("foo", 0..10);
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 assert_eq!(const_format::str_index!("効率的", 3..6), "率");
@@ -442,7 +442,7 @@ macro_rules! str_index {
 ///
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 assert_eq!(const_format::str_get!("効率的", 3..6), Some("率"));

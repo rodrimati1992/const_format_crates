@@ -354,6 +354,6 @@
 /// # }
 /// ```
 ///
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "derive")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "derive")))]
 #[cfg(feature = "derive")]
 pub use const_format_proc_macros::ConstDebug;

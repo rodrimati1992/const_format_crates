@@ -324,7 +324,7 @@ macro_rules! formatcp {
 ///
 /// [`FormatMarker`]: ./marker_traits/trait.FormatMarker.html
 ///
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! concatc {
@@ -496,7 +496,7 @@ macro_rules! __concatc_inner {
 ///
 ///
 #[macro_export]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
@@ -696,7 +696,7 @@ macro_rules! formatc {
 ///
 ///
 #[macro_export]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! writec {
     ( $writer:expr, $format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => ({

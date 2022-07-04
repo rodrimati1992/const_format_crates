@@ -45,7 +45,7 @@ mod str_methods;
 ///
 /// # Ok::<(), Error>(())
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! try_ {
@@ -81,7 +81,7 @@ macro_rules! try_ {
 /// assert_eq!(TEXT, "foo bar baz")
 ///
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! unwrap {
@@ -130,7 +130,7 @@ macro_rules! unwrap {
 /// assert_eq!(BAR.as_str(), "bar");
 ///
 /// ```
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! unwrap_or_else {
@@ -205,7 +205,7 @@ macro_rules! unwrap_or_else {
 /// ```
 ///
 /// [`PWrapper`]: ./struct.PWrapper.html
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! coerce_to_fmt {
@@ -266,7 +266,7 @@ macro_rules! coerce_to_fmt {
 /// }
 /// ```
 ///
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[deprecated(since = "0.2.19", note = "Use `StrWriter::as_str_alt` instead")]
 #[macro_export]
@@ -280,7 +280,7 @@ macro_rules! strwriter_as_str {
     };
 }
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! conditionally_const {
     (
@@ -302,7 +302,7 @@ macro_rules! conditionally_const {
     )
 }
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 macro_rules! std_kind_impl {
     (

@@ -33,12 +33,21 @@ assertcp = ["const_generics"]
 constant_time_as_str = ["fmt"]
 more_str_macros = ["konst", "konst/constant_time_slice", "const_generics"]
 
+# enables all the features, requires (potentially) the latest nightly
+all = [
+    "fmt",
+    "derive",
+    "constant_time_as_str",
+    "more_str_macros",
+    "nightly_const_generics",
+    "assert",
+]
+
 # "private" features
-debug = ["const_format_proc_macros/debug"]
-testing = []
-only_new_tests = ["testing"]
-docsrs = []
-all = ["fmt", "derive", "constant_time_as_str", "nightly_const_generics", "assert", "docsrs"]
+__debug = ["const_format_proc_macros/debug"]
+__test = []
+__only_new_tests = ["__test"]
+__docsrs = []
 
 [dependencies.const_format_proc_macros]
 version = "=0.2.22"
@@ -54,5 +63,5 @@ fastrand = {version = "1.3.5", default_features = false}
 arrayvec = {version = "0.5.1", default_features = false}
 
 [package.metadata.docs.rs]
-features = ["all"]
+features = ["all", "__docsrs"]
 

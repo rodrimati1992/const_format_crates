@@ -355,7 +355,7 @@
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 #![cfg_attr(feature = "constant_time_as_str", feature(const_slice_from_raw_parts))]
-#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
+#![cfg_attr(feature = "__docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
 #![allow(clippy::blacklisted_name)]
@@ -391,7 +391,7 @@ mod pargument;
 #[cfg(feature = "const_generics")]
 mod const_generic_concatcp;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod utils;
 
@@ -402,22 +402,22 @@ mod slice_cmp;
 #[doc(hidden)]
 pub mod __hidden_utils;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod for_examples;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod marker_traits;
 
-#[cfg(feature = "testing")]
+#[cfg(feature = "__test")]
 pub mod test_utils;
 
-#[cfg(feature = "testing")]
+#[cfg(feature = "__test")]
 #[allow(missing_docs)]
 pub mod doctests;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 pub mod fmt;
 
@@ -425,7 +425,7 @@ pub mod fmt;
 #[doc(hidden)]
 pub mod msg;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg_attr(not(feature = "fmt"), doc(hidden))]
 pub mod wrapper_types;
 
@@ -438,7 +438,7 @@ pub mod __str_methods;
 
 pub use __str_methods::SplicedStr;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 pub use __ascii_case_conv::Case;
 
@@ -513,5 +513,5 @@ pub mod pmr {
     }
 }
 
-#[cfg(all(test, not(feature = "testing")))]
+#[cfg(all(test, not(feature = "__test")))]
 compile_error! { "tests must be run with the \"testing\" feature" }
