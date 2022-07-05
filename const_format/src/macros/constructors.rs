@@ -31,7 +31,7 @@
 ///
 /// [`AsciiStr`]: ./struct.AsciiStr.html
 ///
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "fmt")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
 #[cfg(feature = "fmt")]
 #[macro_export]
 macro_rules! ascii_str {

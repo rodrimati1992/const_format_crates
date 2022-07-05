@@ -1,37 +1,29 @@
-use super::{bytes_find, AsciiByte};
+use super::{bytes_find, Pattern, PatternCtor, PatternNorm};
 
 pub struct ReplaceInputConv<T>(pub &'static str, pub T, pub &'static str);
 
-impl ReplaceInputConv<u8> {
-    pub const fn conv(self) -> ReplaceInput {
-        ReplaceInput {
-            str: self.0,
-            pattern: ReplacePattern::AsciiByte(AsciiByte::new(self.1)),
-            replaced_with: self.2,
+macro_rules! ctor {
+    ($ty:ty) => {
+        impl ReplaceInputConv<$ty> {
+            pub const fn conv(self) -> ReplaceInput {
+                ReplaceInput {
+                    str: self.0,
+                    pattern: PatternCtor(self.1).conv(),
+                    replaced_with: self.2,
+                }
+            }
         }
-    }
+    };
 }
 
-impl ReplaceInputConv<&'static str> {
-    pub const fn conv(self) -> ReplaceInput {
-        ReplaceInput {
-            str: self.0,
-            pattern: ReplacePattern::Str(self.1),
-            replaced_with: self.2,
-        }
-    }
-}
+ctor! {u8}
+ctor! {&'static str}
+ctor! {char}
 
 pub struct ReplaceInput {
     str: &'static str,
-    pattern: ReplacePattern,
+    pattern: Pattern,
     replaced_with: &'static str,
-}
-
-#[derive(Copy, Clone)]
-pub enum ReplacePattern {
-    AsciiByte(AsciiByte),
-    Str(&'static str),
 }
 
 impl ReplaceInput {
@@ -43,24 +35,23 @@ impl ReplaceInput {
     }
 }
 
-const fn str_replace_length(inp: &str, r: ReplacePattern, replaced_with: &str) -> usize {
+const fn str_replace_length(inp: &str, r: Pattern, replaced_with: &str) -> usize {
     let inp = inp.as_bytes();
 
     let replaced_len = replaced_with.len();
     let mut out_len = 0;
 
-    match r {
-        ReplacePattern::AsciiByte(byte) => {
+    match r.normalize() {
+        PatternNorm::AsciiByte(byte) => {
             let byte = byte.get();
             iter_copy_slice! {b in inp =>
                 out_len += if b == byte { replaced_len } else { 1 };
             }
         }
-        ReplacePattern::Str(str) => {
+        PatternNorm::Str(str) => {
             if str.is_empty() {
                 return inp.len();
             }
-            let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;
             while let Some(next_match) = bytes_find(inp, str, i) {
@@ -74,7 +65,7 @@ const fn str_replace_length(inp: &str, r: ReplacePattern, replaced_with: &str) -
     out_len
 }
 
-const fn str_replace<const L: usize>(inp: &str, r: ReplacePattern, replaced_with: &str) -> [u8; L] {
+const fn str_replace<const L: usize>(inp: &str, r: Pattern, replaced_with: &str) -> [u8; L] {
     let inp = inp.as_bytes();
 
     let replaced_with_bytes = replaced_with.as_bytes();
@@ -96,8 +87,8 @@ const fn str_replace<const L: usize>(inp: &str, r: ReplacePattern, replaced_with
         };
     }
 
-    match r {
-        ReplacePattern::AsciiByte(byte) => {
+    match r.normalize() {
+        PatternNorm::AsciiByte(byte) => {
             let byte = byte.get();
             iter_copy_slice! {b in inp =>
                 if b == byte {
@@ -107,14 +98,13 @@ const fn str_replace<const L: usize>(inp: &str, r: ReplacePattern, replaced_with
                 }
             }
         }
-        ReplacePattern::Str(str) => {
+        PatternNorm::Str(str) => {
             if str.is_empty() {
                 iter_copy_slice! {b in inp =>
                     write_byte!(b);
                 }
                 return out;
             }
-            let str = str.as_bytes();
             let str_len = str.len();
             let mut i = 0;
             while let Some(next_match) = bytes_find(inp, str, i) {

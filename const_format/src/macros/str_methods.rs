@@ -17,6 +17,8 @@
 ///
 /// - `&'static str`
 ///
+/// - `char`
+///
 /// - `u8`: required to be ascii (`0` up to `127` inclusive).
 ///
 /// # Example
@@ -29,6 +31,12 @@
 /// assert_eq!(
 ///     str_replace!("The incredible shrinking man.", "i", "eee"),
 ///     "The eeencredeeeble shreeenkeeeng man.",
+/// );
+///
+/// // Passing a char pattern
+/// assert_eq!(
+///     str_replace!("The incredible shrinking man.", ' ', "---"),
+///     "The---incredible---shrinking---man.",
 /// );
 ///
 /// // Passing an ascii u8 pattern.
@@ -55,7 +63,7 @@
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
 #[cfg(feature = "const_generics")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
 macro_rules! str_replace {
     ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
@@ -102,7 +110,7 @@ macro_rules! str_replace {
 /// ```
 ///
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r##"
 ```rust
 const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
@@ -202,7 +210,7 @@ macro_rules! str_repeat {
 /// const_format::str_splice!("foo", 0..10, "");
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 const_format::str_splice!("foo", 0..3, "");
@@ -341,7 +349,7 @@ macro_rules! str_splice {
 /// const_format::str_index!("foo", 0..10);
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 assert_eq!(const_format::str_index!("効率的", 3..6), "率");
@@ -442,7 +450,7 @@ macro_rules! str_index {
 ///
 /// ```
 #[cfg_attr(
-    feature = "testing",
+    feature = "__test",
     doc = r#"
 ```rust
 assert_eq!(const_format::str_get!("効率的", 3..6), Some("率"));
@@ -481,6 +489,71 @@ macro_rules! str_get {
             };
 
             OUT
+        }
+    }};
+}
+
+/// Splits `$string` (a `&'static str` constant) with `$splitter`,
+/// returning an array of `&'static str`s.
+///
+/// # Signature
+///
+/// This macro acts like a function of this signature:
+/// ```rust
+/// # const LEN: usize = 0;
+/// # trait Splitter {}
+/// fn str_split(string: &'static str, splitter: impl Splitter) -> [&'static str; LEN]
+/// # { [] }
+/// ```
+///
+/// `impl Splitter` is any of these types:
+///
+/// - `&'static str`
+///
+/// - `char`
+///
+/// - `u8`: only ascii values (0 up to 127 inclusive) are allowed
+///
+/// The value of `LEN` depends on the `string` and `splitter` arguments.
+///
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::str_split;
+///
+/// assert_eq!(str_split!("this is nice", ' '), ["this", "is", "nice"]);
+///
+/// assert_eq!(str_split!("Hello, world!", ", "), ["Hello", "world!"]);
+///
+/// // A `""` splitter outputs all chars individually (`str::split` does the same)
+/// assert_eq!(str_split!("🧡BAR🧠", ""), ["", "🧡", "B", "A", "R", "🧠", ""]);
+///
+/// // Splitting the string with an ascii byte
+/// assert_eq!(str_split!("dash-separated-string", b'-'), ["dash", "separated", "string"]);
+///
+/// {
+///     const STR: &str = "foo bar baz";
+///     const SPLITTER: &str = " ";
+///
+///     // both arguments to the `str_aplit` macro can be non-literal constants
+///     const SPLIT: [&str; 3] = str_split!(STR, SPLITTER);
+///
+///     assert_eq!(SPLIT, ["foo", "bar", "baz"]);
+/// }
+///
+/// ```
+#[macro_export]
+#[cfg(feature = "more_str_macros")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "more_str_macros")))]
+macro_rules! str_split {
+    ($string:expr, $splitter:expr $(,)?) => {{
+        const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =
+            $crate::__str_methods::SplitInputConv($string, $splitter).conv();
+
+        {
+            const OB: [&$crate::pmr::str; ARGS_OSRCTFL4A.length()] = ARGS_OSRCTFL4A.split_it();
+            OB
         }
     }};
 }

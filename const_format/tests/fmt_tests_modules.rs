@@ -12,21 +12,21 @@ pub const _ASSERT_NOT_CF: [(); 13] = [(); const_format::NOT_CF];
 cfmt_a::__declare_rng_ext! {}
 
 mod fmt_tests {
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod display_formatting;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod formatted_writing;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod formatter_methods;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod std_impl_tests;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod str_writer_methods;
 
-    #[cfg(not(feature = "only_new_tests"))]
+    #[cfg(not(feature = "__only_new_tests"))]
     mod str_writer_mut;
 }

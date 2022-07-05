@@ -13,6 +13,18 @@ pub use str_splice::{DecomposedString, SplicedStr, StrSplceArgsConv, StrSpliceAr
 mod str_indexing;
 pub use str_indexing::{IndexValidity, StrIndexArgs, StrIndexArgsConv};
 
+#[cfg(feature = "more_str_macros")]
+mod str_split;
+
+#[cfg(feature = "more_str_macros")]
+pub use str_split::{SplitInput, SplitInputConv};
+
+#[cfg(feature = "const_generics")]
+mod pattern;
+
+#[cfg(feature = "const_generics")]
+use pattern::{Pattern, PatternCtor, PatternNorm};
+
 #[cfg(feature = "const_generics")]
 mod ascii_byte {
     #[derive(Copy, Clone)]
