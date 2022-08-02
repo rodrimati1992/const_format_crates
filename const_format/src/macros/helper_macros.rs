@@ -29,11 +29,11 @@ macro_rules! __write_pvariant {
         let encoded = $elem.encoded();
         let len = $elem.len();
 
-        let mut start = 0;
-        while start < len {
-            $out.array[$out.len] = encoded[start];
+        let mut __start = 0;
+        while __start < len {
+            $out.array[$out.len] = encoded[__start];
             $out.len += 1;
-            start += 1;
+            __start += 1;
         }
     }};
     (int, $parg:expr, $elem:ident => $out:ident) => {{
@@ -64,11 +64,11 @@ macro_rules! __write_pvariant {
             },
         };
 
-        let mut start = sa.start;
-        while start < sa.array.len() {
-            $out.array[$out.len] = sa.array[start];
+        let mut __start = sa.start;
+        while __start < sa.array.len() {
+            $out.array[$out.len] = sa.array[__start];
             $out.len += 1;
-            start += 1;
+            __start += 1;
         }
     }};
     (str, $parg:expr, $elem:ident => $out:ident) => {{
