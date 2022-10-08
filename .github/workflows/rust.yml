@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        rust: [stable, beta, nightly, 1.46.0, 1.51.0, 1.64.0]
+        rust: [stable, beta, nightly, 1.46.0, 1.51.0, 1.57.0, 1.64.0]
 
     steps:
     - uses: actions/checkout@v2
@@ -34,18 +34,29 @@ jobs:
         cargo update
 
         cd "${{github.workspace}}/const_format/"
-        cargo test --features "__test const_generics"
         cargo test --features "__test rust_1_51"
 
     - uses: actions/checkout@v2
     - name: ci-stable
-      if: ${{ matrix.rust == '1.64.0' }}
+      if: ${{ matrix.rust == '1.57.0' }}
       run: |
         cargo update
 
         cd "${{github.workspace}}/const_format/"
-        cargo test --features "__test rust_1_64"
 
+        cargo test --features "__test assertcp"
+        cargo test --features "__test rust_1_51"
+
+
+    - uses: actions/checkout@v2
+    - name: ci-stable
+      if: ${{ matrix.rust == '1.64.0' }}
+
+        cargo update
+
+        cd "${{github.workspace}}/const_format/"
+
+        cargo test --features "__test rust_1_64"
 
     - uses: actions/checkout@v2
     - name: ci-nighly
