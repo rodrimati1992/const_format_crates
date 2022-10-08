@@ -510,7 +510,7 @@ pub mod pmr {
     }
 }
 
-#[cfg(all(feature = "derive", feature = "assertcp"))]
+#[cfg(all(feature = "__test", feature = "derive", feature = "assertcp"))]
 identity! {
     #[doc = include_str!("../../README.md")]
     pub struct ReadmeTest;
