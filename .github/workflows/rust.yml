@@ -51,7 +51,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: ci-stable
       if: ${{ matrix.rust == '1.64.0' }}
-
+      run: |
         cargo update
 
         cd "${{github.workspace}}/const_format/"
