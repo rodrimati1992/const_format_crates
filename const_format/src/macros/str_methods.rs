@@ -62,8 +62,8 @@
 ///
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
-#[cfg(feature = "const_generics")]
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg(feature = "rust_1_51")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
 macro_rules! str_replace {
     ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
@@ -544,8 +544,8 @@ macro_rules! str_get {
 ///
 /// ```
 #[macro_export]
-#[cfg(feature = "more_str_macros")]
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "more_str_macros")))]
+#[cfg(feature = "rust_1_64")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
 macro_rules! str_split {
     ($string:expr, $splitter:expr $(,)?) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =

@@ -2,6 +2,15 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.27
+
+Replacing existing features with these:
+- `"rust_1_64"`: superceeding the soft-deprecated `"more_str_macros"` feature.
+- `"rust_1_51"`: superceeding the soft-deprecated `"const_generics"` feature.
+The new features are enabled by the feature they superceede.
+
+Now the `"fmt"` feature enables the `"rust_1_64"` feature.
+
 ### 0.2.26 
 
 Added `"more_str_macros"` crate feature.

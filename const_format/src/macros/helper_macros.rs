@@ -10,6 +10,10 @@ macro_rules! __for_range{
     })
 }
 
+macro_rules! identity {
+    ($($tt:tt)*) => { $($tt)* };
+}
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! iter_copy_slice{

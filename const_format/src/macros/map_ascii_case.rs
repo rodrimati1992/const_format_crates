@@ -73,7 +73,7 @@
 ///
 ///
 /// ```
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
 #[macro_export]
 macro_rules! map_ascii_case {
     ($case:expr, $str:expr) => {{

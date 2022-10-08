@@ -1,7 +1,7 @@
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 mod str_replace;
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 pub use self::str_replace::{ReplaceInput, ReplaceInputConv};
 
 mod str_repeat;
@@ -13,19 +13,19 @@ pub use str_splice::{DecomposedString, SplicedStr, StrSplceArgsConv, StrSpliceAr
 mod str_indexing;
 pub use str_indexing::{IndexValidity, StrIndexArgs, StrIndexArgsConv};
 
-#[cfg(feature = "more_str_macros")]
+#[cfg(feature = "rust_1_64")]
 mod str_split;
 
-#[cfg(feature = "more_str_macros")]
+#[cfg(feature = "rust_1_64")]
 pub use str_split::{SplitInput, SplitInputConv};
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 mod pattern;
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 use pattern::{Pattern, PatternCtor, PatternNorm};
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 mod ascii_byte {
     #[derive(Copy, Clone)]
     pub struct AsciiByte(u8);
@@ -46,11 +46,11 @@ mod ascii_byte {
         }
     }
 }
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 pub use ascii_byte::AsciiByte;
 
 // copied from the konst crate, if that implementation is wrong, this needs to be fixed
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 const fn bytes_find(left: &[u8], right: &[u8], from: usize) -> Option<usize> {
     let mut matching = right;
 
