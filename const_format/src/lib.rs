@@ -511,8 +511,10 @@ pub mod pmr {
 }
 
 #[cfg(all(feature = "derive", feature = "assertcp"))]
-#[doc = include_str!("../../README.md")]
-pub struct ReadmeTest;
+identity! {
+    #[doc = include_str!("../../README.md")]
+    pub struct ReadmeTest;
+}
 
 #[cfg(all(test, not(feature = "__test")))]
 compile_error! { "tests must be run with the \"testing\" feature" }
