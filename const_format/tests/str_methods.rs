@@ -1,12 +1,12 @@
 mod str_methods_modules {
-    #[cfg(feature = "const_generics")]
+    #[cfg(feature = "rust_1_51")]
     mod conv_ascii_case;
 
-    #[cfg(feature = "const_generics")]
+    #[cfg(feature = "rust_1_51")]
     mod str_replace;
 
     mod str_splice;
 
-    #[cfg(feature = "more_str_macros")]
+    #[cfg(feature = "rust_1_64")]
     mod str_split_tests;
 }

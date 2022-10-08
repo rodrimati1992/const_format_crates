@@ -67,7 +67,7 @@ macro_rules! concatcp {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "rust_1_51"))]
 macro_rules! __concatcp_inner {
     ($variables:expr) => {{
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
@@ -108,7 +108,7 @@ macro_rules! __concatcp_inner {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 macro_rules! __concatcp_inner {
     ($variables:expr) => {{
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);

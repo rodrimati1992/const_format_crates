@@ -19,7 +19,7 @@ mod fmt_macros;
 mod impl_fmt;
 
 #[macro_use]
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 mod map_ascii_case;
 
 #[macro_use]
@@ -233,11 +233,10 @@ macro_rules! coerce_to_fmt {
 ///
 /// # Runtime
 ///
-/// If the "constant_time_as_str" feature is disabled,
+/// If the "rust_1_64" feature is disabled,
 /// this takes time proportional to `$expr.capacity() - $expr.len()`.
 ///
-/// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
-/// but uses a few additional nightly features.
+/// If the "rust_1_64" feature is enabled, it takes constant time to run.
 ///
 /// # Example
 ///

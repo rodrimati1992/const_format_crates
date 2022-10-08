@@ -98,7 +98,7 @@ impl FmtChar {
     }
 
     pub(crate) const fn as_bytes(&self) -> &[u8] {
-        #[cfg(not(feature = "more_str_macros"))]
+        #[cfg(not(feature = "rust_1_64"))]
         {
             match self.len() {
                 1 => {
@@ -126,7 +126,7 @@ impl FmtChar {
             }
         }
 
-        #[cfg(feature = "more_str_macros")]
+        #[cfg(feature = "rust_1_64")]
         {
             ::konst::slice::slice_up_to(&self.encoded, self.len())
         }

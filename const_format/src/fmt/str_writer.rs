@@ -307,11 +307,10 @@ impl StrWriter {
     ///
     /// ### Runtime
     ///
-    /// If the "constant_time_as_str" feature is disabled,
+    /// If the "rust_1_64" feature is disabled,
     /// this takes time proportional to `self.capacity() - self.len()`.
     ///
-    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
-    /// but uses a few additional nightly features.
+    /// If the "rust_1_64" feature is enabled, it takes constant time to run.
     ///
     /// # Example
     ///
@@ -345,11 +344,10 @@ impl StrWriter {
     ///
     /// ### Runtime
     ///
-    /// If the "constant_time_as_str" feature is disabled,
+    /// If the "rust_1_64" feature is disabled,
     /// this takes time proportional to `self.capacity() - self.len()`.
     ///
-    /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
-    /// but uses a few additional nightly features.
+    /// If the "rust_1_64" feature is enabled, it takes constant time to run.
     ///
     /// # Example
     ///
@@ -385,19 +383,18 @@ impl StrWriter {
     }
 
     conditionally_const! {
-        feature = "constant_time_as_str";
+        feature = "rust_1_64";
         /// Gets the written part of this `StrWriter` as a `&str`
         ///
         /// ### Constness
         ///
-        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2021-07-15.
+        /// This can be called in const contexts by enabling the "rust_1_64" feature.
         ///
         /// ### Alternative
         ///
         /// You can also use the [`as_str_alt`](Self::as_str_alt) method,
         /// which is always available,
-        /// but takes linear time to run when the "constant_time_as_str" feature
+        /// but takes linear time to run when the "rust_1_64" feature
         /// is disabled.
         ///
         #[inline(always)]
@@ -413,8 +410,7 @@ impl StrWriter {
         ///
         /// ### Constness
         ///
-        /// This can be called in const contexts by enabling the "constant_time_as_str" feature,
-        /// which requires nightly Rust versions after 2021-07-15.
+        /// This can be called in const contexts by enabling the "rust_1_64" feature.
         ///
         /// # Example
         ///

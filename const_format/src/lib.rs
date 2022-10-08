@@ -4,9 +4,8 @@
 //!
 //! # Rust versions
 //!
-//! There are some features that require Rust 1.46.0,
-//! some that require Rust 1.51.0,
-//! and others that require Rust nightly,
+//! There are some features that require a variety of stable Rust versions and
+//! others that Rust nightly,
 //! the sections below describe the features that are available for each version.
 //!
 //! ### Rust 1.46.0
@@ -35,7 +34,7 @@
 //!
 //! ### Rust 1.51.0
 //!
-//! By enabling the "const_generics" feature, you can use these macros:
+//! By enabling the "rust_1_51" feature, you can use these macros:
 //!
 //! - [`map_ascii_case`]:
 //! Converts a `&'static str` constant to a different casing style,
@@ -53,6 +52,12 @@
 //! but evaluated at compile-time,
 //! with the limitation that they can only have primitive types as arguments
 //! (just like [`concatcp`] and [`formatcp`]).
+//!
+//! ### Rust 1.64.0
+//!
+//! The `"rust_1_64"` feature enables these macros:
+//!
+//! -  [`str_split`]: splits a string constant
 //!
 //! ### Rust nightly
 //!
@@ -264,22 +269,17 @@
 //! This feature was previously named "assert",
 //! but it was renamed to avoid confusion with the "assertcp" feature.
 //!
-//! - "assertcp": Requires Rust 1.57.0, implies the "const_generics" feature.
+//! - "assertcp": Requires Rust 1.57.0, implies the "rust_1_51" feature.
 //! Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 //!
-//! - "constant_time_as_str": implies the "fmt" feature.
-//! An optimization that requires a few additional nightly features,
-//! allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
-//! in constant time, rather than linear time proportional to the truncated part of the slice.
-//!
-//! - "const_generics": Requires Rust 1.51.0.
+//! - "rust_1_51":
 //! Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
 //! Also changes the the implementation of the [`concatcp`] and [`formatcp`]
 //! macros to use const generics.
 //!
-//! - "more_str_macros": Requires Rust nightly, implies the "const_generics" feature.
-//! Enables the [`str_split`] macro.
-//!
+//! - "rust_1_64": Enables the [`str_split`] macro.
+//! Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
+//! in constant time, rather than linear time proportional to the truncated part of the slice.
 //!
 //! # No-std support
 //!
@@ -354,7 +354,6 @@
 //!
 #![no_std]
 #![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-#![cfg_attr(feature = "constant_time_as_str", feature(const_slice_from_raw_parts))]
 #![cfg_attr(feature = "__docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly
@@ -388,7 +387,7 @@ mod char_encoding;
 
 mod pargument;
 
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 mod const_generic_concatcp;
 
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
@@ -430,7 +429,7 @@ pub mod msg;
 pub mod wrapper_types;
 
 #[doc(hidden)]
-#[cfg(feature = "const_generics")]
+#[cfg(feature = "rust_1_51")]
 pub mod __ascii_case_conv;
 
 #[doc(hidden)]
@@ -438,8 +437,8 @@ pub mod __str_methods;
 
 pub use __str_methods::SplicedStr;
 
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "const_generics")))]
-#[cfg(feature = "const_generics")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
+#[cfg(feature = "rust_1_51")]
 pub use __ascii_case_conv::Case;
 
 #[cfg(feature = "fmt")]
@@ -483,7 +482,7 @@ pub mod pmr {
         result::Result::{self, Err, Ok},
     };
 
-    #[cfg(feature = "const_generics")]
+    #[cfg(feature = "rust_1_51")]
     pub use crate::const_generic_concatcp::__priv_concatenate;
 
     #[cfg(feature = "assertcp")]

@@ -11,9 +11,8 @@ This crate provides types and macros for formatting strings at compile-time.
 
 # Rust versions
 
-There are some features that require Rust 1.46.0,
-some that require Rust 1.51.0,
-and others that require Rust nightly,
+There are some features that require a variety of stable Rust versions and 
+others that Rust nightly,
 the sections below describe the features that are available for each version.
 
 ### Rust 1.46.0
@@ -59,6 +58,13 @@ These macros are like the standard library assert macros,
 but evaluated at compile-time,
 with the limitation that they can only have primitive types as arguments
 (just like [`concatcp`] and [`formatcp`]).
+
+### Rust 1.64.0
+
+The `"rust_1_64"` feature enables these macros:
+
+-  [`str_split`]: splits a string constant
+
 
 ### Rust nightly
 
@@ -279,18 +285,15 @@ but it was renamed to avoid confusion with the "assertcp" feature.
 - "assertcp": Requires Rust 1.57.0, implies the "const_generics" feature.
 Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 
-- "constant_time_as_str": implies the "fmt" feature.
-An optimization that requires a few additional nightly features,
-allowing the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run 
-in constant time, rather than linear time proportional to the truncated part of the slice.
-
-- "const_generics": Requires Rust 1.51.0.
+- "rust_1_51": 
 Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
 Also changes the the implementation of the [`concatcp`] and [`formatcp`]
 macros to use const generics.
 
-- "more_str_macros": Requires Rust nightly, implies the "const_generics" feature.
-Enables the [`str_split`] macro. 
+- "rust_1_64": Enables the [`str_split`] macro.
+Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
+in constant time, rather than linear time proportional to the truncated part of the slice.
+
 
 # No-std support
 

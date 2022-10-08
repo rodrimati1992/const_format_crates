@@ -11,8 +11,7 @@ macro_rules! with_shared_docs {(
 ) => (
     $(#[$before_clarification])*
     ///
-    /// This macro requires the "assertcp" feature to be exported,
-    /// because it uses some nightly Rust features.<br>
+    /// This macro requires the "assertcp" feature to be exported.
     ///
     $(#[$before_syntax])*
     /// # Syntax

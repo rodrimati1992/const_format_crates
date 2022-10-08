@@ -16,7 +16,7 @@ pub const fn saturate_range(s: &[u8], range: &Range<usize>) -> Range<usize> {
 }
 
 #[doc(hidden)]
-#[cfg(feature = "constant_time_as_str")]
+#[cfg(feature = "rust_1_64")]
 #[repr(C)]
 pub union Dereference<'a, T: ?Sized> {
     pub ptr: *const T,
@@ -33,12 +33,11 @@ macro_rules! slice_up_to_len_alt_docs {
         ///
         /// # Runtime
         ///
-        /// If the "constant_time_as_str" feature is disabled,
+        /// If the "rust_1_64" feature is disabled,
         /// thich takes linear time to remove the trailing elements,
         /// proportional to `slice.len() - len`.
         ///
-        /// If the "constant_time_as_str" feature is enabled, it takes constant time to run,
-        /// but uses a few additional nightly features.
+        /// If the "rust_1_64" feature is enabled, it takes constant time to run.
         ///
         /// # Example
         ///
@@ -61,14 +60,14 @@ macro_rules! slice_up_to_len_alt_docs {
 }
 
 slice_up_to_len_alt_docs! {
-    #[cfg(feature = "constant_time_as_str")]
+    #[cfg(feature = "rust_1_64")]
     #[inline(always)]
     pub const fn slice_up_to_len_alt<T>(slice: &[T], len: usize) -> &[T] {
         slice_up_to_len(slice, len)
     }
 }
 slice_up_to_len_alt_docs! {
-    #[cfg(not(feature = "constant_time_as_str"))]
+    #[cfg(not(feature = "rust_1_64"))]
     pub const fn slice_up_to_len_alt<T>(slice: &[T], len: usize) -> &[T] {
         let mut rem = slice.len().saturating_add(1).saturating_sub(len);
         let mut ret = slice;
@@ -111,9 +110,8 @@ macro_rules! slice_up_to_len_docs {
         /// # Constness
         ///
         /// This function takes constant time,
-        /// and in order to be `const fn` it requires the "constant_time_as_str"
-        /// feature to be enabled,
-        /// because this function uses some additional nightly Rust features.
+        /// and in order to be `const fn` it requires the "rust_1_64"
+        /// feature to be enabled.
         ///
         /// # Example
         ///
@@ -136,7 +134,7 @@ macro_rules! slice_up_to_len_docs {
 }
 
 slice_up_to_len_docs! {
-    #[cfg(feature = "constant_time_as_str")]
+    #[cfg(feature = "rust_1_64")]
     #[inline]
     pub const fn slice_up_to_len<T>(slice: &[T], len: usize) -> &[T] {
         if len > slice.len() {
@@ -152,7 +150,7 @@ slice_up_to_len_docs! {
 }
 
 slice_up_to_len_docs! {
-    #[cfg(not(feature = "constant_time_as_str"))]
+    #[cfg(not(feature = "rust_1_64"))]
     #[inline]
     pub fn slice_up_to_len<T>(slice: &[T], len: usize) -> &[T] {
         if len > slice.len() {

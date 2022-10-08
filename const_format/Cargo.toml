@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.26"
+version = "0.2.27"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -22,23 +22,25 @@ travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
 default = []
-const_generics = []
+const_generics = ["rust_1_51"]
 nightly_const_generics = ["const_generics"]
-fmt = ["const_generics"]
+rust_1_51 = []
+rust_1_64 = ["rust_1_51", "konst", "konst/rust_1_64"]
+fmt = ["rust_1_64"]
 derive = ["fmt", "const_format_proc_macros/derive"]
 # soft-deprecated, use assertc instead.
 assert = ["assertc"]
 assertc = ["fmt", "assertcp"]
 assertcp = ["const_generics"]
 constant_time_as_str = ["fmt"]
-more_str_macros = ["konst", "konst/constant_time_slice", "const_generics"]
+more_str_macros = ["rust_1_64"]
 
 # enables all the features, requires (potentially) the latest nightly
 all = [
     "fmt",
     "derive",
+    "rust_1_64",
     "constant_time_as_str",
-    "more_str_macros",
     "nightly_const_generics",
     "assert",
 ]
