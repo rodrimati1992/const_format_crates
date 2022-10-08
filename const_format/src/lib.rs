@@ -165,8 +165,6 @@
 //!
 #![cfg_attr(feature = "assertcp", doc = "```compile_fail")]
 #![cfg_attr(not(feature = "assertcp"), doc = "```ignore")]
-//! #![feature(const_mut_refs)]
-//!
 //! use const_format::assertcp_ne;
 //!
 //! macro_rules! check_valid_pizza{
@@ -511,6 +509,10 @@ pub mod pmr {
         pub x: &'static str,
     }
 }
+
+#[cfg(all(feature = "derive", feature = "assertcp"))]
+#[doc = include_str!("../../README.md")]
+pub struct ReadmeTest;
 
 #[cfg(all(test, not(feature = "__test")))]
 compile_error! { "tests must be run with the \"testing\" feature" }

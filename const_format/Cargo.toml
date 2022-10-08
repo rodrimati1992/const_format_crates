@@ -31,7 +31,7 @@ derive = ["fmt", "const_format_proc_macros/derive"]
 # soft-deprecated, use assertc instead.
 assert = ["assertc"]
 assertc = ["fmt", "assertcp"]
-assertcp = ["const_generics"]
+assertcp = ["rust_1_51"]
 constant_time_as_str = ["fmt"]
 more_str_macros = ["rust_1_64"]
 

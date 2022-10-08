@@ -137,7 +137,7 @@ This example requires Rust nightly, and the "derive" feature.
 
 
 ```rust
-    #![feature(const_mut_refs)]
+#![feature(const_mut_refs)]
 
 use const_format::{ConstDebug, formatc};
 
@@ -157,11 +157,12 @@ const MSG: Message = Message{
 
 const FOO: &str = formatc!("{:?}", MSG);
 
-assert_eq!(
-    FOO,
-    "Message { ip: [Octet(127), Octet(0), Octet(0), Octet(1)], value: \"Hello, World!\" }"
-);
-
+fn main(){
+    assert_eq!(
+        FOO,
+        "Message { ip: [Octet(127), Octet(0), Octet(0), Octet(1)], value: \"Hello, World!\" }"
+    );
+}
 ```
 
 ### Formatted const assertions
@@ -172,9 +173,7 @@ do compile-time inequality assertions with formatted error messages.
 This requires the "assertcp" feature,
 because using the `panic` macro at compile-time requires Rust 1.57.0.
 
-```rust
-#![feature(const_mut_refs)]
-
+```rust, compile_fail
 use const_format::assertcp_ne;
 
 macro_rules! check_valid_pizza{
@@ -191,8 +190,6 @@ macro_rules! check_valid_pizza{
 check_valid_pizza!("John", "salami");
 check_valid_pizza!("Dave", "sausage");
 check_valid_pizza!("Bob", "pineapple");
-
-# fn main(){}
 ```
 
 This is the compiler output:
