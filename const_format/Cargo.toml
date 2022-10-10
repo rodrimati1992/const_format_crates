@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.28"
+version = "0.2.29"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -40,8 +40,6 @@ all = [
     "fmt",
     "derive",
     "rust_1_64",
-    "constant_time_as_str",
-    "nightly_const_generics",
     "assert",
 ]
 
@@ -55,7 +53,7 @@ __only_new_tests = ["__test"]
 __docsrs = []
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.22"
+version = "=0.2.29"
 path = "../const_format_proc_macros"
 
 [dependencies.konst]

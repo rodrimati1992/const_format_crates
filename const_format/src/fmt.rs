@@ -67,15 +67,15 @@
 //!
 //! - Display formatting (eg: `formatc!("{}", 0u8)`, `formatc!("{:}", 0u8)` )
 //!
-//! - Lowercase hexadecimal formatting (eg: `formatc!("{:x}", 0u8)`):
+//! - Lowercase hexadecimal formatting (eg: `formatc!("{:x}", 0u8)`):<br>
 //! Writes numbers in lowercase hexadecimal.
 //! This can be combined with debug formatting, with the `"{:x?}"` formatter.
 //!
-//! - Upperacse Hexadecimal formatting (eg: `formatc!("{:X}", 0u8)`):
+//! - Upperacse Hexadecimal formatting (eg: `formatc!("{:X}", 0u8)`):<br>
 //! Writes numbers in uppercase hexadecimal.
 //! This can be combined with debug formatting, with the `"{:X?}"` formatter.
 //!
-//! - Binary formatting (eg: `formatc!("{:b}", 0u8)`):
+//! - Binary formatting (eg: `formatc!("{:b}", 0u8)`):<br>
 //! This can be combined with debug formatting, with the `"{:b?}"` formatter.
 //!
 //! ### Alternate flag

@@ -207,7 +207,7 @@ macro_rules! __concatcp_inner {
 ///
 /// ### Display
 ///
-/// The `{}`/`{:}` formatter formats the same as in [`format`].
+/// The `{}`/`{:}` formatter produces the same output as in [`format`].
 ///
 ///
 /// # Examples
