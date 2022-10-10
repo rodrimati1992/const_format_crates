@@ -12,6 +12,7 @@ pub(crate) enum Formatting {
 pub(crate) enum NumberFormatting {
     Decimal,
     Hexadecimal,
+    LowerHexadecimal,
     Binary,
 }
 
@@ -26,6 +27,7 @@ impl ToTokens for NumberFormatting {
         ts.append_all(match self {
             Self::Decimal => return,
             Self::Hexadecimal => quote!(.set_hexadecimal()),
+            Self::LowerHexadecimal => quote!(.set_lower_hexadecimal()),
             Self::Binary => quote!(.set_binary()),
         });
     }
@@ -108,9 +110,15 @@ impl ToTokens for FormattingFlags {
         ts.append_all(match (self.is_alternate, formatting) {
             (IA::No, FM::Decimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__REG),
             (IA::No, FM::Hexadecimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__HEX),
+            (IA::No, FM::LowerHexadecimal) => {
+                quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__LOWHEX)
+            }
             (IA::No, FM::Binary) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__BIN),
             (IA::Yes, FM::Decimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_REG),
             (IA::Yes, FM::Hexadecimal) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_HEX),
+            (IA::Yes, FM::LowerHexadecimal) => {
+                quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_LOWHEX)
+            }
             (IA::Yes, FM::Binary) => quote!(__cf_osRcTFl4A::pmr::FormattingFlags::__A_BIN),
         });
     }

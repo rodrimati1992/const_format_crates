@@ -62,7 +62,7 @@ mod tests;
 /// }
 ///
 /// const TEXT: &str = formatc!("{:?}", Divide(34, 11));
-/// const T_HEX: &str = formatc!("{:x?}", Divide(34, 11));
+/// const T_HEX: &str = formatc!("{:X?}", Divide(34, 11));
 /// const T_BIN: &str = formatc!("{:b?}", Divide(34, 11));
 ///
 /// assert_eq!(TEXT, "Divide { numerator: 34, denominator: 11, divided: 3 }");
@@ -350,7 +350,7 @@ impl PWrapper<Integer> {
             let digit = (n & 0xF) as u8;
             out.array[out.start] = match digit {
                 0..=9 => b'0' + digit,
-                _ => b'A' - 10 + digit,
+                _ => digit + flags.hex_fmt() as u8,
             };
             n >>= 4;
             if n == 0 {

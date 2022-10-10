@@ -1436,9 +1436,11 @@ delegate_integer_debug_methods! {
     ///
     /// assert_eq!(debug_fmt(writer, reg_flag),                   "63"     );
     /// assert_eq!(debug_fmt(writer, reg_flag.set_hexadecimal()), "3F"     );
+    /// assert_eq!(debug_fmt(writer, reg_flag.set_lower_hexadecimal()), "3f"     );
     /// assert_eq!(debug_fmt(writer, reg_flag.set_binary()),      "111111" );
     /// assert_eq!(debug_fmt(writer, alt_flag),                   "63"     );
     /// assert_eq!(debug_fmt(writer, alt_flag.set_hexadecimal()), "0x3F"   );
+    /// assert_eq!(debug_fmt(writer, alt_flag.set_lower_hexadecimal()), "0x3f"   );
     /// assert_eq!(debug_fmt(writer, alt_flag.set_binary()),      "0b111111");
     ///
     /// ```

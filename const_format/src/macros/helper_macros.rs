@@ -101,9 +101,10 @@ macro_rules! __write_pvariant {
                         $out.len += 1;
                         if (FOR_ESCAPING.is_backslash_escaped & shifted) == 0 {
                             $out.array[$out.len] = b'x';
-                            $out.array[$out.len + 1] = hex_as_ascii(c >> 4);
+                            $out.array[$out.len + 1] =
+                                hex_as_ascii(c >> 4, $crate::pmr::HexFormatting::Upper);
                             $out.len += 2;
-                            written_c = hex_as_ascii(c & 0b1111);
+                            written_c = hex_as_ascii(c & 0b1111, $crate::pmr::HexFormatting::Upper);
                         } else {
                             written_c = ForEscaping::get_backslash_escape(c);
                         };

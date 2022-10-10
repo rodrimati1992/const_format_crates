@@ -1,4 +1,4 @@
-use crate::formatting::hex_as_ascii;
+use crate::formatting::{hex_as_ascii, HexFormatting};
 
 #[cfg(any(test, feature = "fmt"))]
 pub(crate) const fn char_display_len(c: char) -> usize {
@@ -64,7 +64,12 @@ pub(crate) const fn char_to_debug(c: char) -> FmtChar {
         '\x00'..='\x1F' => {
             let n = c as u8;
             (
-                [b'\\', b'x', hex_as_ascii(n >> 4), hex_as_ascii(n & 0b1111)],
+                [
+                    b'\\',
+                    b'x',
+                    hex_as_ascii(n >> 4, HexFormatting::Upper),
+                    hex_as_ascii(n & 0b1111, HexFormatting::Upper),
+                ],
                 4,
             )
         }

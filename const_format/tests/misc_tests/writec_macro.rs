@@ -38,7 +38,7 @@ fn repeated_positional_args() {
         writer.clear();
         try_!(writec!(
             writer,
-            "{0:},{0:?},{0:#x},{0:#b},{1},{1:?}",
+            "{0:},{0:?},{0:#x},{0:#X},{0:#b},{1},{1:?}",
             foo.x,
             foo.y
         ));
@@ -54,7 +54,7 @@ fn repeated_positional_args() {
     inner(&foo, writer).unwrap();
     assert_eq!(
         writer.as_str(),
-        "13,13,0xD,0b1101,foo\nbar\tbaz\x00,\"foo\\nbar\\tbaz\\x00\""
+        "13,13,0xd,0xD,0b1101,foo\nbar\tbaz\x00,\"foo\\nbar\\tbaz\\x00\""
     );
 }
 
@@ -68,7 +68,7 @@ fn write_from_consts() {
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
         const X: u32 = FOO.x;
         const Y: &str = FOO.y;
-        try_!(writec!(f, "{X:},{X:?},{X:#x},{X:#b},{Y},{Y:?}"));
+        try_!(writec!(f, "{X:},{X:?},{X:#x},{X:#X},{X:#b},{Y},{Y:?}"));
         Ok(())
     }
 
@@ -76,7 +76,7 @@ fn write_from_consts() {
     inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
     assert_eq!(
         writer.as_str(),
-        "13,13,0xD,0b1101,foo\nbar\tbaz\x00,\"foo\\nbar\\tbaz\\x00\""
+        "13,13,0xd,0xD,0b1101,foo\nbar\tbaz\x00,\"foo\\nbar\\tbaz\\x00\""
     );
 }
 
@@ -85,7 +85,7 @@ fn named_parameters() {
     const fn inner(f: &mut Formatter<'_>) -> Result<(), Error> {
         try_!(writec!(
             f,
-            "{x},{y},{},{},{x:b},{y:x},{:?}",
+            "{x},{y},{},{},{x:b},{y:x},{y:X},{:?}",
             21u8,
             34u8,
             55..89,
@@ -97,7 +97,7 @@ fn named_parameters() {
 
     let writer: &mut StrWriter = &mut StrWriter::new([0; 256]);
     inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
-    assert_eq!(writer.as_str(), "8,13,21,34,1000,D,55..89");
+    assert_eq!(writer.as_str(), "8,13,21,34,1000,d,D,55..89");
 }
 
 #[test]
@@ -111,17 +111,17 @@ fn write_from_locals() {
     const fn innerb(f: &mut Formatter<'_>, foo: u8, bar: &str) -> Result<(), Error> {
         writec!(
             f,
-            "{foo},{bar},{foo:?},{bar:?},{foo:x},{bar:x},{foo:b},{bar:b}"
+            "{foo},{bar},{foo:?},{bar:?},{foo:x},{bar:x},{foo:X},{bar:X},{foo:b},{bar:b}"
         )
     }
 
     let writer: &mut StrWriter = &mut StrWriter::new([0; 96]);
     inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
-    assert_eq!(writer.as_str(), r#"13,58,13,"58",D,"58",1101,"58""#);
+    assert_eq!(writer.as_str(), r#"13,58,13,"58",d,"58",D,"58",1101,"58""#);
 
     writer.clear();
     inner(&mut writer.make_formatter(FormattingFlags::NEW)).unwrap();
-    assert_eq!(writer.as_str(), r#"13,58,13,"58",D,"58",1101,"58""#);
+    assert_eq!(writer.as_str(), r#"13,58,13,"58",d,"58",D,"58",1101,"58""#);
 }
 
 #[test]

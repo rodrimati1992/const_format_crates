@@ -29,6 +29,18 @@ pub enum NumberFormatting {
     Binary,
 }
 
+#[doc(hidden)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[repr(u8)]
+pub enum HexFormatting {
+    // micro-optimization
+    // by having these values for the discriminants,
+    // going from a number greater than 9 and smaller than 16
+    // to their ascii digits is as simple as `number + (hex_fmt as u8)`
+    Upper = b'A' - 10,
+    Lower = b'a' - 10,
+}
+
 impl NumberFormatting {
     #[cfg(test)]
     #[cfg(feature = "fmt")]
@@ -63,6 +75,9 @@ impl NumberFormatting {
 /// debug formatting,
 /// and can be used to for example print an array of binary numbers.
 ///
+/// Note: Lowercase hexadecimal formatting requires calling the
+/// [`set_lower_hexadecimal`](#method.set_lower_hexadecimal) method.
+///
 /// # Alternate flag
 ///
 /// A flag that types can use to be formatted differently when it's enabled,
@@ -85,6 +100,11 @@ impl NumberFormatting {
 #[derive(Debug, Copy, Clone)]
 pub struct FormattingFlags {
     num_fmt: NumberFormatting,
+    // Whether the `NumberFormatting` prints hexadecimal digits in lowercase
+    // (e.g: 0xf00, 0xF00)
+    //
+    // move this in 0.3.0 to `NumberFormatting`.
+    hex_fmt: HexFormatting,
     is_alternate: bool,
 }
 
@@ -92,16 +112,19 @@ pub struct FormattingFlags {
 impl FormattingFlags {
     pub const __REG: Self = Self::NEW.set_alternate(false).set_decimal();
     pub const __HEX: Self = Self::NEW.set_alternate(false).set_hexadecimal();
+    pub const __LOWHEX: Self = Self::NEW.set_alternate(false).set_lower_hexadecimal();
     pub const __BIN: Self = Self::NEW.set_alternate(false).set_binary();
 
     pub const __A_REG: Self = Self::NEW.set_alternate(true).set_decimal();
     pub const __A_HEX: Self = Self::NEW.set_alternate(true).set_hexadecimal();
+    pub const __A_LOWHEX: Self = Self::NEW.set_alternate(true).set_lower_hexadecimal();
     pub const __A_BIN: Self = Self::NEW.set_alternate(true).set_binary();
 }
 impl FormattingFlags {
     #[doc(hidden)]
     pub const DEFAULT: Self = Self {
         num_fmt: NumberFormatting::Decimal,
+        hex_fmt: HexFormatting::Upper,
         is_alternate: false,
     };
 
@@ -113,6 +136,7 @@ impl FormattingFlags {
     ///
     pub const NEW: Self = Self {
         num_fmt: NumberFormatting::Decimal,
+        hex_fmt: HexFormatting::Upper,
         is_alternate: false,
     };
 
@@ -127,7 +151,7 @@ impl FormattingFlags {
         Self::NEW
     }
 
-    /// Sets the integer formatting num_fmt,
+    /// Sets the integer formatting,
     ///
     /// This usually doesn't affect the outputted text in display formatting.
     #[inline]
@@ -136,7 +160,7 @@ impl FormattingFlags {
         self
     }
 
-    /// Sets the formatting num_fmt to `NumberFormatting::Decimal`.
+    /// Sets the number formatting to `NumberFormatting::Decimal`.
     ///
     /// This means that numbers are written as decimal.
     #[inline]
@@ -145,16 +169,28 @@ impl FormattingFlags {
         self
     }
 
-    /// Sets the formatting num_fmt to `NumberFormatting::Hexadecimal`.
+    /// Sets the number formatting to `NumberFormatting::Hexadecimal`.
     ///
-    /// This means that numbers are written as hexadecimal.
+    /// This means that numbers are written as uppercase hexadecimal.
     #[inline]
     pub const fn set_hexadecimal(mut self) -> Self {
         self.num_fmt = NumberFormatting::Hexadecimal;
+        self.hex_fmt = HexFormatting::Upper;
         self
     }
 
-    /// Sets the formatting num_fmt to `NumberFormatting::Binary`.
+    /// Sets the number formatting to `NumberFormatting::Hexadecimal`,
+    /// and uses lowercase for alphabetic hexadecimal digits.
+    ///
+    /// This means that numbers are written as lowercase hexadecimal.
+    #[inline]
+    pub const fn set_lower_hexadecimal(mut self) -> Self {
+        self.num_fmt = NumberFormatting::Hexadecimal;
+        self.hex_fmt = HexFormatting::Lower;
+        self
+    }
+
+    /// Sets the number formatting to `NumberFormatting::Binary`.
     ///
     /// This means that numbers are written as binary.
     #[inline]
@@ -180,6 +216,10 @@ impl FormattingFlags {
     #[inline]
     pub const fn is_alternate(self) -> bool {
         self.is_alternate
+    }
+
+    pub(crate) const fn hex_fmt(self) -> HexFormatting {
+        self.hex_fmt
     }
 }
 
@@ -221,11 +261,11 @@ impl ForEscaping {
 #[doc(hidden)]
 /// Converts 0..=0xF to its ascii representation of '0'..='9' and 'A'..='F'
 #[inline(always)]
-pub const fn hex_as_ascii(n: u8) -> u8 {
+pub const fn hex_as_ascii(n: u8, hex_fmt: HexFormatting) -> u8 {
     if n < 10 {
         n + b'0'
     } else {
-        n - 10 + b'A'
+        n + (hex_fmt as u8)
     }
 }
 

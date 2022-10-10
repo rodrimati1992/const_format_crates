@@ -152,12 +152,16 @@ macro_rules! __concatcp_inner {
 /// Similar to how Debug formatting in the standard library works,
 /// except that it does not escape unicode characters.`
 ///
-/// - Use Hexsadecimal formatting (eg: `formatcp!("{:x}", "hello" )`):
-/// Formats numbers as capitalized hexadecimal,
-/// The alternate version (written as `"{:#x}"`), prefixes the number with `0x`
+/// - Use LowerHex formatting (eg: `formatcp!("{:x}", "hello" )`):
+/// Formats numbers as lowercase hexadecimal.
+/// The alternate version (written as `"{:#x}"`) prefixes the number with `0x`
+///
+/// - Use UpperHex formatting (eg: `formatcp!("{:X}", "hello" )`):
+/// Formats numbers as capitalized hexadecimal.
+/// The alternate version (written as `"{:#X}"`) prefixes the number with `0x`
 ///
 /// - Use Binary formatting (eg: `formatcp!("{:b}", "hello" )`).
-/// The alternate version (written as `"{:#b}"`), prefixes the number with `0b`
+/// The alternate version (written as `"{:#b}"`) prefixes the number with `0b`
 ///
 /// - Use Display formatting: `formatcp!("{}", "hello" )`
 ///
@@ -203,7 +207,7 @@ macro_rules! __concatcp_inner {
 ///
 /// ### Display
 ///
-/// The `{}`/`{:}` formatter works the same as in [`format`].
+/// The `{}`/`{:}` formatter formats the same as in [`format`].
 ///
 ///
 /// # Examples
@@ -249,6 +253,11 @@ macro_rules! __concatcp_inner {
 ///     assert_eq!(CHARS, r#"'\"' - " - 👀 - '👀'"#);
 /// }
 /// ```
+///
+/// ### Additional specifiers
+///
+/// `const_format` macros don't support width, fill, alignment, sign,
+/// or precision specifiers.
 ///
 /// [`format`]: https://doc.rust-lang.org/std/macro.format.html
 ///
@@ -456,11 +465,11 @@ macro_rules! __concatc_inner {
 /// // Formatting the numbers in an array as decimal, hexadecimal, and binary.
 /// // You can use the name of cnstants from scope, as well as named arguments.
 /// const ARR: &[u32] = &[9, 25];
-/// const ARRAY: &str = formatc!("{ARR:?},{ARR:x},{ARR:b}");
+/// const ARRAY: &str = formatc!("{ARR:?},{ARR:X},{ARR:b}");
 ///
 ///
 /// assert_eq!(POINT, "Point3 { x: 8, y: 13, z: 21 }");
-/// assert_eq!(NUMBER, "10,A,1010");
+/// assert_eq!(NUMBER, "10,a,1010");
 /// assert_eq!(ARRAY, "[9, 25],[9, 19],[1001, 11001]");
 ///
 /// ```
@@ -481,7 +490,7 @@ macro_rules! __concatc_inner {
 ///
 /// const P: Point3 = Point3{x: 5, y: 13, z: 21};
 ///
-/// const STR: &str = formatc!("{0};{0:#x};{0:#b}", |fmt|{
+/// const STR: &str = formatc!("{0};{0:#X};{0:#b}", |fmt|{
 ///     try_!(fmt.write_u32_debug(P.x));
 ///     try_!(fmt.write_str(" "));
 ///     try_!(fmt.write_u32_debug(P.y));
