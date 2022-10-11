@@ -145,22 +145,22 @@ macro_rules! __concatcp_inner {
 ///
 /// - Take named arguments: `formatcp!("{a}{a}", a = "hello" )`
 ///
-/// - Use constants from scope as arguments: `formatcp!("{FOO}")`,
+/// - Use constants from scope as arguments: `formatcp!("{FOO}")`<br>
 /// equivalent to the [`format_args_implicits` RFC]
 ///
-/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" )`:
-/// Similar to how Debug formatting in the standard library works,
-/// except that it does not escape unicode characters.`
+/// - Use Debug-like formatting (eg: `formatcp!("{:?}", "hello" )`:<br>
+/// Similar to how `Debug` formatting in the standard library works,
+/// except that it does not escape unicode characters.
 ///
-/// - Use LowerHex formatting (eg: `formatcp!("{:x}", "hello" )`):
+/// - Use LowerHex formatting (eg: `formatcp!("{:x}", "hello" )`):<br>
 /// Formats numbers as lowercase hexadecimal.
 /// The alternate version (written as `"{:#x}"`) prefixes the number with `0x`
 ///
-/// - Use UpperHex formatting (eg: `formatcp!("{:X}", "hello" )`):
+/// - Use UpperHex formatting (eg: `formatcp!("{:X}", "hello" )`):<br>
 /// Formats numbers as capitalized hexadecimal.
 /// The alternate version (written as `"{:#X}"`) prefixes the number with `0x`
 ///
-/// - Use Binary formatting (eg: `formatcp!("{:b}", "hello" )`).
+/// - Use Binary formatting (eg: `formatcp!("{:b}", "hello" )`)<br>
 /// The alternate version (written as `"{:#b}"`) prefixes the number with `0b`
 ///
 /// - Use Display formatting: `formatcp!("{}", "hello" )`
