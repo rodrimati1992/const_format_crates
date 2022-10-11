@@ -13,6 +13,8 @@
 /// ) -> &'static str
 /// # {""}
 /// ```
+/// and is evaluated at compile-time.
+///
 /// Where `pattern` can be any of these types:
 ///
 /// - `&'static str`
@@ -81,6 +83,8 @@ macro_rules! str_replace {
 }
 
 /// Creates a `&'static str` by repeating a `&'static str` constant `times` times
+///
+/// This is evaluated at compile-time.
 ///
 /// # Example
 ///
@@ -161,6 +165,7 @@ macro_rules! str_repeat {
 /// ) -> const_format::SplicedStr
 /// # {unimplemented!()}
 /// ```
+/// and is evaluated at compile-time.
 ///
 /// ### `range` argument
 ///
@@ -313,6 +318,8 @@ macro_rules! str_splice {
 /// fn str_index(input: &'static str, range: impl SomeIndex) -> &'static str
 /// # {unimplemented!()}
 /// ```
+/// and is evaluated at compile-time.
+///
 /// This accepts
 /// [the same `range` arguments as `str_splice`](macro.str_splice.html#range-argument)
 ///
@@ -411,6 +418,8 @@ macro_rules! str_index {
 /// fn str_get(input: &'static str, range: impl SomeIndex) -> Option<&'static str>
 /// # {unimplemented!()}
 /// ```
+/// and is evaluated at compile-time.
+///
 /// This accepts
 /// [the same `range` arguments as `str_splice`](macro.str_splice.html#range-argument)
 ///
@@ -505,6 +514,7 @@ macro_rules! str_get {
 /// fn str_split(string: &'static str, splitter: impl Splitter) -> [&'static str; LEN]
 /// # { [] }
 /// ```
+/// and is evaluated at compile-time.
 ///
 /// `impl Splitter` is any of these types:
 ///

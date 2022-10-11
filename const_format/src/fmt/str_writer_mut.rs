@@ -1,5 +1,7 @@
 use crate::{
-    formatting::{hex_as_ascii, ForEscaping, FormattingFlags, NumberFormatting, FOR_ESCAPING},
+    formatting::{
+        hex_as_ascii, ForEscaping, FormattingFlags, HexFormatting, NumberFormatting, FOR_ESCAPING,
+    },
     utils::{min_usize, saturate_range, Constructor},
     wrapper_types::{AsciiStr, PWrapper},
 };
@@ -494,7 +496,7 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
     ///     let mut writer = StrWriterMut::new(&mut buffer);
     ///
     ///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
-    ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
+    ///     unwrap!(writec!(writer, "{:X}", [3u32, 5, 8, 13, 21, 34]));
     ///
     ///     buffer
     /// };
@@ -813,7 +815,7 @@ macro_rules! write_integer_fn {
                 loop {
                     cursor-=1;
                     let digit = (n & 0b1111) as u8;
-                    this_buffer[cursor] = hex_as_ascii(digit);
+                    this_buffer[cursor] = hex_as_ascii(digit, f.hex_fmt());
                     n >>= 4;
                     if n == 0 { break }
                 }
@@ -848,7 +850,7 @@ macro_rules! write_integer_fn {
                 loop {
                     cursor-=1;
                     let digit = (n & 1) as u8;
-                    this_buffer[cursor] = hex_as_ascii(digit);
+                    this_buffer[cursor] = hex_as_ascii(digit, f.hex_fmt());
                     n >>= 1;
                     if n == 0 { break }
                 }
@@ -1321,9 +1323,9 @@ impl<'w, E> StrWriterMut<'w, E> {
                     }
                     self_buffer[written] = b'x';
                     written += 1;
-                    self_buffer[written] = hex_as_ascii(c >> 4);
+                    self_buffer[written] = hex_as_ascii(c >> 4, HexFormatting::Upper);
                     written += 1;
-                    written_c = hex_as_ascii(c & 0xF);
+                    written_c = hex_as_ascii(c & 0xF, HexFormatting::Upper);
                 };
             }
 
@@ -1390,9 +1392,11 @@ write_integer_fn! {
         ///
         /// assert_eq!(debug_fmt(&mut writer, reg_flag),                   "63"     );
         /// assert_eq!(debug_fmt(&mut writer, reg_flag.set_hexadecimal()), "3F"     );
+        /// assert_eq!(debug_fmt(&mut writer, reg_flag.set_lower_hexadecimal()), "3f");
         /// assert_eq!(debug_fmt(&mut writer, reg_flag.set_binary()),      "111111" );
         /// assert_eq!(debug_fmt(&mut writer, alt_flag),                   "63"     );
         /// assert_eq!(debug_fmt(&mut writer, alt_flag.set_hexadecimal()), "0x3F"   );
+        /// assert_eq!(debug_fmt(&mut writer, alt_flag.set_lower_hexadecimal()), "0x3f");
         /// assert_eq!(debug_fmt(&mut writer, alt_flag.set_binary()),      "0b111111");
         ///
         /// ```

@@ -182,7 +182,8 @@ fn parse_formatting(input: &str, starts_at: usize) -> Result<FormattingFlags, Pa
     for byte in bytes {
         match byte {
             b'b' if num_fmt.is_regular() => num_fmt = NumberFormatting::Binary,
-            b'x' if num_fmt.is_regular() => num_fmt = NumberFormatting::Hexadecimal,
+            b'x' if num_fmt.is_regular() => num_fmt = NumberFormatting::LowerHexadecimal,
+            b'X' if num_fmt.is_regular() => num_fmt = NumberFormatting::Hexadecimal,
             b'#' => is_alternate = IsAlternate::Yes,
             _ => return Err(make_error()),
         }

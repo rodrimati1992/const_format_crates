@@ -261,7 +261,7 @@ macro_rules! coerce_to_fmt {
 /// const STR: &str = strwriter_as_str!(__STR);
 ///
 /// fn main() {
-///     assert_eq!(STR, "[3, 5, 8, D, 15, 22]");
+///     assert_eq!(STR, "[3, 5, 8, d, 15, 22]");
 /// }
 /// ```
 ///

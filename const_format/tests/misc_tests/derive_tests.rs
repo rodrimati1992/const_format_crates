@@ -44,14 +44,14 @@ fn struct_formatting() {
             z: (0, 1),
             a: true,
         };
-        try_!(writec!(f, "{0:?}\n{0:x?}\n", braced));
+        try_!(writec!(f, "{0:?}\n{0:x?}\n{0:X?}\n", braced));
 
         let tupled_a: Tupled<u32, Dummy> = Tupled(13, Some("hello"), 21, PhantomData);
         let tupled_b: Tupled<u64, Dummy> = Tupled(32, Some("hello"), 33, PhantomData);
         let tupled_c: Tupled<bool, Dummy> = Tupled(48, Some("hello"), false, PhantomData);
         try_!(writec!(
             f,
-            "{0:?}\n{0:x?}\n{1:?}\n{1:x?}\n{2:?}\n{2:x?}\n",
+            "{0:?}\n{0:x?}\n{0:X?}\n{1:?}\n{1:x?}\n{1:X?}\n{2:?}\n{2:x?}\n{2:X?}\n",
             tupled_a,
             tupled_b,
             tupled_c,
@@ -71,11 +71,15 @@ fn struct_formatting() {
         "\
             Braced { x: 100, y: Some(\"hello\"), a: true }\n\
             Braced { x: 64, y: Some(\"hello\"), a: true }\n\
+            Braced { x: 64, y: Some(\"hello\"), a: true }\n\
             Tupled(13, 21, PhantomData)\n\
+            Tupled(d, 15, PhantomData)\n\
             Tupled(D, 15, PhantomData)\n\
             Tupled(32, 33, PhantomData)\n\
             Tupled(20, 21, PhantomData)\n\
+            Tupled(20, 21, PhantomData)\n\
             Tupled(48, false, PhantomData)\n\
+            Tupled(30, false, PhantomData)\n\
             Tupled(30, false, PhantomData)\n\
             Unit\
         ",
@@ -113,13 +117,13 @@ fn enum_formatting() {
             z: (0, 1),
             a: true,
         };
-        try_!(writec!(f, "{0:?}\n{0:x?}\n", braced));
+        try_!(writec!(f, "{0:?}\n{0:x?}\n{0:X?}\n", braced));
 
         let tupled_a = Enum::Tupled(13, Some("hello"), 21, PhantomData);
         let tupled_b = Enum::Tupled(32, Some("hello"), 33, PhantomData);
         try_!(writec!(
             f,
-            "{0:?}\n{0:x?}\n{1:?}\n{1:x?}\n",
+            "{0:?}\n{0:x?}\n{0:X?}\n{1:?}\n{1:x?}\n{1:X?}\n",
             tupled_a,
             tupled_b
         ));
@@ -138,9 +142,12 @@ fn enum_formatting() {
         "\
             Braced { x: 100, y: Some(\"hello\"), a: true }\n\
             Braced { x: 64, y: Some(\"hello\"), a: true }\n\
+            Braced { x: 64, y: Some(\"hello\"), a: true }\n\
             Tupled(13, 21, PhantomData)\n\
+            Tupled(d, 15, PhantomData)\n\
             Tupled(D, 15, PhantomData)\n\
             Tupled(32, 33, PhantomData)\n\
+            Tupled(20, 21, PhantomData)\n\
             Tupled(20, 21, PhantomData)\n\
             Unit\
         ",

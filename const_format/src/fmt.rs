@@ -67,11 +67,15 @@
 //!
 //! - Display formatting (eg: `formatc!("{}", 0u8)`, `formatc!("{:}", 0u8)` )
 //!
-//! - Hexadecimal formatting (eg: `formatc!("{:x}", 0u8)`):
-//! Writes numbers in capialized hexadecimal.
+//! - Lowercase hexadecimal formatting (eg: `formatc!("{:x}", 0u8)`):<br>
+//! Writes numbers in lowercase hexadecimal.
 //! This can be combined with debug formatting, with the `"{:x?}"` formatter.
 //!
-//! - Binary formatting (eg: `formatc!("{:b}", 0u8)`):
+//! - Upperacse Hexadecimal formatting (eg: `formatc!("{:X}", 0u8)`):<br>
+//! Writes numbers in uppercase hexadecimal.
+//! This can be combined with debug formatting, with the `"{:X?}"` formatter.
+//!
+//! - Binary formatting (eg: `formatc!("{:b}", 0u8)`):<br>
 //! This can be combined with debug formatting, with the `"{:b?}"` formatter.
 //!
 //! ### Alternate flag
@@ -89,6 +93,11 @@
 //!
 //! - The binary formater (eg: `formatc!("{:#b}", FOO)`):
 //! prefixes numbers with `0b`.
+//!
+//! ### Additional specifiers
+//!
+//! `const_format` macros don't support width, fill, alignment, sign,
+//! or precision specifiers.
 //!
 //! <span id="custom-formatting-section"></span>
 //! ### Custom formatting
@@ -142,7 +151,7 @@
 //!         point: Point{ x: 13, y: 21 },
 //!     };
 //!
-//!     unwrap!(writec!(writer, "{:x?}", foo));
+//!     unwrap!(writec!(writer, "{:X?}", foo));
 //!
 //!     writer
 //! }
@@ -277,13 +286,15 @@
 //! // But binary/hex formatting, and the alternate flag, do have an effect:
 //! assert_eq!(
 //!     formatc!(
-//!         "{0}\n{0:x}\n{0:b}\n{0:#x}\n{0:#b}",
+//!         "{0}\n{0:x}\n{0:X}\n{0:b}\n{0:#x}\n{0:#X}\n{0:#b}",
 //!         |fmt| call_debug_fmt!(array, [3u8, 13], fmt),
 //!     ),
 //!     "\
 //!         [3, 13]\n\
+//!         [3, d]\n\
 //!         [3, D]\n\
 //!         [11, 1101]\n\
+//!         [\n    0x3,\n    0xd,\n]\n\
 //!         [\n    0x3,\n    0xD,\n]\n\
 //!         [\n    0b11,\n    0b1101,\n]\
 //!     ",

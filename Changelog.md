@@ -2,6 +2,13 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.29
+
+Added lowercase hexadecimal formatting support.
+    
+Breaking: to add lowercase hexadecimal formatting, this crate changed the uppercase hexadecimal formatter from `{:x}` to `{:X}`
+
+
 ### 0.2.27
 
 Replacing existing features with these:

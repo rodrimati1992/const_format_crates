@@ -18,6 +18,11 @@ fn get_hex_digits(n: impl fmt::UpperHex) -> ArrayString<[u8; 64]> {
     write!(buff, "{:X}", n).unwrap();
     buff
 }
+fn get_lower_hex_digits(n: impl fmt::LowerHex) -> ArrayString<[u8; 64]> {
+    let mut buff = ArrayString::<[u8; 64]>::new();
+    write!(buff, "{:x}", n).unwrap();
+    buff
+}
 fn get_binary_digits(n: impl fmt::Binary) -> ArrayString<[u8; 192]> {
     let mut buff = ArrayString::<[u8; 192]>::new();
     write!(buff, "{:b}", n).unwrap();
@@ -33,6 +38,7 @@ macro_rules! check_number_of_digits_ {
         fn number_of_digits_test_case(val: $ty) {
             let display_digits = get_digits_display(val);
             let hex_digits = get_hex_digits(val);
+            let lower_hex_digits = get_lower_hex_digits(val);
             let binary_digits = get_binary_digits(val);
             let wrapper = PWrapper(val);
 
@@ -51,6 +57,11 @@ macro_rules! check_number_of_digits_ {
                     wrapper.compute_debug_len(DEF_FLAGS.set_num_fmt(NF::Hexadecimal)),
                     hex_digits.len(),
                     "const_debug_len hexadecimal"
+                );
+                assert_eq!(
+                    wrapper.compute_debug_len(DEF_FLAGS.set_lower_hexadecimal()),
+                    lower_hex_digits.len(),
+                    "const_debug_len lower hexadecimal"
                 );
                 assert_eq!(
                     wrapper.compute_debug_len(DEF_FLAGS.set_num_fmt(NF::Binary)),
@@ -81,6 +92,14 @@ macro_rules! check_number_of_digits_ {
                     &sa.array[sa.start..],
                     hex_digits.as_bytes(),
                     "const_debug_len hexadecimal"
+                );
+
+                let sa = integer
+                    .to_start_array_hexadecimal(FormattingFlags::NEW.set_lower_hexadecimal());
+                assert_eq!(
+                    &sa.array[sa.start..],
+                    lower_hex_digits.as_bytes(),
+                    "const_debug_len lower hexadecimal"
                 );
 
                 let sa = integer.to_start_array_binary(FormattingFlags::NEW);

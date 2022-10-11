@@ -496,8 +496,8 @@ pub mod pmr {
 
     pub use crate::{
         formatting::{
-            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, LenAndArray, NumberFormatting,
-            StartAndArray, FOR_ESCAPING,
+            hex_as_ascii, ForEscaping, Formatting, FormattingFlags, HexFormatting, LenAndArray,
+            NumberFormatting, StartAndArray, FOR_ESCAPING,
         },
         pargument::{PArgument, PConvWrapper, PVariant},
         wrapper_types::PWrapper,

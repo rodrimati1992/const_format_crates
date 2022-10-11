@@ -364,7 +364,7 @@ impl StrWriter {
     ///     let mut writer =  StrWriter::new([0; CAP]);
     ///
     ///     // Writing the array with debug formatting, and the integers with hexadecimal formatting.
-    ///     unwrap!(writec!(writer, "{:x}", [3u32, 5, 8, 13, 21, 34]));
+    ///     unwrap!(writec!(writer, "{:X}", [3u32, 5, 8, 13, 21, 34]));
     ///
     ///     writer
     /// };
