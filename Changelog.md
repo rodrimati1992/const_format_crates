@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.31
+
+Added a workaround for rustdoc bug (https://github.com/rust-lang/rust/issues/112085).
+
 ### 0.2.29
 
 Added lowercase hexadecimal formatting support.
