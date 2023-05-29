@@ -25,6 +25,7 @@ pub(crate) fn concatcp_impl(value: ExprArgs) -> Result<TokenStream2, crate::Erro
 
     Ok(quote!(({
         // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+        #[doc(hidden)]
         #[allow(unused_mut, non_snake_case)]
         const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = {
             let #fmt_var = __cf_osRcTFl4A::pmr::FormattingFlags::NEW;
@@ -101,6 +102,7 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
 
             // This is generic so that the constant is only evaluated when it's needed.
             impl<T> __cf_osRcTFl4A::pmr::ConcatArgsIf<T, true> for __Foo_osRcTFl4A {
+                #[doc(hidden)]
                 const PARGUMENTS : &'static [__cf_osRcTFl4A::pmr::PArgument] = #fmt_if_true;
             }
 
@@ -111,6 +113,7 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
     } else {
         Ok(quote!(({
             // The suffix is to avoid name collisions with identifiers in the passed-in expression.
+            #[doc(hidden)]
             #[allow(unused_mut, non_snake_case)]
             const CONCATP_NHPMWYD3NJA : &[__cf_osRcTFl4A::pmr::PArgument] = #fmt_if_true;
 
@@ -141,6 +144,7 @@ pub(crate) fn formatc_macro_impl(fmt_args: FormatArgs) -> Result<TokenStream2, c
     let cond_a = fmt_args.condition.iter();
 
     Ok(quote!(({
+        #[doc(hidden)]
         #[allow(non_snake_case)]
         const fn fmt_NHPMWYD3NJA(
             mut #strwriter: __cf_osRcTFl4A::fmt::Formatter<'_>,

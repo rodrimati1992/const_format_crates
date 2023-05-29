@@ -70,8 +70,10 @@ macro_rules! concatcp {
 #[cfg(not(feature = "rust_1_51"))]
 macro_rules! __concatcp_inner {
     ($variables:expr) => {{
+        #[doc(hidden)]
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
 
+        #[doc(hidden)]
         const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
             use $crate::{__write_pvariant, pmr::PVariant};
 
@@ -94,6 +96,7 @@ macro_rules! __concatcp_inner {
             &{ out }
         };
 
+        #[doc(hidden)]
         #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
             // This transmute truncates the length of the array to the amound of written bytes.
@@ -111,11 +114,14 @@ macro_rules! __concatcp_inner {
 #[cfg(feature = "rust_1_51")]
 macro_rules! __concatcp_inner {
     ($variables:expr) => {{
+        #[doc(hidden)]
         const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
 
+        #[doc(hidden)]
         const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> =
             &$crate::pmr::__priv_concatenate($variables);
 
+        #[doc(hidden)]
         #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
             // This transmute truncates the length of the array to the amound of written bytes.
