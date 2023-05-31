@@ -517,4 +517,4 @@ identity! {
 }
 
 #[cfg(all(test, not(feature = "__test")))]
-compile_error! { "tests must be run with the \"testing\" feature" }
+compile_error! { "tests must be run with the \"__test\" feature" }
