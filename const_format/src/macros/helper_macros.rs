@@ -34,6 +34,8 @@ macro_rules! __write_pvariant {
         let len = $elem.len();
 
         let mut start = 0;
+
+        #[allow(clippy::indexing_slicing)]
         while start < len {
             $out.array[$out.len] = encoded[start];
             $out.len += 1;
@@ -69,6 +71,8 @@ macro_rules! __write_pvariant {
         };
 
         let mut start = sa.start;
+
+        #[allow(clippy::indexing_slicing)]
         while start < sa.array.len() {
             $out.array[$out.len] = sa.array[start];
             $out.len += 1;
@@ -79,30 +83,46 @@ macro_rules! __write_pvariant {
         let str = $elem.as_bytes();
         let is_display = $parg.fmt.is_display();
         let mut i = 0;
+
         if is_display {
+            #[allow(clippy::indexing_slicing)]
             while i < str.len() {
                 $out.array[$out.len] = str[i];
                 $out.len += 1;
                 i += 1;
             }
         } else {
-            $out.array[$out.len] = b'"';
+            #[allow(clippy::indexing_slicing)]
+            {
+                $out.array[$out.len] = b'"';
+            }
             $out.len += 1;
+
             while i < str.len() {
                 use $crate::pmr::{hex_as_ascii, ForEscaping, FOR_ESCAPING};
 
+                #[allow(clippy::indexing_slicing)]
                 let c = str[i];
                 let mut written_c = c;
+
                 if c < 128 {
                     let shifted = 1 << c;
 
                     if (FOR_ESCAPING.is_escaped & shifted) != 0 {
-                        $out.array[$out.len] = b'\\';
+                        #[allow(clippy::indexing_slicing)]
+                        {
+                            $out.array[$out.len] = b'\\';
+                        }
                         $out.len += 1;
+
                         if (FOR_ESCAPING.is_backslash_escaped & shifted) == 0 {
-                            $out.array[$out.len] = b'x';
-                            $out.array[$out.len + 1] =
-                                hex_as_ascii(c >> 4, $crate::pmr::HexFormatting::Upper);
+                            #[allow(clippy::indexing_slicing)]
+                            {
+                                $out.array[$out.len] = b'x';
+                                $out.array[$out.len + 1] =
+                                    hex_as_ascii(c >> 4, $crate::pmr::HexFormatting::Upper);
+                            }
+
                             $out.len += 2;
                             written_c = hex_as_ascii(c & 0b1111, $crate::pmr::HexFormatting::Upper);
                         } else {
@@ -110,11 +130,19 @@ macro_rules! __write_pvariant {
                         };
                     }
                 }
-                $out.array[$out.len] = written_c;
+
+                #[allow(clippy::indexing_slicing)]
+                {
+                    $out.array[$out.len] = written_c;
+                }
                 $out.len += 1;
                 i += 1;
             }
-            $out.array[$out.len] = b'"';
+
+            #[allow(clippy::indexing_slicing)]
+            {
+                $out.array[$out.len] = b'"';
+            }
             $out.len += 1;
         }
     }};
