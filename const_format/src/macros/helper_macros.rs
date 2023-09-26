@@ -10,6 +10,8 @@ macro_rules! __for_range{
     })
 }
 
+#[doc(hidden)]
+#[macro_export]
 macro_rules! identity {
     ($($tt:tt)*) => { $($tt)* };
 }
