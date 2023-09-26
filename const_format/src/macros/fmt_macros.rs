@@ -85,6 +85,7 @@ macro_rules! __concatcp_inner {
             let input = $variables;
 
             $crate::__for_range! { outer_i in 0..input.len() =>
+                #[allow(clippy::indexing_slicing)]
                 let current = &input[outer_i];
 
                 match current.elem {
