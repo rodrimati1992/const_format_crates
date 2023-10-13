@@ -2,7 +2,8 @@
 name = "const_format"
 version = "0.2.31"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
-edition = "2018"
+rust-version = "1.57.0"
+edition = "2021"
 license = "Zlib"
 description = "Compile-time string formatting"
 documentation = "https://docs.rs/const_format/"

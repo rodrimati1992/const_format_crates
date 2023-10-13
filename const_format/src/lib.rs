@@ -31,11 +31,6 @@
 //! - [`str_splice`]:
 //! Replaces a substring in a `&'static str` constant.
 //!
-//!
-//! ### Rust 1.51.0
-//!
-//! By enabling the "rust_1_51" feature, you can use these macros:
-//!
 //! - [`map_ascii_case`]:
 //! Converts a `&'static str` constant to a different casing style,
 //! determined by a [`Case`] argument.
@@ -44,7 +39,6 @@
 //! Replaces all the instances of a pattern in a `&'static str` constant with
 //! another `&'static str` constant.
 //!
-//! ### Rust 1.57.0
 //!
 //! The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`],
 //! and [`assertcp_ne`] macros.
@@ -267,13 +261,8 @@
 //! This feature was previously named "assert",
 //! but it was renamed to avoid confusion with the "assertcp" feature.
 //!
-//! - "assertcp": Requires Rust 1.57.0, implies the "rust_1_51" feature.
+//! - "assertcp":
 //! Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
-//!
-//! - "rust_1_51":
-//! Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
-//! Also changes the the implementation of the [`concatcp`] and [`formatcp`]
-//! macros to use const generics.
 //!
 //! - "rust_1_64": Enables the [`str_split`] macro.
 //! Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
@@ -385,7 +374,6 @@ mod char_encoding;
 
 mod pargument;
 
-#[cfg(feature = "rust_1_51")]
 mod const_generic_concatcp;
 
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
@@ -427,7 +415,6 @@ pub mod msg;
 pub mod wrapper_types;
 
 #[doc(hidden)]
-#[cfg(feature = "rust_1_51")]
 pub mod __ascii_case_conv;
 
 #[doc(hidden)]
@@ -435,8 +422,6 @@ pub mod __str_methods;
 
 pub use __str_methods::SplicedStr;
 
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
-#[cfg(feature = "rust_1_51")]
 pub use __ascii_case_conv::Case;
 
 #[cfg(feature = "fmt")]
@@ -480,7 +465,6 @@ pub mod pmr {
         result::Result::{self, Err, Ok},
     };
 
-    #[cfg(feature = "rust_1_51")]
     pub use crate::const_generic_concatcp::__priv_concatenate;
 
     #[cfg(feature = "assertcp")]

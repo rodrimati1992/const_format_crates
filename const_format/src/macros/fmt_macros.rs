@@ -67,51 +67,6 @@ macro_rules! concatcp {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(not(feature = "rust_1_51"))]
-macro_rules! __concatcp_inner {
-    ($variables:expr) => {{
-        #[doc(hidden)]
-        const ARR_LEN: usize = $crate::pmr::PArgument::calc_len($variables);
-
-        #[doc(hidden)]
-        const CONCAT_ARR: &$crate::pmr::LenAndArray<[u8; ARR_LEN]> = {
-            use $crate::{__write_pvariant, pmr::PVariant};
-
-            let mut out = $crate::pmr::LenAndArray {
-                len: 0,
-                array: [0u8; ARR_LEN],
-            };
-
-            let input = $variables;
-
-            $crate::__for_range! { outer_i in 0..input.len() =>
-                let current = &input[outer_i];
-
-                match current.elem {
-                    PVariant::Str(s) => __write_pvariant!(str, current, s => out),
-                    PVariant::Int(int) => __write_pvariant!(int, current, int => out),
-                    PVariant::Char(c) => __write_pvariant!(char, current, c => out),
-                }
-            }
-            &{ out }
-        };
-
-        #[doc(hidden)]
-        #[allow(clippy::transmute_ptr_to_ptr)]
-        const CONCAT_STR: &str = unsafe {
-            // This transmute truncates the length of the array to the amound of written bytes.
-            let slice =
-                $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
-
-            $crate::__priv_transmute_bytes_to_str!(slice)
-        };
-        CONCAT_STR
-    }};
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(feature = "rust_1_51")]
 macro_rules! __concatcp_inner {
     ($variables:expr) => {{
         #[doc(hidden)]

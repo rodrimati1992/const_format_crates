@@ -64,8 +64,6 @@
 ///
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
-#[cfg(feature = "rust_1_51")]
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
 macro_rules! str_replace {
     ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
