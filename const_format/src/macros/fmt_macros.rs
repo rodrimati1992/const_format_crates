@@ -249,7 +249,7 @@ macro_rules! formatcp {
 ///
 /// # Stable equivalent
 ///
-/// For an equivalent macro which can be used in stable Rust (1.46.0 onwards),
+/// For an equivalent macro which can be used in stable Rust,
 /// but can only concatenate primitive types,
 /// you can use the [`concatcp`](crate::concatcp) macro.
 ///
@@ -396,7 +396,7 @@ macro_rules! __concatc_inner {
 ///
 /// # Stable equivalent
 ///
-/// For an equivalent macro which can be used in stable Rust (1.46.0 onwards),
+/// For an equivalent macro which can be used in stable Rust,
 /// but can only format primitive types,
 /// you can use the [`formatcp`](crate::formatcp) macro.
 ///

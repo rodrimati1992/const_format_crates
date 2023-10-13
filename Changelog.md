@@ -2,6 +2,11 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.32
+
+Breaking change: bumped Minimum Supported Rust Version to Rust 1.57 and changed crate's edition to 2021, motivated by proc-macro2 increasing it to 1.56.
+
+
 ### 0.2.31
 
 Added a workaround for rustdoc bug (https://github.com/rust-lang/rust/issues/112085).

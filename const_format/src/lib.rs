@@ -8,9 +8,9 @@
 //! others that Rust nightly,
 //! the sections below describe the features that are available for each version.
 //!
-//! ### Rust 1.46.0
+//! ### Rust 1.57.0
 //!
-//! These macros are the only things available in Rust 1.46.0:
+//! These macros are available in Rust 1.57.0:
 //!
 //! - [`concatcp`]:
 //! Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
@@ -85,8 +85,6 @@
 //!
 //! ### Concatenation of primitive types
 //!
-//! This example works in Rust 1.46.0.
-//!
 //! ```rust
 //! use const_format::concatcp;
 //!
@@ -97,8 +95,6 @@
 //! ```
 //!
 //! ### Formatting primitive types
-//!
-//! This example works in Rust 1.46.0.
 //!
 //! ```rust
 //! use const_format::formatcp;
@@ -252,11 +248,11 @@
 //! requires Rust nightly because it uses mutable references in const fn.<br>
 //! This feature includes the [`formatc`]/[`writec`] formatting macros.
 //!
-//! - "derive": implies the "fmt" feature,
+//! - "derive": requires Rust nightly, implies the "fmt" feature,
 //! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
-//! - "assertc": implies the "fmt" feature,
+//! - "assertc": requires Rust nightly, implies the "fmt" feature,
 //! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
 //! This feature was previously named "assert",
 //! but it was renamed to avoid confusion with the "assertcp" feature.
@@ -274,7 +270,7 @@
 //!
 //! # Minimum Supported Rust Version
 //!
-//! `const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
+//! `const_format` requires Rust 1.57.0.
 //!
 //! Features that require newer versions of Rust, or the nightly compiler,
 //! need to be explicitly enabled with cargo features.

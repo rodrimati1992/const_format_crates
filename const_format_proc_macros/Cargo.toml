@@ -1,8 +1,9 @@
 [package]
 name = "const_format_proc_macros"
-version = "0.2.31"
+version = "0.2.32"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
-edition = "2018"
+rust-version = "1.57.0"
+edition = "2021"
 license = "Zlib"
 description = "Implementation detail of the `const_format` crate"
 keywords = ["no-std", "format", "concat"]
@@ -14,9 +15,6 @@ include = [
     "../README.md",
     "LICENSE-ZLIB.md", 
 ]
-
-[badges]
-travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [lib]
 proc-macro = true

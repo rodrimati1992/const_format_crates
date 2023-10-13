@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.31"
+version = "0.2.32"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 rust-version = "1.57.0"
 edition = "2021"
@@ -17,9 +17,6 @@ include = [
     "../README.md",
     "LICENSE-ZLIB.md", 
 ]
-
-[badges]
-travis-ci = { repository =  "rodrimati1992/const_format_crates/" }
 
 [features]
 default = []
@@ -54,7 +51,7 @@ __only_new_tests = ["__test"]
 __docsrs = []
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.31"
+version = "=0.2.32"
 path = "../const_format_proc_macros"
 
 [dependencies.konst]
