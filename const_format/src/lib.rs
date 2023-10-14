@@ -40,7 +40,7 @@
 //! another `&'static str` constant.
 //!
 //!
-//! The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`],
+//! The `"assertcp"` feature enables the [`assertcp`], [`assertcp_eq`],
 //! and [`assertcp_ne`] macros.
 //! These macros are like the standard library assert macros,
 //! but evaluated at compile-time,

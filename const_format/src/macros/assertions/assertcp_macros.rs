@@ -11,7 +11,7 @@ macro_rules! with_shared_docs {(
     ///
     /// [For **examples** look here](#examples)
     ///
-    /// This macro requires the "assertcp" feature to be exported.<br>
+    /// This macro requires the `"assertcp"` feature to be exported.<br>
     ///
     $(#[$before_syntax])*
     /// # Syntax

@@ -4,8 +4,11 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 ### 0.2.32
 
-Breaking change: bumped Minimum Supported Rust Version to Rust 1.57 and changed crate's edition to 2021, motivated by proc-macro2 increasing it to 1.56.
+Breaking change: bumped Minimum Supported Rust Version to Rust 1.57 and changed crate's edition to 2021. This change is motivated by proc-macro2 increasing its MSRV to 1.56.
 
+Changed these items that needed the `"rust_1_51"` feature into always being enabled:
+- `map_ascii_case`
+- `str_replace`
 
 ### 0.2.31
 

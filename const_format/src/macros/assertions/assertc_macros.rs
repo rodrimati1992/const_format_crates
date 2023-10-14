@@ -11,13 +11,12 @@ macro_rules! with_shared_docs {(
 ) => (
     $(#[$before_clarification])*
     ///
-    /// This macro requires the "assertcp" feature to be exported.
+    /// This macro requires the `"assertc"` feature to be exported.
     ///
     $(#[$before_syntax])*
-    /// # Syntax
     ///
     /// This macro uses [the same syntax](./fmt/index.html#fmtsyntax)
-    /// for the format string and formatting arguments as the
+    /// for the format string and supports the same formatting arguments as the
     /// [`formatc`] macro.
     ///
     $(#[$after_syntax])*
@@ -127,7 +126,7 @@ macro_rules! assert_eq_docs {
         with_shared_docs! {
             $(#[$documentation])*
             ;clarification
-            /// # Comparison Arguments
+            /// # Arguments
             ///
             /// This macro accepts these types for comparison and debug printing:
             ///
