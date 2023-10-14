@@ -19,7 +19,6 @@ mod fmt_macros;
 mod impl_fmt;
 
 #[macro_use]
-#[cfg(feature = "rust_1_51")]
 mod map_ascii_case;
 
 #[macro_use]

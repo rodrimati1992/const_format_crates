@@ -11,13 +11,13 @@ This crate provides types and macros for formatting strings at compile-time.
 
 # Rust versions
 
-There are some features that require a variety of stable Rust versions and 
-others that Rust nightly,
+There are some features that require a variety of stable Rust versions and
+others that require Rust nightly,
 the sections below describe the features that are available for each version.
 
-### Rust 1.46.0
+### Rust 1.57.0
 
-These macros are the only things available in Rust 1.46.0:
+These macros are available in Rust 1.57.0:
 
 - [`concatcp`]:
 Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
@@ -26,21 +26,17 @@ Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static s
 [`format`]-like formatting which takes `integers`, `bool`, `char`, and `&str` constants,
 and emits a `&'static str` constant.
 
-- [`str_get`]: 
-Indexes a `&'static str` constant, returning `None` when the index is out of bounds. 
+- [`str_get`]:
+Indexes a `&'static str` constant, returning `None` when the index is out of bounds.
 
-- [`str_index`]: 
-Indexes a `&'static str` constant. 
+- [`str_index`]:
+Indexes a `&'static str` constant.
 
-- [`str_repeat`]: 
+- [`str_repeat`]:
 Creates a `&'static str` by repeating a `&'static str` constant `times` times.
 
-- [`str_splice`]: 
+- [`str_splice`]:
 Replaces a substring in a `&'static str` constant.
-
-### Rust 1.51.0
-
-By enabling the "const_generics" feature, you can use these macros:
 
 - [`map_ascii_case`]:
 Converts a `&'static str` constant to a different casing style,
@@ -50,10 +46,9 @@ determined by a [`Case`] argument.
 Replaces all the instances of a pattern in a `&'static str` constant with
 another `&'static str` constant.
 
-### Rust 1.57.0
 
-The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`], 
-and [`assertcp_ne`] macros. 
+The `"assertcp"` feature enables the [`assertcp`], [`assertcp_eq`],
+and [`assertcp_ne`] macros.
 These macros are like the standard library assert macros,
 but evaluated at compile-time,
 with the limitation that they can only have primitive types as arguments
@@ -65,12 +60,11 @@ The `"rust_1_64"` feature enables these macros:
 
 -  [`str_split`]: splits a string constant
 
-
 ### Rust nightly
 
 By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
 
-This requires the nightly compiler because it uses mutable references in const fn,
+This requires the nightly compiler, because it uses mutable references in const fn,
 which have not been stabilized as of writing these docs.
 
 All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
@@ -86,21 +80,18 @@ a `&'static str` constant.
 [`write`]-like macro that can format many standard library and user defined types
 into a type that implements [`WriteMarker`].
 
-The "derive" feature enables the [`ConstDebug`] macro,
-and the "fmt" feature.<br>
+The `"derive"` feature enables the [`ConstDebug`] macro,
+and the `"fmt"` feature.<br>
 [`ConstDebug`] derives the [`FormatMarker`] trait,
 and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 
-The "assertc" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
-and the "fmt" feature.<br>
+The `"assertc"` feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+and the `"fmt"` feature.<br>
 These macros are like the standard library assert macros, but evaluated at compile-time.
-
 
 # Examples
 
 ### Concatenation of primitive types
-
-This example works in Rust 1.46.0.
 
 ```rust
 use const_format::concatcp;
@@ -113,8 +104,6 @@ assert_eq!(FOO, "Bob, age 21!");
 
 ### Formatting primitive types
 
-This example works in Rust 1.46.0.
-
 ```rust
 use const_format::formatcp;
 
@@ -125,7 +114,6 @@ const FOO: &str = formatcp!("{NAME}, age {}!", compute_age(NAME));
 assert_eq!(FOO, "John, age 24!");
 
 const fn compute_age(s: &str) -> usize { s.len() * 6 }
-
 ```
 
 ### Formatting custom types
@@ -133,8 +121,7 @@ const fn compute_age(s: &str) -> usize { s.len() * 6 }
 This example demonstrates how you can use the [`ConstDebug`] derive macro,
 and then format the type into a `&'static str` constant.
 
-This example requires Rust nightly, and the "derive" feature.
-
+This example requires Rust nightly, and the `"derive"` feature.
 
 ```rust
 #![feature(const_mut_refs)]
@@ -157,12 +144,11 @@ const MSG: Message = Message{
 
 const FOO: &str = formatc!("{:?}", MSG);
 
-fn main(){
-    assert_eq!(
-        FOO,
-        "Message { ip: [Octet(127), Octet(0), Octet(0), Octet(1)], value: \"Hello, World!\" }"
-    );
-}
+assert_eq!(
+    FOO,
+    "Message { ip: [Octet(127), Octet(0), Octet(0), Octet(1)], value: \"Hello, World!\" }"
+);
+
 ```
 
 ### Formatted const assertions
@@ -170,8 +156,7 @@ fn main(){
 This example demonstrates how you can use the [`assertcp_ne`] macro to
 do compile-time inequality assertions with formatted error messages.
 
-This requires the "assertcp" feature,
-because using the `panic` macro at compile-time requires Rust 1.57.0.
+This requires the `"assertcp"` feature.
 
 ```rust, compile_fail
 use const_format::assertcp_ne;
@@ -190,6 +175,7 @@ macro_rules! check_valid_pizza{
 check_valid_pizza!("John", "salami");
 check_valid_pizza!("Dave", "sausage");
 check_valid_pizza!("Bob", "pineapple");
+
 ```
 
 This is the compiler output:
@@ -209,8 +195,6 @@ You can't put pineapple on pizza, Bob
 
 ```
 
-
-
 <div id="macro-limitations"></div>
 
 # Limitations
@@ -229,6 +213,7 @@ so while a `Type::<u8>::FOO` argument would be fine,
 So `#[doc = "foobar"]` cannot be replaced with `#[doc = concatcp!("foo", "bar") ]`.
 
 <span id="integer-args"></span>
+
 ### Integer arguments
 
 Integer arguments must have a type inferrable from context.
@@ -244,8 +229,7 @@ assert_eq!(const_format::concatcp!(2u32, 2 + 1u8, 3u8 + 1), "234");
 ```
 
 Example of what does not compile:
-
-```compile_fail
+```rust,compile_fail
 assert_eq!(const_format::concatcp!(1 + 1, 2 + 1), "23");
 ```
 # Plans
@@ -256,53 +240,47 @@ None right now.
 
 All function-like macros from `const_format` can be used when the crate is renamed.
 
-The [`ConstDebug`] derive macro has the `#[cdeb(crate = "foo::bar")]` attribute to 
+The [`ConstDebug`] derive macro has the `#[cdeb(crate = "foo::bar")]` attribute to
 tell it where to find the `const_format` crate.
 
 Example of renaming the `const_format` crate in the Cargo.toml file:
 ```toml
+[dependencies]
 cfmt = {version = "0.*", package = "const_format"}
 ```
 
 # Cargo features
 
-- "fmt": Enables the [`std::fmt`]-like API,
+- `"fmt"`: Enables the [`std::fmt`]-like API,
 requires Rust nightly because it uses mutable references in const fn.<br>
 This feature includes the [`formatc`]/[`writec`] formatting macros.
 
-- "derive": implies the "fmt" feature,
+- `"derive"`: requires Rust nightly, implies the `"fmt"` feature,
 provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
-- "assertc": implies the "fmt" feature,
+- `"assertc"`: requires Rust nightly, implies the `"fmt"` feature,
 enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
-This feature was previously named "assert",
-but it was renamed to avoid confusion with the "assertcp" feature.
+This feature was previously named `"assert"`,
+but it was renamed to avoid confusion with the `"assertcp"` feature.
 
-- "assertcp": Requires Rust 1.57.0, implies the "const_generics" feature.
+- `"assertcp"`:
 Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 
-- "rust_1_51": 
-Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
-Also changes the the implementation of the [`concatcp`] and [`formatcp`]
-macros to use const generics.
-
-- "rust_1_64": Enables the [`str_split`] macro.
+- `"rust_1_64"`: Enables the [`str_split`] macro.
 Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
-in constant time, rather than linear time proportional to the truncated part of the slice.
-
+in constant time, rather than linear time (proportional to the truncated part of the slice).
 
 # No-std support
 
-`const_format` is `#![no_std]`, it can be used anywhere Rust can be used.
+`const_format` is unconditionally `#![no_std]`, it can be used anywhere Rust can be used.
 
 # Minimum Supported Rust Version
 
-`const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
+`const_format` requires Rust 1.57.0.
 
 Features that require newer versions of Rust, or the nightly compiler,
 need to be explicitly enabled with cargo features.
-
 
 [`assertc`]: https://docs.rs/const_format/0.2.*/const_format/macro.assertc.html
 

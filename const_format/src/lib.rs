@@ -5,12 +5,12 @@
 //! # Rust versions
 //!
 //! There are some features that require a variety of stable Rust versions and
-//! others that Rust nightly,
+//! others that require Rust nightly,
 //! the sections below describe the features that are available for each version.
 //!
-//! ### Rust 1.46.0
+//! ### Rust 1.57.0
 //!
-//! These macros are the only things available in Rust 1.46.0:
+//! These macros are available in Rust 1.57.0:
 //!
 //! - [`concatcp`]:
 //! Concatenates `integers`, `bool`, `char`, and `&str` constants into a `&'static str` constant.
@@ -31,11 +31,6 @@
 //! - [`str_splice`]:
 //! Replaces a substring in a `&'static str` constant.
 //!
-//!
-//! ### Rust 1.51.0
-//!
-//! By enabling the "rust_1_51" feature, you can use these macros:
-//!
 //! - [`map_ascii_case`]:
 //! Converts a `&'static str` constant to a different casing style,
 //! determined by a [`Case`] argument.
@@ -44,9 +39,8 @@
 //! Replaces all the instances of a pattern in a `&'static str` constant with
 //! another `&'static str` constant.
 //!
-//! ### Rust 1.57.0
 //!
-//! The "assertcp" feature enables the [`assertcp`], [`assertcp_eq`],
+//! The `"assertcp"` feature enables the [`assertcp`], [`assertcp_eq`],
 //! and [`assertcp_ne`] macros.
 //! These macros are like the standard library assert macros,
 //! but evaluated at compile-time,
@@ -63,7 +57,7 @@
 //!
 //! By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
 //!
-//! This requires the nightly compiler because it uses mutable references in const fn,
+//! This requires the nightly compiler, because it uses mutable references in const fn,
 //! which have not been stabilized as of writing these docs.
 //!
 //! All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
@@ -79,19 +73,18 @@
 //! [`write`]-like macro that can format many standard library and user defined types
 //! into a type that implements [`WriteMarker`].
 //!
-//! The "derive" feature enables the [`ConstDebug`] macro,
-//! and the "fmt" feature.<br>
+//! The `"derive"` feature enables the [`ConstDebug`] macro,
+//! and the `"fmt"` feature.<br>
 //! [`ConstDebug`] derives the [`FormatMarker`] trait,
 //! and implements an inherent `const_debug_fmt` method for compile-time debug formatting.
 //!
-//! The "assertc" feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
-//! and the "fmt" feature.<br>
+//! The `"assertc"` feature enables the [`assertc`], [`assertc_eq`], [`assertc_ne`] macros,
+//! and the `"fmt"` feature.<br>
 //! These macros are like the standard library assert macros, but evaluated at compile-time.
+//!
 //! # Examples
 //!
 //! ### Concatenation of primitive types
-//!
-//! This example works in Rust 1.46.0.
 //!
 //! ```rust
 //! use const_format::concatcp;
@@ -103,8 +96,6 @@
 //! ```
 //!
 //! ### Formatting primitive types
-//!
-//! This example works in Rust 1.46.0.
 //!
 //! ```rust
 //! use const_format::formatcp;
@@ -124,7 +115,7 @@
 //! This example demonstrates how you can use the [`ConstDebug`] derive macro,
 //! and then format the type into a `&'static str` constant.
 //!
-//! This example requires Rust nightly, and the "derive" feature.
+//! This example requires Rust nightly, and the `"derive"` feature.
 //!
 #![cfg_attr(feature = "derive", doc = "```rust")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
@@ -160,8 +151,7 @@
 //! This example demonstrates how you can use the [`assertcp_ne`] macro to
 //! do compile-time inequality assertions with formatted error messages.
 //!
-//! This requires the "assertcp" feature,
-//! because using the `panic` macro at compile-time requires Rust 1.57.0.
+//! This requires the `"assertcp"` feature.
 //!
 #![cfg_attr(feature = "assertcp", doc = "```compile_fail")]
 #![cfg_attr(not(feature = "assertcp"), doc = "```ignore")]
@@ -249,35 +239,31 @@
 //!
 //! Example of renaming the `const_format` crate in the Cargo.toml file:
 //! ```toml
+//! [dependencies]
 //! cfmt = {version = "0.*", package = "const_format"}
 //! ```
 //!
 //! # Cargo features
 //!
-//! - "fmt": Enables the [`std::fmt`]-like API,
+//! - `"fmt"`: Enables the [`std::fmt`]-like API,
 //! requires Rust nightly because it uses mutable references in const fn.<br>
 //! This feature includes the [`formatc`]/[`writec`] formatting macros.
 //!
-//! - "derive": implies the "fmt" feature,
+//! - `"derive"`: requires Rust nightly, implies the `"fmt"` feature,
 //! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
-//! - "assertc": implies the "fmt" feature,
+//! - `"assertc"`: requires Rust nightly, implies the `"fmt"` feature,
 //! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
-//! This feature was previously named "assert",
-//! but it was renamed to avoid confusion with the "assertcp" feature.
+//! This feature was previously named `"assert"`,
+//! but it was renamed to avoid confusion with the `"assertcp"` feature.
 //!
-//! - "assertcp": Requires Rust 1.57.0, implies the "rust_1_51" feature.
+//! - `"assertcp"`:
 //! Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 //!
-//! - "rust_1_51":
-//! Enables the macros listed in the [Rust 1.51.0](#rust-1510) section.
-//! Also changes the the implementation of the [`concatcp`] and [`formatcp`]
-//! macros to use const generics.
-//!
-//! - "rust_1_64": Enables the [`str_split`] macro.
+//! - `"rust_1_64"`: Enables the [`str_split`] macro.
 //! Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
-//! in constant time, rather than linear time proportional to the truncated part of the slice.
+//! in constant time, rather than linear time (proportional to the truncated part of the slice).
 //!
 //! # No-std support
 //!
@@ -285,7 +271,7 @@
 //!
 //! # Minimum Supported Rust Version
 //!
-//! `const_format` requires Rust 1.46.0, because it uses looping an branching in const contexts.
+//! `const_format` requires Rust 1.57.0.
 //!
 //! Features that require newer versions of Rust, or the nightly compiler,
 //! need to be explicitly enabled with cargo features.
@@ -385,7 +371,6 @@ mod char_encoding;
 
 mod pargument;
 
-#[cfg(feature = "rust_1_51")]
 mod const_generic_concatcp;
 
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "fmt")))]
@@ -427,7 +412,6 @@ pub mod msg;
 pub mod wrapper_types;
 
 #[doc(hidden)]
-#[cfg(feature = "rust_1_51")]
 pub mod __ascii_case_conv;
 
 #[doc(hidden)]
@@ -435,8 +419,6 @@ pub mod __str_methods;
 
 pub use __str_methods::SplicedStr;
 
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_51")))]
-#[cfg(feature = "rust_1_51")]
 pub use __ascii_case_conv::Case;
 
 #[cfg(feature = "fmt")]
@@ -480,7 +462,6 @@ pub mod pmr {
         result::Result::{self, Err, Ok},
     };
 
-    #[cfg(feature = "rust_1_51")]
     pub use crate::const_generic_concatcp::__priv_concatenate;
 
     #[cfg(feature = "assertcp")]
