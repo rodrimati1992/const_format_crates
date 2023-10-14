@@ -7,7 +7,7 @@
 /// 
 /// This derive macro is only available with the "derive" feature,
 /// and the nightly compiler,
-/// because at the time of writing these docs (2021-08-XX) mutable references in const fn
+/// because at the time of writing these docs (2023-10-XX) mutable references in const fn
 /// require the unstable
 /// [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
 ///

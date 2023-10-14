@@ -18,7 +18,7 @@ macro_rules! with_shared_docs {(
     ///
     /// This macro uses the same syntax
     /// for the format string and formatting arguments as the
-    /// [`formatcp`] macro.
+    /// [`formatcp`](crate::formatcp) macro.
     ///
     $(#[$after_syntax])*
     /// # Limitations
@@ -75,7 +75,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// use const_format::assertcp;
@@ -92,13 +92,13 @@ with_shared_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///   --> src/macros/assertions/assertcp_macros.rs:124:11
-    ///    |
-    /// 10 | assertcp!(L.pow(R) == 64, "{L} to the {R} isn't 64, it's {}", L.pow(R));
-    ///    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    ///  --> const_format/src/macros/assertions/assertcp_macros.rs:116:11
+    ///   |
+    /// 9 | assertcp!(L.pow(R) == 64, "{L} to the {R} isn't 64, it's {}", L.pow(R));
+    ///   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed.
     /// 2 to the 5 isn't 64, it's 32
-    /// ', src/macros/assertions/assertcp_macros.rs:10:11
+    /// ', const_format/src/macros/assertions/assertcp_macros.rs:9:11
     ///
     /// ```
     ///
@@ -192,7 +192,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// use const_format::assertcp_eq;
@@ -210,15 +210,15 @@ with_shared_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///   --> src/macros/assertions/assertcp_macros.rs:226:14
+    ///   --> const_format/src/macros/assertions/assertcp_macros.rs:235:14
     ///    |
-    /// 11 | assertcp_eq!(size_of::<Type>(), size_of::<[u16; 2]>(), "Whoops, `Type` is too large");
+    /// 12 | assertcp_eq!(size_of::<Type>(), size_of::<[u16; 2]>(), "Whoops, `Type` is too large");
     ///    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed: `(left == right)`
     ///  left: `6`
     /// right: `4`
     /// Whoops, `Type` is too large
-    /// ', src/macros/assertions/assertcp_macros.rs:11:14
+    /// ', const_format/src/macros/assertions/assertcp_macros.rs:12:14
     ///
     /// ```
     ///
@@ -258,7 +258,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// use const_format::assertcp_ne;
@@ -272,15 +272,15 @@ with_shared_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///  --> src/macros/assertions/assertcp_macros.rs:298:14
+    ///  --> const_format/src/macros/assertions/assertcp_macros.rs:297:14
     ///   |
-    /// 7 | assertcp_ne!(NAME, "", "NAME must not be empty!");
+    /// 8 | assertcp_ne!(NAME, "", "NAME must not be empty!");
     ///   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed: `(left != right)`
     ///  left: `""`
     /// right: `""`
     /// NAME must not be empty!
-    /// ', src/macros/assertions/assertcp_macros.rs:7:14
+    /// ', const_format/src/macros/assertions/assertcp_macros.rs:8:14
     /// ```
     ///
     #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertcp")))]

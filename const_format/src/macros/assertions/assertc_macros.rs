@@ -75,7 +75,7 @@ with_shared_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -94,14 +94,13 @@ with_shared_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///   --> src/macros/assertions.rs:132:10
+    ///   --> const_format/src/macros/assertions/assertc_macros.rs:109:10
     ///    |
-    /// 12 | assertc!(L + R == 5, "{} plus {} isn't 5, buddy", L,  R);
+    /// 11 | assertc!(L + R == 5, "{} plus {} isn't 5, buddy", L,  R);
     ///    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed.
     /// 2 plus 2 isn't 5, buddy
-    /// ', src/macros/assertions.rs:12:10
-    ///
+    /// ', const_format/src/macros/assertions/assertc_macros.rs:11:10
     /// ```
     ///
     #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "assertc")))]
@@ -175,7 +174,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -193,14 +192,13 @@ assert_eq_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///  --> src/macros/assertions.rs:296:13
-    ///   |
-    /// 9 | assertc_eq!(size_of::<u32>(), size_of::<u8>());
-    ///   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
+    ///   --> const_format/src/macros/assertions/assertc_macros.rs:222:13
+    ///    |
+    /// 10 | assertc_eq!(size_of::<u32>(), size_of::<u8>());
+    ///    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed: `(left == right)`
     ///  left: `4`
-    /// right: `1`', src/macros/assertions.rs:9:13
-    ///
+    /// right: `1`', const_format/src/macros/assertions/assertc_macros.rs:10:13
     /// ```
     ///
     /// ### Comparing user-defined types
@@ -302,7 +300,7 @@ assert_eq_docs! {
     /// ### Failing assertion
     ///
     /// This example demonstrates a failing assertion,
-    /// and how the compiler error looks like as of 2021-09-18.
+    /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
     /// #![feature(const_mut_refs)]
@@ -322,14 +320,13 @@ assert_eq_docs! {
     ///
     /// ```text
     /// error[E0080]: evaluation of constant value failed
-    ///   --> src/macros/assertions.rs:465:13
+    ///   --> const_format/src/macros/assertions/assertc_macros.rs:350:13
     ///    |
-    /// 11 | assertc_ne!(size_of::<u32>(), size_of::<Foo>());
+    /// 12 | assertc_ne!(size_of::<u32>(), size_of::<Foo>());
     ///    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the evaluated program panicked at '
     /// assertion failed: `(left != right)`
     ///  left: `4`
-    /// right: `4`', src/macros/assertions.rs:11:13
-    ///
+    /// right: `4`', const_format/src/macros/assertions/assertc_macros.rs:12:13
     /// ```
     ///
     /// ### Comparing user-defined types
