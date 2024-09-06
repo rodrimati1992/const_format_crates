@@ -98,16 +98,16 @@ pub(crate) fn formatcp_impl(fmt_args: FormatArgs) -> Result<TokenStream2, crate:
 
     if let Some(cond) = fmt_args.condition {
         Ok(quote!(({
-            enum __Foo_osRcTFl4A {}
+            enum __Fooosrctfl4a {}
 
             // This is generic so that the constant is only evaluated when it's needed.
-            impl<T> __cf_osRcTFl4A::pmr::ConcatArgsIf<T, true> for __Foo_osRcTFl4A {
+            impl<T> __cf_osRcTFl4A::pmr::ConcatArgsIf<T, true> for __Fooosrctfl4a {
                 #[doc(hidden)]
                 const PARGUMENTS : &'static [__cf_osRcTFl4A::pmr::PArgument] = #fmt_if_true;
             }
 
             __cf_osRcTFl4A::__concatcp_inner!(
-                <__Foo_osRcTFl4A as __cf_osRcTFl4A::pmr::ConcatArgsIf<(), #cond>>::PARGUMENTS
+                <__Fooosrctfl4a as __cf_osRcTFl4A::pmr::ConcatArgsIf<(), #cond>>::PARGUMENTS
             )
         })))
     } else {
