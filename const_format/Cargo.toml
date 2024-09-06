@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.32"
+version = "0.2.33"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 rust-version = "1.57.0"
 edition = "2021"
@@ -53,7 +53,7 @@ __only_new_tests = ["__test"]
 __docsrs = []
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.32"
+version = "=0.2.33"
 path = "../const_format_proc_macros"
 
 [dependencies.konst]
