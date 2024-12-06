@@ -1,3 +1,5 @@
+#![allow(unexpected_cfgs)]
+
 use crate::{
     formatting::{FormattingFlags, NumberFormatting, StartAndArray, FOR_ESCAPING},
     pargument::Integer,

@@ -3,7 +3,7 @@
 use core::ops::Range;
 
 /// Newtype wrapper to get around limitations in `const fn`s
-pub(crate) struct Constructor<T>(fn() -> T);
+pub(crate) struct Constructor<T>(#[allow(dead_code)] fn() -> T);
 
 pub use crate::slice_cmp::{str_eq, u8_slice_eq};
 

@@ -33,7 +33,7 @@ unicode-xid = "0.2"
 [dependencies.syn]
 version = "1.0.38"
 optional = true
-default_features = false
+default-features = false
 features = ["parsing", "proc-macro"]
 
 [dev-dependencies]

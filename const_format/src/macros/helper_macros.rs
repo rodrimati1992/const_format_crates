@@ -10,6 +10,7 @@ macro_rules! __for_range{
     })
 }
 
+#[allow(unused_macros)]
 macro_rules! identity {
     ($($tt:tt)*) => { $($tt)* };
 }

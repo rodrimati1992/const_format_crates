@@ -5,3 +5,4 @@ members=[
     "print_errors",
     "print_warnings",
 ]
+resolver = "2"

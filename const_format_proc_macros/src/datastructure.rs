@@ -46,7 +46,6 @@ impl<'a> DataStructure<'a> {
                     variants.push(Struct::new(
                         StructParams {
                             variant: variant,
-                            attrs: &var.attrs,
                             name: &var.ident,
                         },
                         &var.fields,
@@ -58,7 +57,6 @@ impl<'a> DataStructure<'a> {
                 variants.push(Struct::new(
                     StructParams {
                         variant: 0,
-                        attrs: &[],
                         name: name,
                     },
                     &struct_.fields,
@@ -72,7 +70,6 @@ impl<'a> DataStructure<'a> {
                 let vari = Struct::with_fields(
                     StructParams {
                         variant: 0,
-                        attrs: &[],
                         name: name,
                     },
                     sk,
@@ -123,19 +120,12 @@ pub struct FieldIndex {
 #[derive(Copy, Clone)]
 struct StructParams<'a> {
     variant: usize,
-    attrs: &'a [Attribute],
     name: &'a Ident,
 }
 
 /// A struct/union or a variant of an enum.
 #[derive(Clone)]
 pub struct Struct<'a> {
-    /// The attributes of this `Struct`.
-    ///
-    /// If this is a struct/union:these is the same as DataStructure.attrs.
-    ///
-    /// If this is an enum:these are the attributes on the variant.
-    pub attrs: &'a [Attribute],
     /// The name of this `Struct`.
     ///
     /// If this is a struct/union:these is the same as DataStructure.name.
@@ -173,7 +163,6 @@ impl<'a> Struct<'a> {
         };
 
         Self {
-            attrs: p.attrs,
             name: p.name,
             kind,
             fields,

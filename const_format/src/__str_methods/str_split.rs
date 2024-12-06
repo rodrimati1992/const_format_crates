@@ -47,7 +47,7 @@ impl SplitInput {
 
 pub const fn count_splits(
     SplitInput {
-        mut str, pattern, ..
+        str, pattern, ..
     }: SplitInput,
 ) -> usize {
     let mut count = 1;
