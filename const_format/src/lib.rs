@@ -243,7 +243,7 @@
 //!
 //! # Cargo features
 //!
-//! - `"fmt"`: Enables the [`std::fmt`]-like API,
+//! - `"fmt"`: Enables the [`std::fmt`]-like API and `"rust_1_83"` feature,
 //! requires Rust 1.83.0 because it uses mutable references in const fn.<br>
 //! This feature includes the [`formatc`]/[`writec`] formatting macros.
 //!
@@ -262,6 +262,9 @@
 //! - `"rust_1_64"`: Enables the [`str_split`] macro.
 //! Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
 //! in constant time, rather than linear time (proportional to the truncated part of the slice).
+//!
+//! - `"rust_1_83"`: Enables the `"rust_1_64"` feature
+//! and makes macros that evaluate to a value compatible with [inline const patterns].
 //!
 //! # No-std support
 //!
@@ -333,6 +336,8 @@
 //! [`str_split`]: ./macro.str_split.html
 //!
 //! [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
+//!
+//! [inline const patterns]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
 //!
 #![no_std]
 #![cfg_attr(feature = "__docsrs", feature(doc_cfg))]

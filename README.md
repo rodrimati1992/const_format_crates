@@ -11,8 +11,7 @@ This crate provides types and macros for formatting strings at compile-time.
 
 # Rust versions
 
-There are some features that require a variety of stable Rust versions and
-others that require Rust nightly,
+There are some features that require a variety of Rust versions,
 the sections below describe the features that are available for each version.
 
 ### Rust 1.57.0
@@ -60,12 +59,11 @@ The `"rust_1_64"` feature enables these macros:
 
 -  [`str_split`]: splits a string constant
 
-### Rust nightly
+### Rust 1.83.0
 
 By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
 
-This requires the nightly compiler, because it uses mutable references in const fn,
-which have not been stabilized as of writing these docs.
+This requires Rust 1.83.0, because it uses mutable references in const fn.
 
 All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
 
@@ -251,15 +249,15 @@ cfmt = {version = "0.*", package = "const_format"}
 
 # Cargo features
 
-- `"fmt"`: Enables the [`std::fmt`]-like API,
-requires Rust nightly because it uses mutable references in const fn.<br>
+- `"fmt"`: Enables the [`std::fmt`]-like API and `"rust_1_83"` feature,
+requires Rust 1.83.0 because it uses mutable references in const fn.<br>
 This feature includes the [`formatc`]/[`writec`] formatting macros.
 
-- `"derive"`: requires Rust nightly, implies the `"fmt"` feature,
+- `"derive"`: requires Rust 1.83.0, implies the `"fmt"` feature,
 provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 
-- `"assertc"`: requires Rust nightly, implies the `"fmt"` feature,
+- `"assertc"`: requires Rust 1.83.0, implies the `"fmt"` feature,
 enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
 This feature was previously named `"assert"`,
 but it was renamed to avoid confusion with the `"assertcp"` feature.
@@ -270,6 +268,9 @@ Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 - `"rust_1_64"`: Enables the [`str_split`] macro.
 Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
 in constant time, rather than linear time (proportional to the truncated part of the slice).
+
+- `"rust_1_83"`: Enables the `"rust_1_64"` feature
+and makes macros that evaluate to a value compatible with [inline const patterns].
 
 # No-std support
 
@@ -339,3 +340,5 @@ need to be explicitly enabled with cargo features.
 [`str_split`]: https://docs.rs/const_format/0.2.*/const_format/macro.str_split.html
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
+
+[inline const patterns]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
