@@ -16,7 +16,6 @@
 /// This demonstrates how you can implement debug formatting for a generic struct.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
 /// use const_format::{formatc, impl_fmt, try_};
@@ -69,7 +68,6 @@
 /// using this macro purely for implementing the [`FormatMarker`] trait.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper, StrWriter};
 /// use const_format::{formatc, impl_fmt, try_};

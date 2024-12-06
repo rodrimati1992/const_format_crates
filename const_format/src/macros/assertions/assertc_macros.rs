@@ -55,7 +55,6 @@ with_shared_docs! {
     /// ### Passing assertion
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc;
     ///
@@ -77,7 +76,6 @@ with_shared_docs! {
     /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc;
     ///
@@ -156,7 +154,6 @@ assert_eq_docs! {
     /// ### Passing assertion
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc_eq;
     ///
@@ -176,7 +173,6 @@ assert_eq_docs! {
     /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc_eq;
     ///
@@ -207,7 +203,6 @@ assert_eq_docs! {
     ///
     #[cfg_attr(feature = "derive", doc = "```compile_fail")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, PWrapper};
     /// use const_format::{ConstDebug, assertc_eq, try_};
@@ -281,7 +276,6 @@ assert_eq_docs! {
     /// ### Passing assertion
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc_ne;
     ///
@@ -302,7 +296,6 @@ assert_eq_docs! {
     /// and how the compiler error looks like as of 2023-10-14.
     ///
     /// ```compile_fail
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::assertc_ne;
     ///
@@ -335,7 +328,6 @@ assert_eq_docs! {
     ///
     #[cfg_attr(feature = "derive", doc = "```compile_fail")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Formatter, PWrapper};
     /// use const_format::{ConstDebug, assertc_ne, try_};

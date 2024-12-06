@@ -262,7 +262,6 @@ macro_rules! formatcp {
 /// ### With standard library types
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::concatc;
 ///
@@ -273,7 +272,6 @@ macro_rules! formatcp {
 /// ### With user-defined types
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Formatter, Sliced, concatc, impl_fmt};
 ///
@@ -412,7 +410,6 @@ macro_rules! __concatc_inner {
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::formatc;
@@ -444,7 +441,6 @@ macro_rules! __concatc_inner {
 /// [in the fmt module](./fmt/index.html#custom-formatting-section).
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::{formatc, try_};
@@ -525,7 +521,6 @@ macro_rules! formatc {
 /// ### Ẁriting a Display impl.
 ///
 /// ```
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, StrWriter};
 /// use const_format::{impl_fmt, try_, writec};
@@ -558,7 +553,6 @@ macro_rules! formatc {
 /// in this case it's a buffer that is cleared every time it's written.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
 /// use const_format::{Formatter, FormattingFlags};
@@ -613,7 +607,6 @@ macro_rules! formatc {
 /// [in the fmt module](./fmt/index.html#custom-formatting-section).
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::{StrWriter, call_debug_fmt, try_, writec};
@@ -640,7 +633,6 @@ macro_rules! formatc {
 /// by using their identifiers in the format string.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Formatter, FormattingFlags, StrWriter, try_, writec};
 ///

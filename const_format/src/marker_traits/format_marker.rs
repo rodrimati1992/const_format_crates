@@ -40,7 +40,6 @@ use core::marker::PhantomData;
 /// without using the [`impl_fmt`] macro.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{
 ///     marker_traits::{FormatMarker, IsNotStdKind},

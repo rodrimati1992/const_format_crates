@@ -15,7 +15,6 @@ use core::ops::Range;
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter};
 /// use const_format::{try_, writec, unwrap};
@@ -144,7 +143,6 @@ enum WriterBackend<'w> {
 /// or [`DebugTuple`] for tuple structs/variants.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, FormattingFlags, StrWriter};
 /// use const_format::{impl_fmt, try_};
@@ -186,7 +184,6 @@ enum WriterBackend<'w> {
 /// anywhere other than 0.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, FormattingFlags, StrWriter};
 /// use const_format::{impl_fmt, try_, writec};
@@ -236,7 +233,6 @@ impl<'w> Formatter<'w> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, FormattingFlags, StrWriter};
     /// use const_format::try_;
@@ -273,7 +269,6 @@ impl<'w> Formatter<'w> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, FormattingFlags, StrWriterMut};
     /// use const_format::try_;
@@ -322,7 +317,6 @@ impl<'w> Formatter<'w> {
     /// that had some text written to it already.
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, FormattingFlags, StrWriter};
     /// use const_format::{impl_fmt, try_, writec};
@@ -430,7 +424,6 @@ impl<'w> Formatter<'w> {
     /// This example demonstrates how you can change the flags when writing a field.
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, PWrapper};
     /// use const_format::{coerce_to_fmt, formatc, impl_fmt, try_};
@@ -671,7 +664,6 @@ macro_rules! finish_method_impl {
 /// and a braced variant.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter};
 /// use const_format::{call_debug_fmt, coerce_to_fmt, formatc, impl_fmt, try_};
@@ -769,7 +761,6 @@ impl<'f, 'w> DebugStruct<'f, 'w> {
 /// and an enum of tuple variants.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter};
 /// use const_format::{call_debug_fmt, coerce_to_fmt, formatc, impl_fmt, try_};
@@ -894,7 +885,6 @@ macro_rules! finish_listset_method_impl {
 /// This example demonstrates how you can debug format a custom type as a list.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter};
 /// use const_format::{formatc, impl_fmt, try_};
@@ -953,7 +943,6 @@ impl<'f, 'w> DebugList<'f, 'w> {
 /// This example demonstrates how you can debug format a custom type as a set.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter};
 /// use const_format::{formatc, impl_fmt, try_};

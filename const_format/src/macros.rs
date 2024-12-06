@@ -29,7 +29,6 @@ mod str_methods;
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, StrWriter};
 /// use const_format::{try_, writec};
@@ -64,7 +63,6 @@ macro_rules! try_ {
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{StrWriter, unwrap, writec};
 ///
@@ -99,7 +97,6 @@ macro_rules! unwrap {
 /// ### Early return
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::unwrap_or_else;
 ///
@@ -117,7 +114,6 @@ macro_rules! unwrap {
 /// ### As unwrap_or
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{AsciiStr, unwrap_or_else};
 ///
@@ -155,7 +151,6 @@ macro_rules! unwrap_or_else {
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{
 ///     for_examples::Unit,
@@ -240,7 +235,6 @@ macro_rules! coerce_to_fmt {
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::StrWriter;
 /// use const_format::{strwriter_as_str, unwrap, writec};

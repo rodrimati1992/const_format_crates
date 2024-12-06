@@ -4,8 +4,7 @@
 //!
 //! # Rust versions
 //!
-//! There are some features that require a variety of stable Rust versions and
-//! others that require Rust nightly,
+//! There are some features that require a variety of Rust versions,
 //! the sections below describe the features that are available for each version.
 //!
 //! ### Rust 1.57.0
@@ -53,12 +52,11 @@
 //!
 //! -  [`str_split`]: splits a string constant
 //!
-//! ### Rust nightly
+//! ### Rust 1.83.0
 //!
 //! By enabling the "fmt" feature, you can use a [`std::fmt`]-like API.
 //!
-//! This requires the nightly compiler, because it uses mutable references in const fn,
-//! which have not been stabilized as of writing these docs.
+//! This requires Rust 1.83.0, because it uses mutable references in const fn.
 //!
 //! All the other features of this crate are implemented on top of the [`const_format::fmt`] API:
 //!
@@ -115,11 +113,11 @@
 //! This example demonstrates how you can use the [`ConstDebug`] derive macro,
 //! and then format the type into a `&'static str` constant.
 //!
-//! This example requires Rust nightly, and the `"derive"` feature.
+//! This example requires the `"derive"` feature
+//! and Rust 1.83.0, because it uses `&mut` in a const context.
 //!
 #![cfg_attr(feature = "derive", doc = "```rust")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! #![feature(const_mut_refs)]
 //!
 //! use const_format::{ConstDebug, formatc};
 //!
@@ -246,14 +244,14 @@
 //! # Cargo features
 //!
 //! - `"fmt"`: Enables the [`std::fmt`]-like API,
-//! requires Rust nightly because it uses mutable references in const fn.<br>
+//! requires Rust 1.83.0 because it uses mutable references in const fn.<br>
 //! This feature includes the [`formatc`]/[`writec`] formatting macros.
 //!
-//! - `"derive"`: requires Rust nightly, implies the `"fmt"` feature,
+//! - `"derive"`: requires Rust 1.83.0, implies the `"fmt"` feature,
 //! provides the [`ConstDebug`] derive macro to format user-defined types at compile-time.<br>
 //! This implicitly uses the `syn` crate, so clean compiles take a bit longer than without the feature.
 //!
-//! - `"assertc"`: requires Rust nightly, implies the `"fmt"` feature,
+//! - `"assertc"`: requires Rust 1.83.0, implies the `"fmt"` feature,
 //! enables the [`assertc`], [`assertc_eq`], and [`assertc_ne`] assertion macros.<br>
 //! This feature was previously named `"assert"`,
 //! but it was renamed to avoid confusion with the `"assertcp"` feature.
@@ -337,7 +335,6 @@
 //! [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 //!
 #![no_std]
-#![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 #![cfg_attr(feature = "__docsrs", feature(doc_cfg))]
 #![deny(rust_2018_idioms)]
 // This lint is silly

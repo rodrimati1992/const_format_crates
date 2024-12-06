@@ -1,9 +1,8 @@
-#![cfg_attr(feature = "nightly", feature(const_mut_refs))]
+#![deny(non_camel_case_types)]
 
-use const_format::{concatcp, formatcp};
+use const_format::{assertcp, concatcp, formatcp};
 
-#[cfg(feature = "nightly")]
-pub mod nightly {
+pub mod rust_1_83 {
     use const_format::{
         assertc, assertc_eq, assertc_ne, concatc, for_examples::Unit, formatc, writec, StrWriter,
         StrWriterMut,
@@ -41,5 +40,7 @@ pub const CONCATCP_A: &str = concatcp!("hello", "world");
 pub const CONCATCP_B: &str = concatcp!(10u8, 20u8);
 
 pub const FORMATCP_A: &str = formatcp!("{}hello{:x?}", "foo", 100u8);
+
+assertcp! {1 == 1, "what the {}", "F"}
 
 fn main() {}

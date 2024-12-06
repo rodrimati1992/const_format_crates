@@ -3,10 +3,8 @@
 //!
 //! # Features
 //!
-//! This module requires the "fmt" feature to be exported, and the nightly compiler,
-//! because at the time of writing these docs (2023-10-XX) mutable references in const fn
-//! require the unstable
-//! [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
+//! This module requires the "fmt" feature to be exported, and Rust 1.83.0,
+//! because it uses `&mut` in `const fn`s.
 //!
 //! # Implementing the formatting methods
 //!
@@ -123,7 +121,6 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```rust")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
 //! use const_format::{ConstDebug, try_, unwrap, writec};
@@ -175,7 +172,6 @@
 //! This example demonstrates how you can use the `fmt` api without using any proc macros.
 //!
 //! ```rust
-//! #![feature(const_mut_refs)]
 //!
 //! use const_format::{Error, Formatter, FormattingFlags, PWrapper, StrWriter};
 //! use const_format::{call_debug_fmt, coerce_to_fmt, impl_fmt, try_};
@@ -267,7 +263,6 @@
 //! by using a `Formatter` directly.
 //!
 //! ```rust
-//! #![feature(const_mut_refs)]
 //!
 //! use const_format::{call_debug_fmt, formatc};
 //!

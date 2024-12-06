@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        rust: [stable, beta, nightly, 1.57.0, 1.64.0]
+        rust: [stable, beta, nightly, 1.57.0, 1.64.0, 1.83.0]
 
     steps:
     - uses: actions/checkout@v2
@@ -41,14 +41,11 @@ jobs:
 
     - uses: actions/checkout@v2
     - name: ci-nighly
-      if: ${{ matrix.rust == 'nightly' && runner.os == 'Linux' }}
+      if: ${{ !(matrix.rust == '1.57.0' || matrix.rust == "1.64.0") }}
       run: |
         rustup override set ${{ matrix.rust }}
 
-        cargo update -Z minimal-versions
-        
-        cd "${{github.workspace}}/const_format_proc_macros/"
-        cargo test
+        cargo update
 
         cd "${{github.workspace}}/const_format/"
         
@@ -62,6 +59,21 @@ jobs:
         cargo test --features "__test rust_1_64"
         cargo test --features "__test derive constant_time_as_str"
         cargo test --features "__test derive constant_time_as_str assertc"
+        cargo test --features "__test derive constant_time_as_str assertc more_str_macros rust_1_64"
+
+    - uses: actions/checkout@v2
+    - name: ci-nighly
+      if: ${{ matrix.rust == 'nightly' && runner.os == 'Linux' }}
+      run: |
+        rustup override set ${{ matrix.rust }}
+
+        cargo update -Z minimal-versions
+        
+        cd "${{github.workspace}}/const_format_proc_macros/"
+        cargo test
+
+        cd "${{github.workspace}}/const_format/"
+
         cargo test --features "__test derive constant_time_as_str assertc more_str_macros rust_1_64"
 
         MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)

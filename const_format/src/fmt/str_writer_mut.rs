@@ -48,7 +48,6 @@ use core::{marker::PhantomData, ops::Range};
 /// using a `StrWriterMut`.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, StrWriterMut, try_, writec};
 ///
@@ -452,7 +451,6 @@ impl<'w, E> StrWriterMut<'w, E> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{StrWriter, StrWriterMut};
     ///
@@ -483,7 +481,6 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{StrWriter, StrWriterMut};
     /// use const_format::{unwrap, writec};
@@ -531,7 +528,6 @@ impl<'w> StrWriterMut<'w, Utf8Encoding> {
         /// # Example
         ///
         /// ```rust
-        /// #![feature(const_mut_refs)]
         ///
         /// use const_format::{StrWriter, StrWriterMut};
         ///
@@ -567,7 +563,6 @@ impl<'w, E> StrWriterMut<'w, E> {
         /// # Example
         ///
         /// ```rust
-        /// #![feature(const_mut_refs)]
         ///
         /// use const_format::{StrWriter, StrWriterMut};
         ///
@@ -593,7 +588,6 @@ impl<'w, E> StrWriterMut<'w, E> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, FormattingFlags, StrWriter, StrWriterMut};
     /// use const_format::call_debug_fmt;
@@ -649,7 +643,6 @@ impl<'w, E> StrWriterMut<'w, E> {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, FormattingFlags, StrWriter, StrWriterMut, call_debug_fmt};
     ///
@@ -1370,7 +1363,6 @@ write_integer_fn! {
         /// # Example
         ///
         /// ```rust
-        /// #![feature(const_mut_refs)]
         ///
         /// use const_format::{FormattingFlags, StrWriterMut};
         ///

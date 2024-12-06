@@ -4,8 +4,7 @@ version = "0.1.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 
-[features]
-nightly = ["cfmt/assert"]
-
-[dependencies]
-cfmt = {path = "../const_format/", package = "const_format"}
+[dependencies.cfmt]
+path = "../const_format/"
+package = "const_format"
+features = ["assertc"]

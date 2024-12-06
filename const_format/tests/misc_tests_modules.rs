@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "fmt", feature(const_mut_refs))]
-
 extern crate const_format as cfmt_b;
 extern crate self as const_format;
 
