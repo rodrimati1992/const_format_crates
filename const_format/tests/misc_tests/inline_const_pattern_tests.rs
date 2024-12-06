@@ -1,19 +1,9 @@
 use crate::cfmt_b;
 
 use crate::cfmt_b::{
-    concatc,
-    concatcp,
-    formatc,
-    formatcp,
-    map_ascii_case,
-    str_get,
-    str_index,
-    str_repeat,
-    str_replace,
-    str_splice_out,
-    str_split_pat,
+    concatc, concatcp, formatc, formatcp, map_ascii_case, str_get, str_index, str_repeat,
+    str_replace, str_splice_out, str_split_pat,
 };
-
 
 #[test]
 fn concatc_inline_pat_tests() {
@@ -42,7 +32,10 @@ fn formatcp_inline_pat_tests() {
 #[test]
 fn map_ascii_case_inline_pat_tests() {
     assert!(matches!("foo", map_ascii_case!(cfmt_b::Case::Lower, "FOO")));
-    assert!(!matches!("bar", map_ascii_case!(cfmt_b::Case::Upper, "bar")));
+    assert!(!matches!(
+        "bar",
+        map_ascii_case!(cfmt_b::Case::Upper, "bar")
+    ));
 }
 
 #[test]
@@ -77,7 +70,12 @@ fn str_replace_inline_pat_tests() {
 
 #[test]
 fn str_split_pat_inline_pat_tests() {
-    assert!(matches!(&["foo", "bar", "baz"][..], str_split_pat!("foo bar baz", " ")));
-    assert!(!matches!(&["foo", "bar", "baz"][..], str_split_pat!("foo bar", " ")));
+    assert!(matches!(
+        &["foo", "bar", "baz"][..],
+        str_split_pat!("foo bar baz", " ")
+    ));
+    assert!(!matches!(
+        &["foo", "bar", "baz"][..],
+        str_split_pat!("foo bar", " ")
+    ));
 }
-

@@ -42,7 +42,6 @@ fn replacements() {
     assert_eq!(str_splice!("abcde", 2..4, "hello"), ss("abhelloe", "cd"));
 }
 
-
 #[test]
 fn splice_out_ranges() {
     assert_eq!(str_splice_out!(IN, 2, RW), "ab_.-defghij");

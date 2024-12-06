@@ -30,11 +30,11 @@ struct Braced {
     "<U> Tupled<bool, U> where U: 'static,",
 ))]
 struct Tupled<T, U>(
-    u32, 
-    #[cdeb(ignore)] 
+    u32,
+    #[cdeb(ignore)]
     #[allow(dead_code)]
-    Option<&'static str>, 
-    T, 
+    Option<&'static str>,
+    T,
     PhantomData<U>,
 );
 
@@ -108,7 +108,7 @@ enum Enum {
     },
     Tupled(
         u32,
-        #[cdeb(ignore)] 
+        #[cdeb(ignore)]
         #[allow(dead_code)]
         Option<&'static str>,
         u32,
