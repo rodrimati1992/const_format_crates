@@ -75,19 +75,21 @@
 /// ```
 #[macro_export]
 macro_rules! map_ascii_case {
-    ($case:expr, $str:expr) => {{
-        const S_OSRCTFL4A: &$crate::pmr::str = $str;
-        const CASE_OSRCTFL4A: $crate::Case = $case;
-        {
-            const L: $crate::pmr::usize =
-                $crate::__ascii_case_conv::size_after_conversion(CASE_OSRCTFL4A, S_OSRCTFL4A);
+    ($case:expr, $str:expr) => {
+        $crate::__str_const! {{
+            const S_OSRCTFL4A: &$crate::pmr::str = $str;
+            const CASE_OSRCTFL4A: $crate::Case = $case;
+            {
+                const L: $crate::pmr::usize =
+                    $crate::__ascii_case_conv::size_after_conversion(CASE_OSRCTFL4A, S_OSRCTFL4A);
 
-            const OB: &[$crate::pmr::u8; L] =
-                &$crate::__ascii_case_conv::convert_str::<L>(CASE_OSRCTFL4A, S_OSRCTFL4A);
+                const OB: &[$crate::pmr::u8; L] =
+                    &$crate::__ascii_case_conv::convert_str::<L>(CASE_OSRCTFL4A, S_OSRCTFL4A);
 
-            const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
+                const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
 
-            OS
-        }
-    }};
+                OS
+            }
+        }}
+    };
 }

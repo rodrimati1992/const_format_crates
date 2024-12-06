@@ -1,3 +1,5 @@
+#![allow(unexpected_cfgs)]
+
 use crate::{
     formatting::{FormattingFlags, NumberFormatting, StartAndArray, FOR_ESCAPING},
     pargument::Integer,
@@ -37,7 +39,6 @@ mod tests;
 ///
 #[cfg_attr(feature = "fmt", doc = "```rust")]
 #[cfg_attr(not(feature = "fmt"), doc = "```ignore")]
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, PWrapper};
 /// use const_format::{impl_fmt, formatc, try_};

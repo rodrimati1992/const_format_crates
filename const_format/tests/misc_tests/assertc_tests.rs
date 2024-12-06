@@ -1,4 +1,5 @@
 #![allow(unreachable_code)]
+#![allow(non_local_definitions)]
 
 use cfmt_b::for_examples::{Point3, Unit};
 use cfmt_b::{assertc, assertc_eq, assertc_ne, call_debug_fmt};

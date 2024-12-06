@@ -1,6 +1,6 @@
 [package]
 name = "const_format"
-version = "0.2.33"
+version = "0.2.34"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 rust-version = "1.57.0"
 edition = "2021"
@@ -24,7 +24,8 @@ const_generics = ["rust_1_51"]
 nightly_const_generics = ["const_generics"]
 rust_1_51 = []
 rust_1_64 = ["rust_1_51", "konst", "konst/rust_1_64"]
-fmt = ["rust_1_64"]
+rust_1_83 = ["rust_1_64"]
+fmt = ["rust_1_83"]
 derive = ["fmt", "const_format_proc_macros/derive"]
 
 # soft-deprecated, use assertc instead.
@@ -50,10 +51,11 @@ all = [
 __debug = ["const_format_proc_macros/debug"]
 __test = []
 __only_new_tests = ["__test"]
+__inline_const_pat_tests = ["__test", "fmt"]
 __docsrs = []
 
 [dependencies.const_format_proc_macros]
-version = "=0.2.33"
+version = "=0.2.34"
 path = "../const_format_proc_macros"
 
 [dependencies.konst]
@@ -62,8 +64,8 @@ default-features = false
 optional = true
 
 [dev-dependencies]
-fastrand = {version = "1.3.5", default_features = false}
-arrayvec = {version = "0.5.1", default_features = false}
+fastrand = {version = "1.3.5", default-features = false}
+arrayvec = {version = "0.5.1", default-features = false}
 
 [package.metadata.docs.rs]
 features = ["all", "__docsrs"]

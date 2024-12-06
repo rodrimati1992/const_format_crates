@@ -2,6 +2,29 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.34
+
+Now all features that used to require nightly only require Rust 1.83.0
+
+Added `"rust_1_83"` feature that enables `"rust_1_64"` feature
+
+Changed `"fmt"` feature to enable `"rust_1_83"` feature
+
+Made many macros forward compatible with inline const patterns(when the `"rust_1_83"` feature is enabled):
+- `concatc`
+- `concatcp`
+- `formatc`
+- `formatcp`
+- `map_ascii_case`
+- `str_get`
+- `str_index`
+- `str_repeat`
+- `str_replace`
+
+Added these macros:
+- `str_splice_out`
+- `str_split_alt`
+
 ### 0.2.33
 
 Fixed Rust Analyzer style warning for assertion macros.

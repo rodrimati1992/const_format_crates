@@ -46,7 +46,6 @@ pub struct ImplFmtWhereClause;
 
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// #[derive(const_format::ConstDebug)]
 /// struct Foo<T>(*const T)
@@ -56,7 +55,6 @@ pub struct ImplFmtWhereClause;
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// #[derive(const_format::ConstDebug)]
 /// struct Foo<T>(*const T)
@@ -69,7 +67,6 @@ pub struct ImplFmtWhereClause;
 pub struct ConstDebugWhereClause;
 
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::StrWriterMut;
 ///
@@ -85,7 +82,6 @@ pub struct ConstDebugWhereClause;
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::StrWriterMut;
 ///
@@ -104,14 +100,12 @@ pub struct ConstDebugWhereClause;
 pub struct AsStr_For_StrWriterMut_NoEncoding;
 
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc!(true, "foo");
 ///
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc!(false, "foo");
 ///
@@ -120,7 +114,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 /// # With a Formatting argument
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc!(
 ///     true,
@@ -139,7 +132,6 @@ pub struct AsStr_For_StrWriterMut_NoEncoding;
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc!(
 ///     false,
@@ -163,14 +155,12 @@ pub struct Assert;
 /// # assert_eq
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc_eq!(0u8, 0u8, "foo");
 ///
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc_eq!(0u8, 10u8, "foo");
 ///
@@ -179,14 +169,12 @@ pub struct Assert;
 /// # assert_ne
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc_ne!(0u8, 10u8, "foo");
 ///
 /// ```
 ///
 /// ```compile_fail
-/// #![feature(const_mut_refs)]
 ///
 /// const_format::assertc_ne!(0u8, 0u8, "foo");
 ///

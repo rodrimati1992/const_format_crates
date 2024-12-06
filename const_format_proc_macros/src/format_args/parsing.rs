@@ -124,7 +124,7 @@ impl MyParse for UncheckedFormatArgs {
 
 impl MyParse for FormatArgs {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error> {
-        let prefix = Ident::new("const_fmt_local_", Span::call_site());
+        let prefix = Ident::new("__const_fmt_local_", Span::call_site());
         FormatArgs::parse_with(input, prefix)
     }
 }
@@ -323,7 +323,7 @@ impl MyParse for FormatIfArgs {
 
 impl MyParse for WriteArgs {
     fn parse(input: ParseStream) -> Result<Self, crate::Error> {
-        let prefix = Ident::new("const_fmt_local_", Span::call_site());
+        let prefix = Ident::new("__const_fmt_local_", Span::call_site());
 
         let paren = input.parse_paren()?;
 

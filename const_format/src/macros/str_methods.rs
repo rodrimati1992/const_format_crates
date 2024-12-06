@@ -65,19 +65,21 @@
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
 macro_rules! str_replace {
-    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
-        const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
-            $crate::__str_methods::ReplaceInputConv($input, $pattern, $replace_with).conv();
+    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {
+        $crate::__str_const! {{
+            const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
+                $crate::__str_methods::ReplaceInputConv($input, $pattern, $replace_with).conv();
 
-        {
-            const OB: &[$crate::pmr::u8; ARGS_OSRCTFL4A.replace_length()] =
-                &ARGS_OSRCTFL4A.replace();
+            {
+                const OB: &[$crate::pmr::u8; ARGS_OSRCTFL4A.replace_length()] =
+                    &ARGS_OSRCTFL4A.replace();
 
-            const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
+                const OS: &$crate::pmr::str = unsafe { $crate::__priv_transmute_bytes_to_str!(OB) };
 
-            OS
-        }
-    }};
+                OS
+            }
+        }}
+    };
 }
 
 /// Creates a `&'static str` by repeating a `&'static str` constant `times` times
@@ -121,35 +123,42 @@ const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
 )]
 #[macro_export]
 macro_rules! str_repeat {
-    ($string:expr, $times:expr  $(,)*) => {{
-        const P_OSRCTFL4A: &$crate::__str_methods::StrRepeatArgs =
-            &$crate::__str_methods::StrRepeatArgs($string, $times);
+    ($string:expr, $times:expr  $(,)*) => {
+        $crate::__str_const! {{
+            const P_OSRCTFL4A: &$crate::__str_methods::StrRepeatArgs =
+                &$crate::__str_methods::StrRepeatArgs($string, $times);
 
-        {
-            use $crate::__hidden_utils::PtrToRef;
-            use $crate::pmr::{str, transmute, u8};
+            {
+                use $crate::__hidden_utils::PtrToRef;
+                use $crate::pmr::{str, transmute, u8};
 
-            const P: &$crate::__str_methods::StrRepeatArgs = P_OSRCTFL4A;
+                const P: &$crate::__str_methods::StrRepeatArgs = P_OSRCTFL4A;
 
-            $crate::pmr::respan_to! {
-                ($string)
-                const _ASSERT_VALID_LEN: () = P.assert_valid();
+                $crate::pmr::respan_to! {
+                    ($string)
+                    const _ASSERT_VALID_LEN: () = P.assert_valid();
+                }
+
+                const OUT_B: &[u8; P.out_len] = &unsafe {
+                    let ptr = P.str.as_ptr() as *const [u8; P.str_len];
+                    transmute::<[[u8; P.str_len]; P.repeat], [u8; P.out_len]>(
+                        [*PtrToRef { ptr }.reff; P.repeat],
+                    )
+                };
+                const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
+                OUT_S
             }
-
-            const OUT_B: &[u8; P.out_len] = &unsafe {
-                let ptr = P.str.as_ptr() as *const [u8; P.str_len];
-                transmute::<[[u8; P.str_len]; P.repeat], [u8; P.out_len]>(
-                    [*PtrToRef { ptr }.reff; P.repeat],
-                )
-            };
-            const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
-            OUT_S
-        }
-    }};
+        }}
+    };
 }
 
 /// Replaces a substring in a `&'static str` constant.
 /// Returns both the new resulting `&'static str`, and the replaced substring.
+///
+/// # Alternatives
+///
+/// For an alternative which only returns the string with the applied replacement,
+/// you can use [`str_splice_out`].
 ///
 /// # Signature
 ///
@@ -249,9 +258,56 @@ assert_eq!(
 ///
 ///
 /// [`SplicedStr`]: ./struct.SplicedStr.html
+/// [`str_splice_out`]: ./macro.str_splice_out.html
 #[macro_export]
 macro_rules! str_splice {
-    ($string:expr, $index:expr, $insert:expr $(,)*) => {{
+    ($string:expr, $index:expr, $insert:expr $(,)*) => {
+        $crate::__const! {
+            $crate::__str_methods::SplicedStr =>
+            $crate::__str_splice!($string, $index, $insert)
+        }
+    };
+}
+
+/// Alternative version of [`str_splice`] which only returns the string
+/// with the applied replacement.
+///
+/// # Example
+///
+/// ```rust
+/// use const_format::{str_splice_out, SplicedStr};
+///
+/// const OUT: &str = str_splice_out!("foo bar baz", 4..=6, "is");
+/// assert_eq!(OUT , "foo is baz");
+///
+/// // You can pass `const`ants to this macro, not just literals
+/// {
+///     const IN: &str = "this is bad";
+///     const INDEX: std::ops::RangeFrom<usize> = 8..;
+///     const REPLACE_WITH: &str = "... fine";
+///     const OUT: &str = str_splice_out!(IN, INDEX, REPLACE_WITH);
+///     assert_eq!(OUT , "this is ... fine");
+/// }
+/// {
+///     const OUT: &str = str_splice_out!("ABC豆-", 3, "DEFGH");
+///     assert_eq!(OUT , "ABCDEFGH-");
+/// }
+/// ```
+///
+/// [`str_splice`]: ./macro.str_splice.html
+#[macro_export]
+macro_rules! str_splice_out {
+    ($string:expr, $index:expr, $insert:expr $(,)*) => {
+        $crate::__str_const! {
+            $crate::__str_splice!($string, $index, $insert).output
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __str_splice {
+    ($string:expr, $index:expr, $insert:expr) => {{
         const P_OSRCTFL4A: $crate::__str_methods::StrSpliceArgs =
             $crate::__str_methods::StrSplceArgsConv($string, $index, $insert).conv();
         {
@@ -372,36 +428,38 @@ assert_eq!(const_format::str_index!("効率的", 4..6), "率");
 ///
 #[macro_export]
 macro_rules! str_index {
-    ($string:expr, $index:expr $(,)*) => {{
-        const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
-            $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
+    ($string:expr, $index:expr $(,)*) => {
+        $crate::__str_const! {{
+            const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
+                $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
 
-        {
-            $crate::pmr::respan_to! {
-                ($string)
-                const _ASSERT_VALID_INDEX: () =
-                    P_OSRCTFL4A.index_validity.assert_valid();
-            }
-
-            use $crate::__hidden_utils::PtrToRef;
-            use $crate::__str_methods::DecomposedString;
-            type DecompIn = DecomposedString<
-                [u8; P_OSRCTFL4A.used_rstart],
-                [u8; P_OSRCTFL4A.used_rlen],
-                [u8; 0],
-            >;
-
-            const OUT: &'static str = unsafe {
-                let input = PtrToRef {
-                    ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
+            {
+                $crate::pmr::respan_to! {
+                    ($string)
+                    const _ASSERT_VALID_INDEX: () =
+                        P_OSRCTFL4A.index_validity.assert_valid();
                 }
-                .reff;
-                $crate::__priv_transmute_raw_bytes_to_str!(&input.middle)
-            };
 
-            OUT
-        }
-    }};
+                use $crate::__hidden_utils::PtrToRef;
+                use $crate::__str_methods::DecomposedString;
+                type DecompIn = DecomposedString<
+                    [u8; P_OSRCTFL4A.used_rstart],
+                    [u8; P_OSRCTFL4A.used_rlen],
+                    [u8; 0],
+                >;
+
+                const OUT: &'static str = unsafe {
+                    let input = PtrToRef {
+                        ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
+                    }
+                    .reff;
+                    $crate::__priv_transmute_raw_bytes_to_str!(&input.middle)
+                };
+
+                OUT
+            }
+        }}
+    };
 }
 
 /// Indexes a `&'static str` constant,
@@ -469,39 +527,48 @@ assert_eq!(const_format::str_get!("効率的", 4..6), None);
 ///
 #[macro_export]
 macro_rules! str_get {
-    ($string:expr, $index:expr $(,)*) => {{
-        const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
-            $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
+    ($string:expr, $index:expr $(,)*) => {
+        $crate::__const! {
+            $crate::pmr::Option<&'static $crate::pmr::str> => {
+            const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
+                $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
 
-        {
-            use $crate::__hidden_utils::PtrToRef;
-            use $crate::__str_methods::DecomposedString;
-            type DecompIn = DecomposedString<
-                [u8; P_OSRCTFL4A.used_rstart],
-                [u8; P_OSRCTFL4A.used_rlen],
-                [u8; 0],
-            >;
+            {
+                use $crate::__hidden_utils::PtrToRef;
+                use $crate::__str_methods::DecomposedString;
+                type DecompIn = DecomposedString<
+                    [u8; P_OSRCTFL4A.used_rstart],
+                    [u8; P_OSRCTFL4A.used_rlen],
+                    [u8; 0],
+                >;
 
-            const OUT: $crate::pmr::Option<&'static $crate::pmr::str> = unsafe {
-                if P_OSRCTFL4A.index_validity.is_valid() {
-                    let input = PtrToRef {
-                        ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
+                const OUT: $crate::pmr::Option<&'static $crate::pmr::str> = unsafe {
+                    if P_OSRCTFL4A.index_validity.is_valid() {
+                        let input = PtrToRef {
+                            ptr: P_OSRCTFL4A.str.as_ptr() as *const DecompIn,
+                        }
+                        .reff;
+
+                        $crate::pmr::Some($crate::__priv_transmute_raw_bytes_to_str!(&input.middle))
+                    } else {
+                        $crate::pmr::None
                     }
-                    .reff;
+                };
 
-                    $crate::pmr::Some($crate::__priv_transmute_raw_bytes_to_str!(&input.middle))
-                } else {
-                    $crate::pmr::None
-                }
-            };
-
-            OUT
-        }
-    }};
+                OUT
+            }
+        }}
+    };
 }
 
 /// Splits `$string` (a `&'static str` constant) with `$splitter`,
 /// returning an array of `&'static str`s.
+///
+/// # Alternatives
+///
+/// For an alternative macro which will be usable in slice patterns
+/// (once [`inline_const_pat`] is stabilized)
+/// you can use [`str_split_pat`].
 ///
 /// # Signature
 ///
@@ -551,6 +618,9 @@ macro_rules! str_get {
 /// }
 ///
 /// ```
+///
+/// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
+/// [`str_split_pat`]: crate::str_split_pat
 #[macro_export]
 #[cfg(feature = "rust_1_64")]
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
@@ -564,4 +634,47 @@ macro_rules! str_split {
             OB
         }
     }};
+}
+
+/// Version of [`str_split`] which evaluates to a `&'static [&'static str]`.
+///
+/// # Example
+///
+/// Using the currently unstable [`inline_const_pat`] feature to use this macro in patterns:
+///
+/// ```rust
+/// # /*
+/// #![feature(inline_const_pat)]
+/// # */
+///
+/// use const_format::str_split_pat;
+///
+/// assert!(is_it(&["foo", "bar", "baz"]));
+/// assert!(!is_it(&["foo", "bar"]));
+///
+/// fn is_it(slice: &[&str]) -> bool {
+///     const SEP: char = ' ';
+/// # /*
+///     matches!(slice, str_split_pat!("foo bar baz", SEP))
+/// # */
+/// #   slice == str_split_pat!("foo bar baz", SEP)
+/// }
+/// ```
+///
+/// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
+#[macro_export]
+#[cfg(feature = "rust_1_64")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
+macro_rules! str_split_pat {
+    ($string:expr, $splitter:expr $(,)?) => {
+        $crate::__const! {&'static [&'static $crate::pmr::str] => {
+            const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =
+                $crate::__str_methods::SplitInputConv($string, $splitter).conv();
+
+            {
+                const OB: [&$crate::pmr::str; ARGS_OSRCTFL4A.length()] = ARGS_OSRCTFL4A.split_it();
+                &OB
+            }
+        }}
+    };
 }

@@ -1,4 +1,4 @@
-use const_format::{str_splice, SplicedStr};
+use const_format::{str_splice, str_splice_out, SplicedStr};
 
 fn ss(output: &'static str, removed: &'static str) -> SplicedStr {
     SplicedStr { output, removed }
@@ -40,4 +40,39 @@ fn replacements() {
     assert_eq!(str_splice!("abcde", 2..4, "hel"), ss("abhele", "cd"));
     assert_eq!(str_splice!("abcde", 2..4, "hell"), ss("abhelle", "cd"));
     assert_eq!(str_splice!("abcde", 2..4, "hello"), ss("abhelloe", "cd"));
+}
+
+#[test]
+fn splice_out_ranges() {
+    assert_eq!(str_splice_out!(IN, 2, RW), "ab_.-defghij");
+    assert_eq!(str_splice_out!(IN, 4, RW), "abcd_.-fghij");
+
+    assert_eq!(str_splice_out!(IN, 2..4, RW), "ab_.-efghij");
+    assert_eq!(str_splice_out!(IN, 4..4, RW), "abcd_.-efghij");
+    assert_eq!(str_splice_out!(IN, 4..0, RW), "abcd_.-efghij");
+
+    assert_eq!(str_splice_out!(IN, 2..=4, RW), "ab_.-fghij");
+    assert_eq!(str_splice_out!(IN, 4..=4, RW), "abcd_.-fghij");
+
+    assert_eq!(str_splice_out!(IN, ..2, RW), "_.-cdefghij");
+    assert_eq!(str_splice_out!(IN, ..4, RW), "_.-efghij");
+
+    assert_eq!(str_splice_out!(IN, ..=1, RW), "_.-cdefghij");
+    assert_eq!(str_splice_out!(IN, ..=3, RW), "_.-efghij");
+
+    assert_eq!(str_splice_out!(IN, 5.., RW), "abcde_.-");
+    assert_eq!(str_splice_out!(IN, 5..IN.len(), RW), "abcde_.-");
+    assert_eq!(str_splice_out!(IN, 7.., RW), "abcdefg_.-");
+
+    assert_eq!(str_splice_out!(IN, .., RW), "_.-");
+}
+
+#[test]
+fn splice_out_replacements() {
+    assert_eq!(str_splice_out!("abcde", 2..4, ""), "abe");
+    assert_eq!(str_splice_out!("abcde", 2..4, "h"), "abhe");
+    assert_eq!(str_splice_out!("abcde", 2..4, "he"), "abhee");
+    assert_eq!(str_splice_out!("abcde", 2..4, "hel"), "abhele");
+    assert_eq!(str_splice_out!("abcde", 2..4, "hell"), "abhelle");
+    assert_eq!(str_splice_out!("abcde", 2..4, "hello"), "abhelloe");
 }

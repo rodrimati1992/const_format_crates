@@ -6,10 +6,7 @@
 /// # Features 
 /// 
 /// This derive macro is only available with the "derive" feature,
-/// and the nightly compiler,
-/// because at the time of writing these docs (2023-10-XX) mutable references in const fn
-/// require the unstable
-/// [`const_mut_refs`](https://github.com/rust-lang/rust/issues/57349) feature.
+/// and Rust 1.83.0, because is uses mutable references in const.
 ///
 /// # Limitations
 ///
@@ -55,7 +52,6 @@
 /// Example:
 /// 
 /// ```rust
-/// # #![feature(const_mut_refs)]
 /// #[derive(const_format::ConstDebug)]
 /// #[cdeb(impls(
 ///     "Foo<u8, u64>",
@@ -153,7 +149,6 @@
 /// This example demonstrates using the derive without using any helper attributes.
 /// 
 /// ```rust
-/// #![feature(const_mut_refs)]
 /// 
 /// use const_format::{ConstDebug, formatc};
 /// 
@@ -201,7 +196,6 @@
 /// specifying a list of impls of types that unconditionally implement const debug formatting
 /// 
 /// ```rust
-/// #![feature(const_mut_refs)]
 /// 
 /// use const_format::{ConstDebug, formatc};
 /// 
@@ -238,7 +232,6 @@
 /// This example demonstrates when you would use the `is_a` attributes.
 /// 
 /// ```rust
-/// #![feature(const_mut_refs)]
 /// 
 /// use const_format::{ConstDebug, formatc};
 /// 
@@ -331,7 +324,6 @@
 /// crate is renamed.
 /// 
 /// ```rust
-/// #![feature(const_mut_refs)]
 /// # extern crate self as const_format;
 /// # extern crate const_format as cfmt;
 /// # fn main() {

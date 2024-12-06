@@ -1,5 +1,4 @@
 #![cfg(feature = "fmt")]
-#![cfg_attr(feature = "fmt", feature(const_mut_refs))]
 
 // Prevents importing from const_format, requiring importing from cfmt_b.
 extern crate const_format as cfmt_a;

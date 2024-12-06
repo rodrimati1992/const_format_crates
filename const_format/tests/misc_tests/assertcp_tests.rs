@@ -1,4 +1,5 @@
 #![allow(unreachable_code)]
+#![allow(non_local_definitions)]
 
 use cfmt_b::{assertcp, assertcp_eq, assertcp_ne};
 

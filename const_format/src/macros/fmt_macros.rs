@@ -56,12 +56,12 @@
 macro_rules! concatcp {
     ()=>{""};
     ($($arg: expr),* $(,)?)=>(
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
             $crate::pmr::__concatcp_impl!{
                 $( ( $arg ), )*
             }
-        }}.x
+        }}
     );
 }
 
@@ -229,14 +229,14 @@ macro_rules! __concatcp_inner {
 #[macro_export]
 macro_rules! formatcp {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::pmr::__formatcp_impl!(
                 ($format_string)
                 $(, $($expr,)+)?
             )
-        }}.x
+        }}
     );
 }
 
@@ -262,7 +262,6 @@ macro_rules! formatcp {
 /// ### With standard library types
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::concatc;
 ///
@@ -273,7 +272,6 @@ macro_rules! formatcp {
 /// ### With user-defined types
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Formatter, Sliced, concatc, impl_fmt};
 ///
@@ -300,12 +298,12 @@ macro_rules! formatcp {
 macro_rules! concatc {
     ()=>{""};
     ($($anything:tt)*)=>(
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::__concatc_expr!(($($anything)*) ($($anything)*))
             as &'static $crate::pmr::str
-        }}.x
+        }}
     )
 }
 
@@ -412,7 +410,6 @@ macro_rules! __concatc_inner {
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::formatc;
@@ -444,7 +441,6 @@ macro_rules! __concatc_inner {
 /// [in the fmt module](./fmt/index.html#custom-formatting-section).
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::{formatc, try_};
@@ -470,14 +466,14 @@ macro_rules! __concatc_inner {
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::pmr::__formatc_impl!{
                 ($format_string)
                 $(, $($expr,)+)?
             }
-        }}.x
+        }}
     );
 }
 
@@ -489,7 +485,7 @@ macro_rules! formatc {
 ///
 /// The syntax is similar to that of other formatting macros in this crate:
 ///
-/// ```ìgnore
+/// ```ignore
 /// ẁritec!(
 ///     writer_expression,
 ///     "formatting literal",
@@ -525,7 +521,6 @@ macro_rules! formatc {
 /// ### Ẁriting a Display impl.
 ///
 /// ```
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Error, Formatter, StrWriter};
 /// use const_format::{impl_fmt, try_, writec};
@@ -558,7 +553,6 @@ macro_rules! formatc {
 /// in this case it's a buffer that is cleared every time it's written.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
 /// use const_format::{Formatter, FormattingFlags};
@@ -613,7 +607,6 @@ macro_rules! formatc {
 /// [in the fmt module](./fmt/index.html#custom-formatting-section).
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::for_examples::Point3;
 /// use const_format::{StrWriter, call_debug_fmt, try_, writec};
@@ -640,7 +633,6 @@ macro_rules! formatc {
 /// by using their identifiers in the format string.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{Formatter, FormattingFlags, StrWriter, try_, writec};
 ///

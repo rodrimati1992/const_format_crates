@@ -30,7 +30,6 @@
 /// Printing all of the kinds of types this supports.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{
 ///     for_examples::{Point3, Unit},
@@ -89,7 +88,6 @@
 ///
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{
 ///     for_examples::{Point3, Unit},

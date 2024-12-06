@@ -33,7 +33,6 @@ use core::marker::PhantomData;
 /// Implementing this trait for a String-like inline allocated type.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::marker_traits::{IsNotAStrWriter, WriteMarker};
 /// use const_format::{Formatter, FormattingFlags};

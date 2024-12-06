@@ -12,7 +12,6 @@ use core::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInc
 /// # Example
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::Sliced;
 /// use const_format::{concatc, formatc};

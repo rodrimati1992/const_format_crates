@@ -10,8 +10,45 @@ macro_rules! __for_range{
     })
 }
 
+#[allow(unused_macros)]
 macro_rules! identity {
     ($($tt:tt)*) => { $($tt)* };
+}
+
+#[cfg(not(feature = "rust_1_83"))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __str_const {
+    ($e:expr) => {
+        $crate::pmr::__AssertStr { x: $e }.x
+    };
+}
+
+#[cfg(feature = "rust_1_83")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __str_const {
+    ($e:expr) => {
+        const { $crate::pmr::__AssertStr { x: $e }.x }
+    };
+}
+
+#[cfg(not(feature = "rust_1_83"))]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __const {
+    ($ty:ty => $e:expr) => {
+        $crate::pmr::__AssertType::<$ty> { x: $e }.x
+    };
+}
+
+#[cfg(feature = "rust_1_83")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __const {
+    ($ty:ty => $e:expr) => {
+        const { $crate::pmr::__AssertType::<$ty> { x: $e }.x }
+    };
 }
 
 #[doc(hidden)]

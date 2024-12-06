@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "fmt", feature(const_mut_refs))]
+#![cfg_attr(feature = "__inline_const_pat_tests", feature(inline_const_pat))]
 
 extern crate const_format as cfmt_b;
 extern crate self as const_format;
@@ -50,4 +50,7 @@ mod misc_tests {
     #[cfg(feature = "fmt")]
     //#[cfg(not(feature = "__only_new_tests"))]
     mod writec_macro;
+
+    #[cfg(feature = "__inline_const_pat_tests")]
+    mod inline_const_pattern_tests;
 }

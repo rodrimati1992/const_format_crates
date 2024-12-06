@@ -1,6 +1,5 @@
 use cfmt::formatcp;
 
-#[cfg(feature = "nightly")]
 use cfmt::formatc;
 
 const _: &str = formatcp!("{}");
@@ -13,7 +12,6 @@ const _: &str = formatcp!("{}", 0u8, 0u8 + 1);
 
 const _: &str = formatcp!("{}", |fmt| 0 + 0);
 
-#[cfg(feature = "nightly")]
 const _: () = {
     const _: &str = formatc!("{}");
 

@@ -29,7 +29,14 @@ struct Braced {
     "<U> Tupled<u64, U>",
     "<U> Tupled<bool, U> where U: 'static,",
 ))]
-struct Tupled<T, U>(u32, #[cdeb(ignore)] Option<&'static str>, T, PhantomData<U>);
+struct Tupled<T, U>(
+    u32,
+    #[cdeb(ignore)]
+    #[allow(dead_code)]
+    Option<&'static str>,
+    T,
+    PhantomData<U>,
+);
 
 #[derive(ConstDebug)]
 #[cdeb(crate = "::cfmt_b")]
@@ -101,7 +108,9 @@ enum Enum {
     },
     Tupled(
         u32,
-        #[cdeb(ignore)] Option<&'static str>,
+        #[cdeb(ignore)]
+        #[allow(dead_code)]
+        Option<&'static str>,
         u32,
         PhantomData<()>,
     ),

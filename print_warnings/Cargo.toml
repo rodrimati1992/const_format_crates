@@ -4,8 +4,6 @@ version = "0.1.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 
-[features]
-nightly = ["const_format/assert", "const_format/rust_1_64"]
-
-[dependencies]
-const_format = {path = "../const_format/"}
+[dependencies.const_format]
+path = "../const_format/"
+features = ["assertc", "assertcp", "rust_1_64"]

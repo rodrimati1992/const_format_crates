@@ -301,12 +301,15 @@ pub trait TokenTreeExt: Sized {
         matches!(self.as_token_tree(), TokenTree2::Punct(p)  if p.as_char() == c)
     }
 
+    #[allow(dead_code)]
     fn is_paren(&self) -> bool {
         matches!(
             self.as_token_tree(),
             TokenTree2::Group(g) if g.delimiter() == Delimiter::Parenthesis
         )
     }
+
+    #[allow(dead_code)]
     fn is_ident(&self, ident: &str) -> bool {
         matches!(self.as_token_tree(), TokenTree2::Ident(x)  if x == ident)
     }
@@ -358,9 +361,12 @@ impl TokenStream2Ext for TokenStream2 {
 
 pub trait MyParse: Sized {
     fn parse(input: ParseStream<'_>) -> Result<Self, crate::Error>;
+
     fn parse_token_stream_1(input: proc_macro::TokenStream) -> Result<Self, crate::Error> {
         Self::parse(&mut ParseBuffer::new(TokenStream2::from(input)))
     }
+
+    #[allow(dead_code)]
     fn parse_token_stream_2(input: TokenStream2) -> Result<Self, crate::Error> {
         Self::parse(&mut ParseBuffer::new(input))
     }

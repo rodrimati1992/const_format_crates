@@ -1,4 +1,5 @@
 #![allow(non_camel_case_types)]
+#![allow(non_local_definitions)]
 
 use cfmt_b::{
     fmt::{ComputeStrLength, Error, Formatter, FormattingFlags, StrWriter, StrWriterMut},

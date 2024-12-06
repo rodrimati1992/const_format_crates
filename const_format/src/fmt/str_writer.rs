@@ -65,7 +65,6 @@ use core::marker::PhantomData;
 /// This example shows how you can construct a formatted `&'static str` from associated constants.
 ///
 /// ```rust
-/// #![feature(const_mut_refs)]
 ///
 /// use const_format::{StrWriter, writec, unwrap};
 ///
@@ -315,7 +314,6 @@ impl StrWriter {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{StrWriter, StrWriterMut};
     ///
@@ -352,7 +350,6 @@ impl StrWriter {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::StrWriter;
     /// use const_format::{unwrap, writec};
@@ -458,7 +455,6 @@ impl StrWriter {
     /// # Example
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
     ///
     /// use const_format::{Error, Formatter, FormattingFlags, StrWriter, call_debug_fmt};
     ///

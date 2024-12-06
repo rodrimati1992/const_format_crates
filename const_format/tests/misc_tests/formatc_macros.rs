@@ -307,6 +307,7 @@ fn raw_literals() {
 
 #[test]
 #[cfg(feature = "fmt")]
+#[expect(non_local_definitions)]
 fn access_formatter() {
     use cfmt_b::call_debug_fmt;
 
