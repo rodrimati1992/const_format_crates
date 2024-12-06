@@ -258,6 +258,7 @@ assert_eq!(
 ///
 ///
 /// [`SplicedStr`]: ./struct.SplicedStr.html
+/// [`str_splice_out`]: ./macro.str_splice_out.html
 #[macro_export]
 macro_rules! str_splice {
     ($string:expr, $index:expr, $insert:expr $(,)*) => {
@@ -268,7 +269,7 @@ macro_rules! str_splice {
     };
 }
 
-/// Alternative version of [`str_split`] which only returns the string
+/// Alternative version of [`str_splice`] which only returns the string
 /// with the applied replacement.
 ///
 /// # Example
@@ -293,6 +294,7 @@ macro_rules! str_splice {
 /// }
 /// ```
 ///
+/// [`str_splice`]: ./macro.str_splice.html
 #[macro_export]
 macro_rules! str_splice_out {
     ($string:expr, $index:expr, $insert:expr $(,)*) => {
@@ -618,6 +620,7 @@ macro_rules! str_get {
 /// ```
 ///
 /// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
+/// [`str_split_pat`]: crate::str_split_pat
 #[macro_export]
 #[cfg(feature = "rust_1_64")]
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
@@ -661,7 +664,7 @@ macro_rules! str_split {
 /// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
 #[macro_export]
 #[cfg(feature = "rust_1_64")]
-#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_83")))]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
 macro_rules! str_split_pat {
     ($string:expr, $splitter:expr $(,)?) => {
         $crate::__const! {&'static [&'static $crate::pmr::str] => {
