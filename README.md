@@ -119,11 +119,9 @@ const fn compute_age(s: &str) -> usize { s.len() * 6 }
 This example demonstrates how you can use the [`ConstDebug`] derive macro,
 and then format the type into a `&'static str` constant.
 
-This example requires Rust nightly, and the `"derive"` feature.
+This example requires Rust 1.83.0, and the `"derive"` feature.
 
 ```rust
-#![feature(const_mut_refs)]
-
 use const_format::{ConstDebug, formatc};
 
 #[derive(ConstDebug)]
