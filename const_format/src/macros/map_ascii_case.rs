@@ -75,7 +75,7 @@
 /// ```
 #[macro_export]
 macro_rules! map_ascii_case {
-    ($case:expr, $str:expr) => {{
+    ($case:expr, $str:expr) => {$crate::__str_const! {{
         const S_OSRCTFL4A: &$crate::pmr::str = $str;
         const CASE_OSRCTFL4A: $crate::Case = $case;
         {
@@ -89,5 +89,5 @@ macro_rules! map_ascii_case {
 
             OS
         }
-    }};
+    }}};
 }

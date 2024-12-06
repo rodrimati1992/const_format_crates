@@ -65,7 +65,7 @@
 /// [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
 #[macro_export]
 macro_rules! str_replace {
-    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {{
+    ($input:expr, $pattern:expr, $replace_with:expr $(,)*) => {$crate::__str_const! {{
         const ARGS_OSRCTFL4A: $crate::__str_methods::ReplaceInput =
             $crate::__str_methods::ReplaceInputConv($input, $pattern, $replace_with).conv();
 
@@ -77,7 +77,7 @@ macro_rules! str_replace {
 
             OS
         }
-    }};
+    }}};
 }
 
 /// Creates a `&'static str` by repeating a `&'static str` constant `times` times
@@ -121,7 +121,7 @@ const_format::str_repeat!("hello", usize::MAX.wrapping_add(4));
 )]
 #[macro_export]
 macro_rules! str_repeat {
-    ($string:expr, $times:expr  $(,)*) => {{
+    ($string:expr, $times:expr  $(,)*) => {$crate::__str_const! {{
         const P_OSRCTFL4A: &$crate::__str_methods::StrRepeatArgs =
             &$crate::__str_methods::StrRepeatArgs($string, $times);
 
@@ -145,7 +145,7 @@ macro_rules! str_repeat {
             const OUT_S: &str = unsafe { $crate::__priv_transmute_bytes_to_str!(OUT_B) };
             OUT_S
         }
-    }};
+    }}};
 }
 
 /// Replaces a substring in a `&'static str` constant.
@@ -251,7 +251,9 @@ assert_eq!(
 /// [`SplicedStr`]: ./struct.SplicedStr.html
 #[macro_export]
 macro_rules! str_splice {
-    ($string:expr, $index:expr, $insert:expr $(,)*) => {{
+    ($string:expr, $index:expr, $insert:expr $(,)*) => {$crate::__const! {
+        $crate::__str_methods::SplicedStr => {
+
         const P_OSRCTFL4A: $crate::__str_methods::StrSpliceArgs =
             $crate::__str_methods::StrSplceArgsConv($string, $index, $insert).conv();
         {
@@ -302,7 +304,7 @@ macro_rules! str_splice {
 
             OUT
         }
-    }};
+    }}};
 }
 
 /// Indexes a `&'static str` constant.
@@ -372,7 +374,7 @@ assert_eq!(const_format::str_index!("効率的", 4..6), "率");
 ///
 #[macro_export]
 macro_rules! str_index {
-    ($string:expr, $index:expr $(,)*) => {{
+    ($string:expr, $index:expr $(,)*) => {$crate::__str_const! {{
         const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
             $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
 
@@ -401,7 +403,7 @@ macro_rules! str_index {
 
             OUT
         }
-    }};
+    }}};
 }
 
 /// Indexes a `&'static str` constant,
@@ -469,7 +471,8 @@ assert_eq!(const_format::str_get!("効率的", 4..6), None);
 ///
 #[macro_export]
 macro_rules! str_get {
-    ($string:expr, $index:expr $(,)*) => {{
+    ($string:expr, $index:expr $(,)*) => {$crate::__const! {
+        $crate::pmr::Option<&'static $crate::pmr::str> => {
         const P_OSRCTFL4A: $crate::__str_methods::StrIndexArgs =
             $crate::__str_methods::StrIndexArgsConv($string, $index).conv();
 
@@ -497,7 +500,7 @@ macro_rules! str_get {
 
             OUT
         }
-    }};
+    }}};
 }
 
 /// Splits `$string` (a `&'static str` constant) with `$splitter`,

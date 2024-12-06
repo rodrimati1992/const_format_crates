@@ -56,12 +56,12 @@
 macro_rules! concatcp {
     ()=>{""};
     ($($arg: expr),* $(,)?)=>(
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
             $crate::pmr::__concatcp_impl!{
                 $( ( $arg ), )*
             }
-        }}.x
+        }}
     );
 }
 
@@ -229,14 +229,14 @@ macro_rules! __concatcp_inner {
 #[macro_export]
 macro_rules! formatcp {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::pmr::__formatcp_impl!(
                 ($format_string)
                 $(, $($expr,)+)?
             )
-        }}.x
+        }}
     );
 }
 
@@ -298,12 +298,12 @@ macro_rules! formatcp {
 macro_rules! concatc {
     ()=>{""};
     ($($anything:tt)*)=>(
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::__concatc_expr!(($($anything)*) ($($anything)*))
             as &'static $crate::pmr::str
-        }}.x
+        }}
     )
 }
 
@@ -466,14 +466,14 @@ macro_rules! __concatc_inner {
 #[cfg(feature = "fmt")]
 macro_rules! formatc {
     ($format_string:expr $( $(, $expr:expr )+ )? $(,)? ) => (
-        $crate::pmr::__AssertStr {x:{
+        $crate::__str_const! {{
             use $crate::__cf_osRcTFl4A;
 
             $crate::pmr::__formatc_impl!{
                 ($format_string)
                 $(, $($expr,)+)?
             }
-        }}.x
+        }}
     );
 }
 

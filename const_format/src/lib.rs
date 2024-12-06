@@ -486,6 +486,12 @@ pub mod pmr {
     pub struct __AssertStr {
         pub x: &'static str,
     }
+
+    #[doc(hidden)]
+    #[repr(transparent)]
+    pub struct __AssertType<T> {
+        pub x: T,
+    }
 }
 
 #[cfg(all(feature = "__test", feature = "derive", feature = "assertcp"))]

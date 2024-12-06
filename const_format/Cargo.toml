@@ -24,7 +24,8 @@ const_generics = ["rust_1_51"]
 nightly_const_generics = ["const_generics"]
 rust_1_51 = []
 rust_1_64 = ["rust_1_51", "konst", "konst/rust_1_64"]
-fmt = ["rust_1_64"]
+rust_1_83 = ["rust_1_64"]
+fmt = ["rust_1_83"]
 derive = ["fmt", "const_format_proc_macros/derive"]
 
 # soft-deprecated, use assertc instead.
@@ -50,6 +51,7 @@ all = [
 __debug = ["const_format_proc_macros/debug"]
 __test = []
 __only_new_tests = ["__test"]
+__inline_const_pat_tests = ["__test", "fmt"]
 __docsrs = []
 
 [dependencies.const_format_proc_macros]
