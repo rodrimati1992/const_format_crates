@@ -10,7 +10,8 @@ use crate::cfmt_b::{
     str_index,
     str_repeat,
     str_replace,
-    str_split,
+    str_splice_out,
+    str_split_pat,
 };
 
 
@@ -51,6 +52,12 @@ fn str_get_inline_pat_tests() {
 }
 
 #[test]
+fn str_splice_out_inline_pat_tests() {
+    assert!(matches!("foo", str_splice_out!("fbar", 1.., "oo")));
+    assert!(!matches!("foo", str_splice_out!("foo", 1..3, "bar")));
+}
+
+#[test]
 fn str_index_inline_pat_tests() {
     assert!(matches!("foo", str_index!(" foobar", 1..4)));
     assert!(!matches!("foo", str_index!(" foobar", 1..5)));
@@ -66,5 +73,11 @@ fn str_repeat_inline_pat_tests() {
 fn str_replace_inline_pat_tests() {
     assert!(matches!("fooo", str_replace!("fo", "o", "ooo")));
     assert!(!matches!("foo", str_replace!("fo", "o", "bar")));
+}
+
+#[test]
+fn str_split_pat_inline_pat_tests() {
+    assert!(matches!(&["foo", "bar", "baz"][..], str_split_pat!("foo bar baz", " ")));
+    assert!(!matches!(&["foo", "bar", "baz"][..], str_split_pat!("foo bar", " ")));
 }
 

@@ -1,4 +1,13 @@
-use const_format::str_split;
+use const_format::{str_split, str_split_pat};
+
+#[test]
+fn test_str_split_pat_basic_equivalence() {
+    assert_eq!(str_split_pat!("fob", "XY"), &["fob"][..]);
+    assert_eq!(str_split_pat!("XYfob", "XY"), &["", "fob"][..]);
+    assert_eq!(str_split_pat!("XYfobXY", "XY"), &["", "fob", ""][..]);
+    assert_eq!(str_split_pat!("fooXYbarXYbaz", "XY"), &["foo", "bar", "baz"][..]);
+    assert_eq!(str_split_pat!("fooXY bar XYbaz", "XY"), &["foo", " bar ", "baz"][..]);
+}
 
 #[test]
 fn test_str_split_with_empty_str_arg() {

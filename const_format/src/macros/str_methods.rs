@@ -151,6 +151,11 @@ macro_rules! str_repeat {
 /// Replaces a substring in a `&'static str` constant.
 /// Returns both the new resulting `&'static str`, and the replaced substring.
 ///
+/// # Alternatives
+///
+/// For an alternative which only returns the string with the applied replacement,
+/// you can use [`str_splice_out`].
+///
 /// # Signature
 ///
 /// This macro acts like a function of this signature:
@@ -252,8 +257,47 @@ assert_eq!(
 #[macro_export]
 macro_rules! str_splice {
     ($string:expr, $index:expr, $insert:expr $(,)*) => {$crate::__const! {
-        $crate::__str_methods::SplicedStr => {
+        $crate::__str_methods::SplicedStr => 
+        $crate::__str_splice!($string, $index, $insert)
+    }};
+}
 
+/// Alternative version of [`str_split`] which only returns the string
+/// with the applied replacement.
+/// 
+/// # Example
+///
+/// ```rust
+/// use const_format::{str_splice_out, SplicedStr};
+///
+/// const OUT: &str = str_splice_out!("foo bar baz", 4..=6, "is");
+/// assert_eq!(OUT , "foo is baz");
+///
+/// // You can pass `const`ants to this macro, not just literals
+/// {
+///     const IN: &str = "this is bad";
+///     const INDEX: std::ops::RangeFrom<usize> = 8..;
+///     const REPLACE_WITH: &str = "... fine";
+///     const OUT: &str = str_splice_out!(IN, INDEX, REPLACE_WITH);
+///     assert_eq!(OUT , "this is ... fine");
+/// }
+/// {
+///     const OUT: &str = str_splice_out!("ABC豆-", 3, "DEFGH");
+///     assert_eq!(OUT , "ABCDEFGH-");
+/// }
+/// ```
+///
+#[macro_export]
+macro_rules! str_splice_out {
+    ($string:expr, $index:expr, $insert:expr $(,)*) => {$crate::__str_const ! {
+        $crate::__str_splice!($string, $index, $insert).output
+    }};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __str_splice {
+    ($string:expr, $index:expr, $insert:expr) => {{
         const P_OSRCTFL4A: $crate::__str_methods::StrSpliceArgs =
             $crate::__str_methods::StrSplceArgsConv($string, $index, $insert).conv();
         {
@@ -304,7 +348,7 @@ macro_rules! str_splice {
 
             OUT
         }
-    }}};
+    }}
 }
 
 /// Indexes a `&'static str` constant.
@@ -506,6 +550,12 @@ macro_rules! str_get {
 /// Splits `$string` (a `&'static str` constant) with `$splitter`,
 /// returning an array of `&'static str`s.
 ///
+/// # Alternatives
+///
+/// For an alternative macro which will be usable in slice patterns
+/// (once [`inline_const_pat`] is stabilized)
+/// you can use [`str_split_pat`].
+///
 /// # Signature
 ///
 /// This macro acts like a function of this signature:
@@ -554,6 +604,8 @@ macro_rules! str_get {
 /// }
 ///
 /// ```
+///
+/// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
 #[macro_export]
 #[cfg(feature = "rust_1_64")]
 #[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_64")))]
@@ -567,4 +619,46 @@ macro_rules! str_split {
             OB
         }
     }};
+}
+
+
+/// Version of [`str_split`] which evaluates to a `&'static [&'static str]`.
+/// 
+/// # Example
+/// 
+/// Using the currently unstable [`inline_const_pat`] feature to use this macro in patterns:
+/// 
+/// ```rust
+/// # /*
+/// #![feature(inline_const_pat)]
+/// # */
+/// 
+/// use const_format::str_split_pat;
+/// 
+/// assert!(is_it(&["foo", "bar", "baz"]));
+/// assert!(!is_it(&["foo", "bar"]));
+/// 
+/// fn is_it(slice: &[&str]) -> bool {
+///     const SEP: char = ' ';
+/// # /*
+///     matches!(slice, str_split_pat!("foo bar baz", SEP))
+/// # */
+/// #   slice == str_split_pat!("foo bar baz", SEP)
+/// }
+/// ```
+/// 
+/// [`inline_const_pat`]: https://doc.rust-lang.org/1.83.0/unstable-book/language-features/inline-const-pat.html
+#[macro_export]
+#[cfg(feature = "rust_1_64")]
+#[cfg_attr(feature = "__docsrs", doc(cfg(feature = "rust_1_83")))]
+macro_rules! str_split_pat {
+    ($string:expr, $splitter:expr $(,)?) => {$crate::__const!{&'static [&'static $crate::pmr::str] => {
+        const ARGS_OSRCTFL4A: $crate::__str_methods::SplitInput =
+            $crate::__str_methods::SplitInputConv($string, $splitter).conv();
+
+        {
+            const OB: [&$crate::pmr::str; ARGS_OSRCTFL4A.length()] = ARGS_OSRCTFL4A.split_it();
+            &OB
+        }
+    }}};
 }

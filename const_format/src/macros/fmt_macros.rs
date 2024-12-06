@@ -485,7 +485,7 @@ macro_rules! formatc {
 ///
 /// The syntax is similar to that of other formatting macros in this crate:
 ///
-/// ```ìgnore
+/// ```ignore
 /// ẁritec!(
 ///     writer_expression,
 ///     "formatting literal",
