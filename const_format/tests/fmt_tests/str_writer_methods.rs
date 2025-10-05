@@ -31,7 +31,7 @@ macro_rules! write_integer_tests {
             assert!( writer.is_empty() );
 
             let snapshot = writer.len();
-            let mut string = ArrayString::<[u8; 1024]>::new();
+            let mut string = ArrayString::<1024>::new();
 
             let flags = FormattingFlags::DEFAULT;
 
@@ -179,7 +179,7 @@ fn test_unescaped_str_fn(
     const CAP: usize = 10;
 
     for _ in 0..tries {
-        let mut input = ArrayString::<[u8; CAP]>::new();
+        let mut input = ArrayString::<CAP>::new();
         while input.try_push(rng()).is_ok() {}
 
         let input = input.as_str();

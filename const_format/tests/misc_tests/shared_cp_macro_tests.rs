@@ -20,7 +20,7 @@ macro_rules! tests {
 
         #[test]
         fn all_types() {
-            let mut string = ArrayString::<[u8; 1024]>::new();
+            let mut string = ArrayString::<1024>::new();
             $(
                 write!(string, "{}", $expr).unwrap();
             )*
@@ -38,7 +38,7 @@ macro_rules! tests {
                 const VALUE_F: &'static str = formatcp!("{}", $expr);
                 const VALUE: &'static str = concatcp!($expr);
 
-                let mut string = ArrayString::<[u8; 64]>::new();
+                let mut string = ArrayString::<64>::new();
                 write!(string, "{}", $expr).unwrap();
 
                 assert_eq!(string.as_str(), VALUE);
