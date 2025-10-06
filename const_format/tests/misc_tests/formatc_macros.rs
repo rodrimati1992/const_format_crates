@@ -73,7 +73,7 @@ fn positional_and_named_arguments() {
 // Display formatting is already tested in the `shared_cp_macro_tests` module
 #[test]
 fn debug_formatting() {
-    let mut string = ArrayString::<[u8; 64]>::new();
+    let mut string = ArrayString::<64>::new();
 
     macro_rules! same_as_display {
         ($($expr:expr),* $(,)?) => (
@@ -108,7 +108,7 @@ fn debug_formatting() {
     ////////////////////////////
     //  Let's debug format all ascii characters!
 
-    let mut escapedes = ArrayVec::<[&str; 16]>::new();
+    let mut escapedes = ArrayVec::<&str, 16>::new();
 
     escapedes.extend(
         [
@@ -253,7 +253,7 @@ macro_rules! binary_hex_test_case {
 
 #[test]
 fn binary_and_hex_formatting() {
-    let mut s = ArrayString::<[u8; 4096]>::new();
+    let mut s = ArrayString::<4096>::new();
     binary_hex_test_case!(u8, s);
     binary_hex_test_case!(u16, s);
     binary_hex_test_case!(u32, s);

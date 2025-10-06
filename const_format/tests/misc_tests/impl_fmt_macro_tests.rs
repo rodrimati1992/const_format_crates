@@ -452,7 +452,7 @@ fn enum_inside_struct() {
     declare_test_case_fns!(StructWE<u32>);
 
     let writer: &mut StrWriter = &mut StrWriter::new([0; 512]);
-    let mut string = ArrayString::<[u8; 512]>::new();
+    let mut string = ArrayString::<512>::new();
 
     {
         let tupled = StructWE(EnumA::Tupled(3, 5));
