@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.35
+
+Breaking change: bumped Minimum Supported Rust Version to Rust 1.60. This change is motivated by `quote` increasing its MSRV to 1.60.
+
 ### 0.2.34
 
 Now all features that used to require nightly only require Rust 1.83.0
