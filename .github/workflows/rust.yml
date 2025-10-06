@@ -75,7 +75,7 @@ jobs:
         cd "${{github.workspace}}/const_format/"
 
         # enable `__inline_const_pat_tests` feature if `const {...}` pats are allowed
-        cargo test --features "derive constant_time_as_str assertc more_str_macros rust_1_83"
+        cargo test --features "__test derive constant_time_as_str assertc more_str_macros rust_1_83"
 
         MIRI_NIGHTLY=nightly-$(curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/miri)
         MIRIFLAGS="-Zmiri-strict-provenance -Zmiri-check-number-validity -Zmiri-symbolic-alignment-check"
@@ -96,4 +96,4 @@ jobs:
         # tests the crate with every feature, including constant_time_as_str 
         # enable `__inline_const_pat_tests` feature if `const {...}` pats are allowed
         cargo miri test \
-        --features "derive constant_time_as_str assertc more_str_macros rust_1_83"
+        --features "__test derive constant_time_as_str assertc more_str_macros rust_1_83"
