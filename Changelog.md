@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.36
+
+Fixed nightly 2026-04-09 compatibility when `cargo update -Z minimal-versions` is used by bumping `konst` internal dependency to `"0.2.20"` version
+
 ### 0.2.35
 
 Breaking change: bumped Minimum Supported Rust Version to Rust 1.60. This change is motivated by `quote` increasing its MSRV to 1.60.
