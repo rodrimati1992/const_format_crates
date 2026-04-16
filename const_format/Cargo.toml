@@ -59,7 +59,7 @@ version = "=0.2.34"
 path = "../const_format_proc_macros"
 
 [dependencies.konst]
-version = "0.2.13"
+version = "0.2.20"
 default-features = false
 optional = true
 
