@@ -33,7 +33,7 @@ pub mod rust_1_83 {
     }
 
     pub const __AS_STR: &StrWriter = &as_str_ctor();
-    pub const AS_STR: &str = __AS_STR.as_str_alt();
+    pub const AS_STR: &str = __AS_STR.as_str();
 }
 
 pub const CONCATCP_A: &str = concatcp!("hello", "world");

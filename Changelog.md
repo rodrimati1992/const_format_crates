@@ -4,6 +4,27 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 ### 0.2.36
 
+Breaking change: bumped Minimum Supported Rust Version to Rust 1.71. This change is motivated by `quote` increasing its MSRV to 1.71.
+
+Now the `"rust_1_64"` feature is effectively always enabled, so these items are always enabled:
+- `const_format::str_split`
+
+Deprecated these items because their replacements now take constant time to run:
+- `const_format::fmt::StrWriter::as_bytes_alt`: superceeded by `as_bytes`
+- `const_format::fmt::StrWriter::as_str_alt`: superceeded by `as_str`
+- `const_format::fmt::StrWriterMut::as_bytes_alt`: superceeded by `as_bytes`
+- `const_format::fmt::StrWriterMut::as_str_alt`: superceeded by `as_str`
+- `const_format::utils::slice_up_to_len_alt`: superceeded by `slice_up_to_len`
+
+Changed these methods from being conditionally const (by requiring the `"rust_1_64"` feature to be const) to being unconditionally const:
+- `const_format::fmt::StrWriter::as_bytes`
+- `const_format::fmt::StrWriter::as_str`
+- `const_format::fmt::StrWriterMut::as_bytes`
+- `const_format::fmt::StrWriterMut::as_str`
+
+Changed this method to be `const`:
+- `const_format::AsciiStr::as_str`
+
 Fixed nightly 2026-04-09 compatibility when `cargo update -Z minimal-versions` is used by bumping `konst` internal dependency to `"0.2.20"` version
 
 ### 0.2.35

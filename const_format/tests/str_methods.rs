@@ -5,6 +5,5 @@ mod str_methods_modules {
 
     mod str_splice;
 
-    #[cfg(feature = "rust_1_64")]
     mod str_split_tests;
 }

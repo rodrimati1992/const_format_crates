@@ -45,6 +45,9 @@ determined by a [`Case`] argument.
 Replaces all the instances of a pattern in a `&'static str` constant with
 another `&'static str` constant.
 
+-  [`str_split`]: 
+Splits a string constant
+
 
 The `"assertcp"` feature enables the [`assertcp`], [`assertcp_eq`],
 and [`assertcp_ne`] macros.
@@ -52,12 +55,6 @@ These macros are like the standard library assert macros,
 but evaluated at compile-time,
 with the limitation that they can only have primitive types as arguments
 (just like [`concatcp`] and [`formatcp`]).
-
-### Rust 1.64.0
-
-The `"rust_1_64"` feature enables these macros:
-
--  [`str_split`]: splits a string constant
 
 ### Rust 1.83.0
 
@@ -263,12 +260,8 @@ but it was renamed to avoid confusion with the `"assertcp"` feature.
 - `"assertcp"`:
 Enables the [`assertcp`], [`assertcp_eq`], and [`assertcp_ne`] assertion macros.
 
-- `"rust_1_64"`: Enables the [`str_split`] macro.
-Allows the `as_bytes_alt` methods and `slice_up_to_len_alt` methods to run
-in constant time, rather than linear time (proportional to the truncated part of the slice).
-
-- `"rust_1_83"`: Enables the `"rust_1_64"` feature
-and makes macros that evaluate to a value compatible with [inline const patterns].
+- `"rust_1_83"`: 
+Makes macros that evaluate to a value become compatible with [inline const patterns].
 
 # No-std support
 
