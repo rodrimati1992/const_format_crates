@@ -449,7 +449,6 @@ pub mod pmr {
     pub use core::{
         cmp::Reverse,
         convert::identity,
-        mem::transmute,
         num::Wrapping,
         ops::Range,
         option::Option::{self, None, Some},

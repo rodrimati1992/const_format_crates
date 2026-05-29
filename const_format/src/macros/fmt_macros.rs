@@ -79,9 +79,8 @@ macro_rules! __concatcp_inner {
         #[doc(hidden)]
         #[allow(clippy::transmute_ptr_to_ptr)]
         const CONCAT_STR: &str = unsafe {
-            // This transmute truncates the length of the array to the amound of written bytes.
-            let slice =
-                $crate::pmr::transmute::<&[u8; ARR_LEN], &[u8; CONCAT_ARR.len]>(&CONCAT_ARR.array);
+            // This truncates the length of the array to the amound of written bytes.
+            let slice = ::core::slice::from_raw_parts(CONCAT_ARR.array.as_ptr(), CONCAT_ARR.len);
 
             $crate::__priv_transmute_bytes_to_str!(slice)
         };
