@@ -2,6 +2,10 @@ This is the changelog,summarising changes in each version(some minor changes may
 
 # 0.2 
 
+### 0.2.37
+
+Fixed rust analyzer unused argument error on assertion macros
+
 ### 0.2.36
 
 Breaking change: bumped Minimum Supported Rust Version to Rust 1.71. This change is motivated by `quote` increasing its MSRV to 1.71.
