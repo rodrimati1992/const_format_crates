@@ -48,6 +48,25 @@ assertcp!(true, "{}", {
 
 const X: u8 = 123;
 
+#[test]
+fn assertcp_eq_with_concat_message() {
+    assertcp_eq!(
+        123u8,
+        X,
+        concat!("values: ", concat!("{0}, ", "{named}, "), "{X}; {{equal}}"),
+        X,
+        named = X,
+    );
+}
+
+#[test]
+fn assertcp_eq_skips_message_evaluation() {
+    assertcp_eq!(X, 123u8, "value: {}", {
+        panic!("a passing assertion must not evaluate its message");
+        0u8
+    });
+}
+
 #[allow(unused_variables)]
 const _: () = {
     ////////////////////////////////////////////////////////////////////////////////
